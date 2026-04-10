@@ -617,8 +617,8 @@ async function loadVersion() {
     if (!r.ok) return;
     const d = await r.json();
     const el = document.getElementById("logoSub");
-    if (el && d.version) {
-      el.textContent = `aktualisiert: ${d.lastUpdated || "unbekannt"}`;
+    if (el && d.lastUpdated) {
+      el.textContent = `aktualisiert: ${d.lastUpdated}`;
     }
   } catch {}
 }
