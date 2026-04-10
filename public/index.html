@@ -701,7 +701,7 @@ function renderContacts(contacts) {
     const nameEl = document.createElement("span");
     nameEl.className = "contact-name";
     nameEl.textContent = c.name;
-    nameEl.title = "Rechtsklick zum Umbenennen";
+    item.title = "Rechtsklick zum Umbenennen";
 
     const dateEl = document.createElement("span");
     dateEl.className = "contact-date";
@@ -716,8 +716,8 @@ function renderContacts(contacts) {
       deleteContact(c, item);
     });
 
-    // Right-click on name to rename
-    nameEl.addEventListener("contextmenu", (e) => {
+    // Right-click anywhere on contact item to rename
+    item.addEventListener("contextmenu", (e) => {
       e.preventDefault();
       e.stopPropagation();
       startRenameContact(c, nameEl);
