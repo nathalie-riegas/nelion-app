@@ -9,16 +9,14 @@ const app = express();
 app.use(express.json({ limit: "1mb" }));
 
 // ─── VERSION ───────────────────────────────────────────────────────────────
-const APP_VERSION = "App Version 1.0";
 let APP_LAST_UPDATED = "unbekannt";
 try {
-  const raw = execSync("git log -1 --format=%cd --date=short", {
+  const raw = execSync("git log -1 --format=%cd --date=format:%d.%m.%Y %H:%M", {
     cwd: __dirname,
     encoding: "utf-8",
     stdio: ["ignore", "pipe", "ignore"],
   }).trim();
-  const m = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  APP_LAST_UPDATED = m ? `${m[3]}-${m[2]}-${m[1]}` : (raw || "unbekannt");
+  APP_LAST_UPDATED = raw || "unbekannt";
 } catch (e) {
   console.warn("Could not read git commit date:", e.message);
 }
@@ -184,7 +182,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // ─── VERSION ENDPOINT ──────────────────────────────────────────────────────
 app.get("/api/version", (req, res) => {
-  res.json({ version: APP_VERSION, lastUpdated: APP_LAST_UPDATED });
+  res.json({ lastUpdated: APP_LAST_UPDATED });
 });
 
 // Content (loaded from content/cockpit.md at startup)
@@ -287,5 +285,5 @@ app.patch("/api/consultations/:id", async (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`NELION Cockpit running on port ${PORT}`);
-  console.log(`Version: ${APP_VERSION} (${APP_LAST_UPDATED})`);
+  console.log(`Aktualisiert: ${APP_LAST_UPDATED}`);
 });
