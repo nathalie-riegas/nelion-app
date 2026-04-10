@@ -181,8 +181,18 @@
     display: flex; align-items: center; justify-content: center;
     transition: opacity .15s, color .15s, background .15s;
   }
-  .contact-item:hover .btn-del-contact { opacity: 1; }
+  .contact-item:hover .btn-del-contact,
+  .contact-item:hover .btn-edit-contact { opacity: 1; }
   .btn-del-contact:hover { color: #c0392b; background: rgba(192,57,43,0.1); }
+  .btn-edit-contact {
+    flex-shrink: 0; opacity: 0;
+    background: transparent; border: none;
+    color: var(--ink-mute); cursor: pointer;
+    padding: 4px 5px; border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity .15s, color .15s, background .15s;
+  }
+  .btn-edit-contact:hover { color: var(--accent); background: rgba(0,0,0,0.05); }
   .divider {
     display: flex; align-items: center; gap: 12px;
     font-family: var(--mono); font-size: 10px; color: var(--ink-mute);
@@ -701,11 +711,19 @@ function renderContacts(contacts) {
     const nameEl = document.createElement("span");
     nameEl.className = "contact-name";
     nameEl.textContent = c.name;
-    item.title = "Rechtsklick zum Umbenennen";
 
     const dateEl = document.createElement("span");
     dateEl.className = "contact-date";
     dateEl.textContent = date;
+
+    const editBtn = document.createElement("button");
+    editBtn.className = "btn-edit-contact";
+    editBtn.title = "Name bearbeiten";
+    editBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2l3 3-7 7H0V9z"/><path d="M6 3l3 3"/></svg>';
+    editBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      startRenameContact(c, nameEl);
+    });
 
     const delBtn = document.createElement("button");
     delBtn.className = "btn-del-contact";
@@ -716,18 +734,12 @@ function renderContacts(contacts) {
       deleteContact(c, item);
     });
 
-    // Right-click anywhere on contact item to rename
-    item.addEventListener("contextmenu", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      startRenameContact(c, nameEl);
-    });
-
     // Click anywhere on item starts session
     item.addEventListener("click", () => startSessionForContact(c));
 
     item.appendChild(nameEl);
     item.appendChild(dateEl);
+    item.appendChild(editBtn);
     item.appendChild(delBtn);
     $contactList.appendChild(item);
   }
