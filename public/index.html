@@ -195,11 +195,38 @@
 
   /* ── COCKPIT ─────────────────────────────────────────────────────────── */
   .cockpit-contact {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     font-family: var(--mono);
-    font-size: 11px;
+    font-size: 12px;
     color: var(--ink-dim);
     letter-spacing: 0.05em;
-    margin-bottom: -8px;
+    margin-bottom: -4px;
+    flex-wrap: wrap;
+  }
+  .cockpit-contact-name {
+    font-weight: 500;
+    color: var(--ink);
+    cursor: pointer;
+    border-bottom: 1px dashed var(--border2);
+    transition: color .15s;
+  }
+  .cockpit-contact-name:hover { color: var(--accent); }
+  .cockpit-contact-name-edit {
+    font-family: var(--mono); font-size: 12px; font-weight: 500;
+    color: var(--ink); background: var(--surface);
+    border: 1px solid var(--accent); border-radius: 4px;
+    padding: 2px 6px; outline: none;
+  }
+  .cockpit-contact-date { color: var(--ink-mute); }
+  .notes-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-mute);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
   }
   .phase-header {
     display: flex;
@@ -563,6 +590,7 @@
     </nav>
     <div class="cockpit-content">
       <div id="phaseContent"></div>
+      <div class="notes-label" id="notesLabel"></div>
       <textarea class="notes-area" id="phaseNotes" placeholder="Notizen zu dieser Phase…"></textarea>
       <div class="btn-row" id="phaseButtons"></div>
     </div>
@@ -823,7 +851,7 @@ async function startSessionForContact(contact) {
     currentConsultation = consultation;
     currentPhase = 1;
     notesDirty = false;
-    $cockpitContact.textContent = `Gespräch mit ${contact.name}`;
+    renderCockpitHeader();
     renderPhase(currentPhase);
     showScreen("screenCockpit");
   } catch (e) {
@@ -832,6 +860,88 @@ async function startSessionForContact(contact) {
 }
 
 // ── COCKPIT ───────────────────────────────────────────────────────────────
+function renderCockpitHeader() {
+  if (!currentContact) return;
+  const dateStr = currentConsultation && currentConsultation.consultation_date
+    ? new Date(currentConsultation.consultation_date).toLocaleDateString("de-CH", { day: "2-digit", month: "long", year: "numeric" })
+    : "";
+  $cockpitContact.innerHTML = "";
+
+  const nameEl = document.createElement("span");
+  nameEl.className = "cockpit-contact-name";
+  nameEl.textContent = currentContact.name;
+  nameEl.title = "Klick zum Bearbeiten";
+  nameEl.addEventListener("click", () => editCockpitName(nameEl));
+
+  const dateEl = document.createElement("span");
+  dateEl.className = "cockpit-contact-date";
+  dateEl.textContent = dateStr ? `— ${dateStr}` : "";
+
+  $cockpitContact.appendChild(nameEl);
+  $cockpitContact.appendChild(dateEl);
+}
+
+function editCockpitName(nameEl) {
+  const oldName = currentContact.name;
+  const input = document.createElement("input");
+  input.type = "text";
+  input.className = "cockpit-contact-name-edit";
+  input.value = oldName;
+  input.maxLength = 200;
+
+  nameEl.replaceWith(input);
+  input.focus();
+  input.select();
+
+  let done = false;
+  const finish = async (save) => {
+    if (done) return;
+    done = true;
+    const newName = input.value.trim();
+
+    const replacement = document.createElement("span");
+    replacement.className = "cockpit-contact-name";
+    replacement.title = "Klick zum Bearbeiten";
+    replacement.addEventListener("click", () => editCockpitName(replacement));
+
+    if (save && newName && newName !== oldName) {
+      replacement.textContent = newName;
+      input.replaceWith(replacement);
+      currentContact.name = newName;
+      updateNotesLabel();
+      try {
+        const r = await fetch(`/api/contacts/${currentContact.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: newName }),
+        });
+        if (!r.ok) throw new Error("HTTP " + r.status);
+      } catch (e) {
+        replacement.textContent = oldName;
+        currentContact.name = oldName;
+        updateNotesLabel();
+        alert("Umbenennen fehlgeschlagen: " + e.message);
+      }
+    } else {
+      replacement.textContent = oldName;
+      input.replaceWith(replacement);
+    }
+  };
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); finish(true); }
+    else if (e.key === "Escape") { e.preventDefault(); finish(false); }
+  });
+  input.addEventListener("blur", () => finish(true));
+}
+
+function updateNotesLabel() {
+  const el = document.getElementById("notesLabel");
+  if (el && currentContact) {
+    el.textContent = `Notizen — ${currentContact.name}`;
+  }
+}
+
 function renderPhaseSidebar(activeNum) {
   // Keep the label, rebuild nav items
   $phaseSidebar.innerHTML = '<div class="phase-sidebar-label">Phasen</div>';
@@ -886,6 +996,7 @@ function renderPhase(num) {
   $phaseContent.innerHTML = html;
 
   // Notes
+  updateNotesLabel();
   const noteKey = `phase${num}_notes`;
   $phaseNotes.value = currentConsultation[noteKey] || "";
   notesDirty = false;
