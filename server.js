@@ -224,6 +224,29 @@ app.get("/api/contacts", async (req, res) => {
   res.json(data);
 });
 
+// Rename contact
+app.patch("/api/contacts/:id", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { name } = req.body || {};
+  if (!name || !name.trim()) return res.status(400).json({ error: "Name erforderlich" });
+  const { data, error } = await supabase
+    .from("contacts")
+    .update({ name: name.trim() })
+    .eq("id", req.params.id)
+    .select()
+    .single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+// Delete contact (cascades to consultations)
+app.delete("/api/contacts/:id", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { error } = await supabase.from("contacts").delete().eq("id", req.params.id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ success: true });
+});
+
 // ─── CONSULTATIONS ─────────────────────────────────────────────────────────
 app.post("/api/consultations", async (req, res) => {
   if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
