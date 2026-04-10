@@ -1,5 +1,6 @@
 const express = require("express");
 const path = require("path");
+const fs = require("fs");
 const crypto = require("crypto");
 const { execSync } = require("child_process");
 const { createClient } = require("@supabase/supabase-js");
@@ -20,6 +21,75 @@ try {
   APP_LAST_UPDATED = m ? `${m[3]}-${m[2]}-${m[1]}` : (raw || "unbekannt");
 } catch (e) {
   console.warn("Could not read git commit date:", e.message);
+}
+
+// ─── CONTENT FILE ─────────────────────────────────────────────────────────
+// Parsed once at startup from content/cockpit.md. To update content:
+// edit the file → git push → Render redeploys → new content is live.
+function parseCockpitContent(filePath) {
+  const raw = fs.readFileSync(filePath, "utf-8");
+
+  // Split on --- separators
+  const blocks = raw.split(/^---$/m).map(b => b.trim()).filter(Boolean);
+
+  const phases = [];
+  const anker = [];
+
+  for (const block of blocks) {
+    // Anker block
+    if (/^## ANKER/m.test(block)) {
+      const lines = block.split("\n");
+      for (const line of lines) {
+        const m = line.match(/^- (.+)$/);
+        if (m) anker.push(m[1].trim());
+      }
+      continue;
+    }
+
+    // Phase block
+    if (/^## PHASE/m.test(block)) {
+      const get = (key) => {
+        const m = block.match(new RegExp(`^${key}:\\s*(.+)$`, "m"));
+        return m ? m[1].trim() : "";
+      };
+
+      // instruction may be multiline — capture everything between instruction: and guide:
+      let instruction = "";
+      const instrMatch = block.match(/^instruction:\s*([\s\S]*?)(?=^guide:|$)/m);
+      if (instrMatch) instruction = instrMatch[1].trim();
+
+      // guide items: lines starting with -
+      const guideItems = [];
+      const guideSection = block.match(/^guide:\s*\n([\s\S]*)$/m);
+      if (guideSection) {
+        for (const line of guideSection[1].split("\n")) {
+          const gm = line.match(/^- (.+)$/);
+          if (gm) guideItems.push(gm[1].trim());
+        }
+      }
+
+      if (get("title")) {
+        phases.push({
+          num: get("num"),
+          title: get("title"),
+          time: get("time"),
+          instruction,
+          guide: guideItems,
+        });
+      }
+    }
+  }
+
+  return { phases, anker };
+}
+
+const CONTENT_PATH = path.join(__dirname, "content", "cockpit.md");
+let COCKPIT_CONTENT = { phases: [], anker: [] };
+try {
+  COCKPIT_CONTENT = parseCockpitContent(CONTENT_PATH);
+  console.log(`Content loaded: ${COCKPIT_CONTENT.phases.length} phases, ${COCKPIT_CONTENT.anker.length} anker lines`);
+} catch (e) {
+  console.error("Failed to load cockpit content:", e.message);
 }
 
 // ─── ENV ───────────────────────────────────────────────────────────────────
@@ -115,6 +185,11 @@ app.use(express.static(path.join(__dirname, "public")));
 // ─── VERSION ENDPOINT ──────────────────────────────────────────────────────
 app.get("/api/version", (req, res) => {
   res.json({ version: APP_VERSION, lastUpdated: APP_LAST_UPDATED });
+});
+
+// Content (loaded from content/cockpit.md at startup)
+app.get("/api/content", (req, res) => {
+  res.json(COCKPIT_CONTENT);
 });
 
 app.get("/api/health", (req, res) => {

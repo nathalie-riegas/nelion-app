@@ -569,72 +569,15 @@
 <!-- ── ANKER OVERLAY ─────────────────────────────────────────────────────── -->
 <div class="anker-overlay" id="ankerOverlay">
   <div class="anker-card">
-    <div class="anker-line">Mein Selbstwert hängt nicht von NELION ab.</div>
-    <div class="anker-line">Fokus auf Aufgabe — nicht beeindrucken.</div>
-    <div class="anker-line italic">You failed. Congratulations!<br>Most people don't even try.</div>
+    <div id="ankerContent"></div>
     <button class="anker-close" id="btnAnkerClose">Zurück</button>
   </div>
 </div>
 
 <script>
-// ── PHASES DEFINITION ─────────────────────────────────────────────────────
-const PHASES = [
-  {
-    num: "Phase 1",
-    title: "Sync",
-    time: "~5 min",
-    instruction: "Setze den Raum. Reine Präsenz. Kein Pitch, keine Agenda. Du bist da, um zu verstehen — nicht um zu überzeugen.",
-    guide: [
-      { text: '<em>"Wie bist du hier angekommen — was hat dich dazu gebracht, heute dieses Gespräch zu führen?"</em>' },
-      { text: '<em>"Was ist gerade die grösste Reibung in deinem Unternehmen?"</em>' },
-      { text: 'Hör zu. Nicht analysieren. Nicht reparieren. Nur aufnehmen.' },
-    ],
-  },
-  {
-    num: "Phase 2",
-    title: "Scan",
-    time: "3 Kernfragen",
-    instruction: "Drei diagnostische Fragen. Jede öffnet eine andere Ebene. Lass Pausen zu — die wichtigsten Antworten kommen nach der ersten Stille.",
-    guide: [
-      { text: '<em>"Was möchtest du verändern?"</em> — Zielzustand erfassen' },
-      { text: '<em>"Was hast du bereits versucht?"</em> — Bisherige Lösungsversuche + Muster erkennen' },
-      { text: '<em>"Woran würdest du merken, dass es sich gelohnt hat?"</em> — Erfolgskriterium auf der Ebene, die wirklich zählt' },
-    ],
-  },
-  {
-    num: "Phase 3",
-    title: "Spiegeln",
-    time: "~3 min",
-    instruction: "Fasse zusammen, was du gehört hast. Kein Rat. Kein Framework. Nur ein Spiegel. Der Mensch soll sich gehört fühlen — nicht analysiert.",
-    guide: [
-      { text: '<em>"Was ich höre ist…"</em> — dann 2–3 Sätze, eigene Worte, keine Papageien-Wiederholung' },
-      { text: 'Achte auf die Körperreaktion beim Gegenüber. Nicken = Treffer. Stirnrunzeln = nachjustieren.' },
-      { text: 'Frage: <em>"Trifft das, was ich höre?"</em>' },
-    ],
-  },
-  {
-    num: "Phase 4",
-    title: "Slice + Firewall",
-    time: "~5 min",
-    instruction: "Slice: Ein konkretes, machbares Stück herausschneiden. Firewall: Was schützt vor Überforderung? Biologie vor Technologie.",
-    guide: [
-      { text: '<em>"Was wäre der kleinste mögliche erste Schritt?"</em>' },
-      { text: '<em>"Was darf auf keinen Fall passieren — was ist die Firewall?"</em>' },
-      { text: 'Wenn nötig: Organizational Friction Scan als konkretes Angebot positionieren — <em>"3 Tage, 3-seitiger Befund, Klarheit bevor investiert wird."</em>' },
-    ],
-  },
-  {
-    num: "Phase 5",
-    title: "Abschluss",
-    time: "~3 min",
-    instruction: "Klarer Abschluss. Kein offenes Ende. Ein konkreter nächster Schritt — kein vager Ausblick.",
-    guide: [
-      { text: '<em>"Wie fühlst du dich jetzt im Vergleich zu vor 30 Minuten?"</em>' },
-      { text: '<em>"Was ist dein nächster konkreter Schritt?"</em>' },
-      { text: 'Nächsten Termin anbieten (nicht aufdrängen). Wenn Interesse: Datum fixieren, nicht "melden Sie sich".' },
-    ],
-  },
-];
+// ── CONTENT (loaded from /api/content at startup) ─────────────────────────
+let PHASES = [];
+let ANKER_LINES = [];
 
 // ── STATE ─────────────────────────────────────────────────────────────────
 let currentConsultation = null;
@@ -902,9 +845,48 @@ document.getElementById("btnBackToStart").addEventListener("click", () => {
   showScreen("screenStart");
 });
 
+// ── CONTENT LOADER ───────────────────────────────────────────────────────
+async function loadContent() {
+  try {
+    const r = await fetch("/api/content");
+    if (!r.ok) return;
+    const d = await r.json();
+
+    if (Array.isArray(d.phases) && d.phases.length > 0) {
+      PHASES = d.phases.map(p => ({
+        num: p.num,
+        title: p.title,
+        time: p.time,
+        instruction: p.instruction,
+        // Format guide items: wrap quoted text in <em>
+        guide: (p.guide || []).map(g => {
+          // Auto-italicize text in quotes at start of line
+          const formatted = g.replace(/^"([^"]+)"/, '<em>"$1"</em>');
+          return { text: formatted };
+        }),
+      }));
+    }
+
+    if (Array.isArray(d.anker) && d.anker.length > 0) {
+      ANKER_LINES = d.anker;
+      const $ankerContent = document.getElementById("ankerContent");
+      $ankerContent.innerHTML = "";
+      for (let i = 0; i < ANKER_LINES.length; i++) {
+        const div = document.createElement("div");
+        div.className = "anker-line" + (i === ANKER_LINES.length - 1 ? " italic" : "");
+        div.textContent = ANKER_LINES[i];
+        $ankerContent.appendChild(div);
+      }
+    }
+  } catch (e) {
+    console.warn("Content load failed:", e.message);
+  }
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────────
-function init() {
+async function init() {
   loadVersion();
+  await loadContent();
   $contactDate.value = new Date().toISOString().slice(0, 10);
   loadContacts();
 }
