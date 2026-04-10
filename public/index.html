@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NELION Cockpit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:         #fafafa;
+    --surface:    #ffffff;
+    --surface2:   #f0f0f0;
+    --ink:        #1a1a1a;
+    --ink-mid:    #4a4a4a;
+    --ink-dim:    #888888;
+    --ink-mute:   #b0b0b0;
+    --accent:     #2c2c2c;
+    --accent-h:   #444444;
+    --border:     rgba(0,0,0,0.08);
+    --border2:    rgba(0,0,0,0.15);
+    --red:        #c0392b;
+    --red-h:      #e74c3c;
+    --red-bg:     #fdf2f2;
+    --green:      #27ae60;
+    --green-bg:   #f0faf4;
+    --mono:       'DM Mono', monospace;
+    --sans:       'DM Sans', sans-serif;
+    --r:          10px;
+    --rs:         6px;
+    --max-w:      720px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── HEADER ──────────────────────────────────────────────────────────── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 56px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .header-left { display: flex; align-items: center; gap: 10px; }
+  .logo-mark {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    color: #fff; letter-spacing: 0.05em;
+  }
+  .logo-text { font-family: var(--mono); font-size: 14px; font-weight: 500; color: var(--ink); letter-spacing: 0.08em; }
+  .logo-sub { font-size: 11px; color: var(--ink-mute); font-weight: 300; }
+
+  /* ── MAIN ────────────────────────────────────────────────────────────── */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 20px 40px;
+    overflow-y: auto;
+  }
+  .container { width: 100%; max-width: var(--max-w); }
+
+  /* ── SCREENS ─────────────────────────────────────────────────────────── */
+  .screen { display: none; }
+  .screen.active { display: flex; flex-direction: column; gap: 20px; }
+
+  /* ── START SCREEN ────────────────────────────────────────────────────── */
+  .start-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .start-desc {
+    font-size: 13px;
+    color: var(--ink-dim);
+    margin-bottom: 8px;
+  }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+  }
+  .form-input {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: var(--r);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .form-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+  }
+  .form-input::placeholder { color: var(--ink-mute); }
+  textarea.form-input {
+    resize: vertical;
+    min-height: 60px;
+    line-height: 1.5;
+  }
+
+  /* ── BUTTONS ─────────────────────────────────────────────────────────── */
+  .btn {
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: var(--r);
+    padding: 10px 22px;
+    cursor: pointer;
+    border: 1px solid;
+    transition: all .15s;
+    text-align: center;
+  }
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .btn-primary:hover { background: var(--accent-h); border-color: var(--accent-h); }
+  .btn-primary:disabled { opacity: .35; cursor: not-allowed; }
+  .btn-ghost {
+    background: transparent;
+    border-color: var(--border2);
+    color: var(--ink-mid);
+  }
+  .btn-ghost:hover { border-color: var(--ink-dim); color: var(--ink); }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  /* ── CONTACT LIST ────────────────────────────────────────────────────── */
+  .contact-list { display: flex; flex-direction: column; gap: 6px; }
+  .contact-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .contact-item:hover { border-color: var(--border2); background: var(--surface2); }
+  .contact-name { font-weight: 500; font-size: 14px; flex: 1; }
+  .contact-date { font-family: var(--mono); font-size: 10px; color: var(--ink-mute); }
+  .divider {
+    display: flex; align-items: center; gap: 12px;
+    font-family: var(--mono); font-size: 10px; color: var(--ink-mute);
+    letter-spacing: 0.1em; text-transform: uppercase;
+    margin: 8px 0;
+  }
+  .divider::before, .divider::after {
+    content: ""; flex: 1; height: 1px; background: var(--border);
+  }
+
+  /* ── COCKPIT ─────────────────────────────────────────────────────────── */
+  .cockpit-contact {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.05em;
+    margin-bottom: -8px;
+  }
+  .phase-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: -4px;
+  }
+  .phase-number {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    flex-shrink: 0;
+  }
+  .phase-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .phase-time {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-mute);
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+  .phase-instruction {
+    background: var(--surface2);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--rs) var(--rs) 0;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: var(--ink-mid);
+    line-height: 1.6;
+  }
+  .guide-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 16px;
+  }
+  .guide-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-bottom: 8px;
+  }
+  .guide-item {
+    padding: 6px 0;
+    font-size: 14px;
+    color: var(--ink-mid);
+    line-height: 1.5;
+    border-bottom: 1px solid var(--border);
+  }
+  .guide-item:last-child { border-bottom: none; }
+  .guide-item em {
+    font-style: italic;
+    color: var(--ink);
+  }
+
+  .notes-area {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: var(--r);
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--ink);
+    padding: 12px 14px;
+    min-height: 120px;
+    resize: vertical;
+    outline: none;
+    line-height: 1.6;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .notes-area:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,0,0,0.04);
+  }
+  .notes-area::placeholder { color: var(--ink-mute); }
+
+  /* ── PROGRESS BAR ────────────────────────────────────────────────────── */
+  .progress-bar {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+  .progress-step {
+    flex: 1;
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 2px;
+    transition: background .3s;
+  }
+  .progress-step.done { background: var(--accent); }
+  .progress-step.current { background: var(--ink-dim); }
+
+  /* ── ANKER ───────────────────────────────────────────────────────────── */
+  .btn-anker {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--red);
+    border: none;
+    color: #fff;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(192,57,43,0.3);
+    transition: background .15s, transform .15s, box-shadow .15s;
+    display: none;
+    z-index: 90;
+  }
+  .btn-anker:hover {
+    background: var(--red-h);
+    transform: scale(1.06);
+    box-shadow: 0 6px 28px rgba(192,57,43,0.4);
+  }
+
+  /* ── ANKER OVERLAY ───────────────────────────────────────────────────── */
+  .anker-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s;
+  }
+  .anker-overlay.open { opacity: 1; pointer-events: all; }
+  .anker-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 36px 32px;
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .anker-line {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.6;
+    color: var(--ink);
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .anker-line:last-of-type { border-bottom: none; }
+  .anker-line.italic { font-style: italic; color: var(--ink-mid); }
+  .anker-close {
+    background: var(--accent);
+    border: none;
+    color: #fff;
+    border-radius: var(--r);
+    padding: 10px 28px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .15s;
+    align-self: center;
+  }
+  .anker-close:hover { background: var(--accent-h); }
+
+  /* ── COMPLETE SCREEN ─────────────────────────────────────────────────── */
+  .complete-icon {
+    font-size: 48px;
+    text-align: center;
+    margin-bottom: -8px;
+  }
+  .complete-title {
+    font-size: 20px;
+    font-weight: 600;
+    text-align: center;
+  }
+  .complete-msg {
+    font-size: 14px;
+    color: var(--ink-dim);
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  /* ── RESPONSIVE ──────────────────────────────────────────────────────── */
+  @media (max-width: 600px) {
+    header { padding: 0 16px; height: 50px; }
+    .logo-sub { display: none; }
+    .main { padding: 16px 14px 32px; }
+    .phase-title { font-size: 18px; }
+    .anker-card { padding: 28px 20px; }
+    .btn-anker { bottom: 16px; right: 16px; width: 46px; height: 46px; font-size: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="logo-mark">N</div>
+    <div class="logo-text">NELION</div>
+    <span class="logo-sub" id="logoSub">Cockpit</span>
+  </div>
+</header>
+
+<div class="main">
+<div class="container">
+
+<!-- ── SCREEN: START ──────────────────────────────────────────────────────── -->
+<div class="screen active" id="screenStart">
+  <div class="start-title">Erstgespräch starten</div>
+  <div class="start-desc">Kontakt anlegen oder bestehenden wählen.</div>
+
+  <div class="form-group">
+    <label class="form-label" for="contactName">Name *</label>
+    <input class="form-input" type="text" id="contactName" placeholder="Vorname Nachname" autocomplete="off">
+  </div>
+  <div class="form-group">
+    <label class="form-label" for="contactDate">Datum</label>
+    <input class="form-input" type="date" id="contactDate">
+  </div>
+  <div class="form-group">
+    <label class="form-label" for="contactNote">Notiz (optional)</label>
+    <textarea class="form-input" id="contactNote" placeholder="Kontext, Quelle, erster Eindruck…" rows="2"></textarea>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-primary" id="btnStartSession">Gespräch starten</button>
+  </div>
+
+  <div class="divider">Bestehende Kontakte</div>
+  <div class="contact-list" id="contactList">
+    <div style="font-size:12px;color:var(--ink-mute);text-align:center;padding:12px;">Lade…</div>
+  </div>
+</div>
+
+<!-- ── SCREEN: COCKPIT ───────────────────────────────────────────────────── -->
+<div class="screen" id="screenCockpit">
+  <div class="progress-bar" id="progressBar">
+    <div class="progress-step"></div>
+    <div class="progress-step"></div>
+    <div class="progress-step"></div>
+    <div class="progress-step"></div>
+    <div class="progress-step"></div>
+  </div>
+  <div class="cockpit-contact" id="cockpitContact"></div>
+  <div id="phaseContent"></div>
+  <textarea class="notes-area" id="phaseNotes" placeholder="Notizen zu dieser Phase…"></textarea>
+  <div class="btn-row" id="phaseButtons"></div>
+</div>
+
+<!-- ── SCREEN: COMPLETE ──────────────────────────────────────────────────── -->
+<div class="screen" id="screenComplete">
+  <div class="complete-icon">&#10003;</div>
+  <div class="complete-title">Erstgespräch abgeschlossen</div>
+  <div class="complete-msg" id="completeMsg"></div>
+  <div class="btn-row" style="justify-content:center;">
+    <button class="btn btn-primary" id="btnBackToStart">Neues Gespräch</button>
+  </div>
+</div>
+
+</div><!-- /.container -->
+</div><!-- /.main -->
+
+<!-- ── ANKER BUTTON ──────────────────────────────────────────────────────── -->
+<button class="btn-anker" id="btnAnker" title="Anker — Regulierung">Anker</button>
+
+<!-- ── ANKER OVERLAY ─────────────────────────────────────────────────────── -->
+<div class="anker-overlay" id="ankerOverlay">
+  <div class="anker-card">
+    <div class="anker-line">Mein Selbstwert hängt nicht von NELION ab.</div>
+    <div class="anker-line">Fokus auf Aufgabe — nicht beeindrucken.</div>
+    <div class="anker-line italic">You failed. Congratulations!<br>Most people don't even try.</div>
+    <button class="anker-close" id="btnAnkerClose">Zurück</button>
+  </div>
+</div>
+
+<script>
+// ── PHASES DEFINITION ─────────────────────────────────────────────────────
+const PHASES = [
+  {
+    num: "Phase 1",
+    title: "Sync",
+    time: "~5 min",
+    instruction: "Setze den Raum. Reine Präsenz. Kein Pitch, keine Agenda. Du bist da, um zu verstehen — nicht um zu überzeugen.",
+    guide: [
+      { text: '<em>"Wie bist du hier angekommen — was hat dich dazu gebracht, heute dieses Gespräch zu führen?"</em>' },
+      { text: '<em>"Was ist gerade die grösste Reibung in deinem Unternehmen?"</em>' },
+      { text: 'Hör zu. Nicht analysieren. Nicht reparieren. Nur aufnehmen.' },
+    ],
+  },
+  {
+    num: "Phase 2",
+    title: "Scan",
+    time: "3 Kernfragen",
+    instruction: "Drei diagnostische Fragen. Jede öffnet eine andere Ebene. Lass Pausen zu — die wichtigsten Antworten kommen nach der ersten Stille.",
+    guide: [
+      { text: '<em>"Was möchtest du verändern?"</em> — Zielzustand erfassen' },
+      { text: '<em>"Was hast du bereits versucht?"</em> — Bisherige Lösungsversuche + Muster erkennen' },
+      { text: '<em>"Woran würdest du merken, dass es sich gelohnt hat?"</em> — Erfolgskriterium auf der Ebene, die wirklich zählt' },
+    ],
+  },
+  {
+    num: "Phase 3",
+    title: "Spiegeln",
+    time: "~3 min",
+    instruction: "Fasse zusammen, was du gehört hast. Kein Rat. Kein Framework. Nur ein Spiegel. Der Mensch soll sich gehört fühlen — nicht analysiert.",
+    guide: [
+      { text: '<em>"Was ich höre ist…"</em> — dann 2–3 Sätze, eigene Worte, keine Papageien-Wiederholung' },
+      { text: 'Achte auf die Körperreaktion beim Gegenüber. Nicken = Treffer. Stirnrunzeln = nachjustieren.' },
+      { text: 'Frage: <em>"Trifft das, was ich höre?"</em>' },
+    ],
+  },
+  {
+    num: "Phase 4",
+    title: "Slice + Firewall",
+    time: "~5 min",
+    instruction: "Slice: Ein konkretes, machbares Stück herausschneiden. Firewall: Was schützt vor Überforderung? Biologie vor Technologie.",
+    guide: [
+      { text: '<em>"Was wäre der kleinste mögliche erste Schritt?"</em>' },
+      { text: '<em>"Was darf auf keinen Fall passieren — was ist die Firewall?"</em>' },
+      { text: 'Wenn nötig: Organizational Friction Scan als konkretes Angebot positionieren — <em>"3 Tage, 3-seitiger Befund, Klarheit bevor investiert wird."</em>' },
+    ],
+  },
+  {
+    num: "Phase 5",
+    title: "Abschluss",
+    time: "~3 min",
+    instruction: "Klarer Abschluss. Kein offenes Ende. Ein konkreter nächster Schritt — kein vager Ausblick.",
+    guide: [
+      { text: '<em>"Wie fühlst du dich jetzt im Vergleich zu vor 30 Minuten?"</em>' },
+      { text: '<em>"Was ist dein nächster konkreter Schritt?"</em>' },
+      { text: 'Nächsten Termin anbieten (nicht aufdrängen). Wenn Interesse: Datum fixieren, nicht "melden Sie sich".' },
+    ],
+  },
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+let currentConsultation = null;
+let currentContact = null;
+let currentPhase = 1;
+let notesDirty = false;
+
+// ── DOM ───────────────────────────────────────────────────────────────────
+const $screenStart    = document.getElementById("screenStart");
+const $screenCockpit  = document.getElementById("screenCockpit");
+const $screenComplete = document.getElementById("screenComplete");
+const $contactList    = document.getElementById("contactList");
+const $contactName    = document.getElementById("contactName");
+const $contactDate    = document.getElementById("contactDate");
+const $contactNote    = document.getElementById("contactNote");
+const $progressBar    = document.getElementById("progressBar");
+const $cockpitContact = document.getElementById("cockpitContact");
+const $phaseContent   = document.getElementById("phaseContent");
+const $phaseNotes     = document.getElementById("phaseNotes");
+const $phaseButtons   = document.getElementById("phaseButtons");
+const $btnAnker       = document.getElementById("btnAnker");
+const $ankerOverlay   = document.getElementById("ankerOverlay");
+
+// ── HELPERS ───────────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  $btnAnker.style.display = id === "screenCockpit" ? "flex" : "none";
+}
+
+function escHtml(s) { return (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+
+// ── VERSION ───────────────────────────────────────────────────────────────
+async function loadVersion() {
+  try {
+    const r = await fetch("/api/version");
+    if (!r.ok) return;
+    const d = await r.json();
+    const el = document.getElementById("logoSub");
+    if (el && d.version) {
+      el.textContent = `${d.version} — zuletzt aktualisiert: ${d.lastUpdated || "unbekannt"}`;
+    }
+  } catch {}
+}
+
+// ── CONTACTS ──────────────────────────────────────────────────────────────
+async function loadContacts() {
+  try {
+    const r = await fetch("/api/contacts");
+    const contacts = await r.json();
+    renderContacts(contacts);
+  } catch {
+    $contactList.innerHTML = '<div style="font-size:12px;color:var(--ink-mute);text-align:center;padding:12px;">Kontakte konnten nicht geladen werden.</div>';
+  }
+}
+
+function renderContacts(contacts) {
+  if (!Array.isArray(contacts) || contacts.length === 0) {
+    $contactList.innerHTML = '<div style="font-size:12px;color:var(--ink-mute);text-align:center;padding:12px;">Noch keine Kontakte.</div>';
+    return;
+  }
+  $contactList.innerHTML = "";
+  for (const c of contacts) {
+    const date = new Date(c.created_at).toLocaleDateString("de-CH", { day: "2-digit", month: "2-digit", year: "2-digit" });
+    const item = document.createElement("div");
+    item.className = "contact-item";
+    item.innerHTML = `<span class="contact-name">${escHtml(c.name)}</span><span class="contact-date">${date}</span>`;
+    item.addEventListener("click", () => startSessionForContact(c));
+    $contactList.appendChild(item);
+  }
+}
+
+// ── START SESSION ─────────────────────────────────────────────────────────
+document.getElementById("btnStartSession").addEventListener("click", async () => {
+  const name = $contactName.value.trim();
+  if (!name) { $contactName.focus(); return; }
+
+  const btn = document.getElementById("btnStartSession");
+  btn.disabled = true;
+  btn.textContent = "Starte…";
+
+  try {
+    const r = await fetch("/api/contacts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, initial_note: $contactNote.value.trim() }),
+    });
+    const contact = await r.json();
+    if (contact.error) throw new Error(contact.error);
+    await startSessionForContact(contact);
+  } catch (e) {
+    alert("Fehler: " + e.message);
+  }
+  btn.disabled = false;
+  btn.textContent = "Gespräch starten";
+});
+
+async function startSessionForContact(contact) {
+  currentContact = contact;
+  const dateVal = $contactDate.value || undefined;
+
+  try {
+    const r = await fetch("/api/consultations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contact_id: contact.id, consultation_date: dateVal }),
+    });
+    const consultation = await r.json();
+    if (consultation.error) throw new Error(consultation.error);
+    currentConsultation = consultation;
+    currentPhase = 1;
+    notesDirty = false;
+    $cockpitContact.textContent = `Gespräch mit ${contact.name}`;
+    renderPhase(currentPhase);
+    showScreen("screenCockpit");
+  } catch (e) {
+    alert("Fehler: " + e.message);
+  }
+}
+
+// ── COCKPIT ───────────────────────────────────────────────────────────────
+function renderPhase(num) {
+  const phase = PHASES[num - 1];
+  if (!phase) return;
+
+  // Progress
+  const steps = $progressBar.children;
+  for (let i = 0; i < steps.length; i++) {
+    steps[i].className = "progress-step"
+      + (i < num - 1 ? " done" : "")
+      + (i === num - 1 ? " current" : "");
+  }
+
+  // Content
+  let html = `
+    <div class="phase-header">
+      <span class="phase-number">${escHtml(phase.num)}</span>
+      <span class="phase-title">${escHtml(phase.title)}</span>
+      <span class="phase-time">${escHtml(phase.time)}</span>
+    </div>
+    <div class="phase-instruction">${escHtml(phase.instruction)}</div>
+    <div class="guide-block">
+      <div class="guide-label">Gesprächsleitfaden</div>
+  `;
+  for (const g of phase.guide) {
+    html += `<div class="guide-item">${g.text}</div>`;
+  }
+  html += `</div>`;
+  $phaseContent.innerHTML = html;
+
+  // Notes
+  const noteKey = `phase${num}_notes`;
+  $phaseNotes.value = currentConsultation[noteKey] || "";
+  notesDirty = false;
+
+  // Buttons
+  $phaseButtons.innerHTML = "";
+  if (num > 1) {
+    const backBtn = document.createElement("button");
+    backBtn.className = "btn btn-ghost";
+    backBtn.textContent = "Zurück";
+    backBtn.addEventListener("click", () => goToPhase(num - 1));
+    $phaseButtons.appendChild(backBtn);
+  }
+  if (num < 5) {
+    const nextBtn = document.createElement("button");
+    nextBtn.className = "btn btn-primary";
+    nextBtn.textContent = "Weiter";
+    nextBtn.addEventListener("click", () => goToPhase(num + 1));
+    $phaseButtons.appendChild(nextBtn);
+  } else {
+    const finishBtn = document.createElement("button");
+    finishBtn.className = "btn btn-primary";
+    finishBtn.textContent = "Gespräch abschliessen";
+    finishBtn.addEventListener("click", finishConsultation);
+    $phaseButtons.appendChild(finishBtn);
+  }
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+async function goToPhase(num) {
+  await saveCurrentNotes();
+  currentPhase = num;
+  currentConsultation.current_phase = num;
+  renderPhase(num);
+}
+
+async function saveCurrentNotes() {
+  if (!currentConsultation) return;
+  const noteKey = `phase${currentPhase}_notes`;
+  const val = $phaseNotes.value;
+  currentConsultation[noteKey] = val;
+
+  try {
+    await fetch(`/api/consultations/${currentConsultation.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ [noteKey]: val, current_phase: currentPhase }),
+    });
+  } catch (e) {
+    console.warn("Save failed:", e.message);
+  }
+}
+
+async function finishConsultation() {
+  await saveCurrentNotes();
+  try {
+    await fetch(`/api/consultations/${currentConsultation.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ completed: true }),
+    });
+  } catch {}
+
+  document.getElementById("completeMsg").textContent =
+    `Gespräch mit ${currentContact.name} wurde gespeichert.`;
+  showScreen("screenComplete");
+}
+
+// Auto-save notes on blur and periodically
+$phaseNotes.addEventListener("input", () => { notesDirty = true; });
+$phaseNotes.addEventListener("blur", () => { if (notesDirty) saveCurrentNotes(); });
+setInterval(() => { if (notesDirty && currentConsultation) saveCurrentNotes(); }, 15000);
+
+// ── ANKER ─────────────────────────────────────────────────────────────────
+$btnAnker.addEventListener("click", () => $ankerOverlay.classList.add("open"));
+document.getElementById("btnAnkerClose").addEventListener("click", () => $ankerOverlay.classList.remove("open"));
+$ankerOverlay.addEventListener("click", (e) => {
+  if (e.target === $ankerOverlay) $ankerOverlay.classList.remove("open");
+});
+
+// ── BACK TO START ─────────────────────────────────────────────────────────
+document.getElementById("btnBackToStart").addEventListener("click", () => {
+  currentConsultation = null;
+  currentContact = null;
+  currentPhase = 1;
+  $contactName.value = "";
+  $contactNote.value = "";
+  loadContacts();
+  showScreen("screenStart");
+});
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+function init() {
+  loadVersion();
+  $contactDate.value = new Date().toISOString().slice(0, 10);
+  loadContacts();
+}
+init();
+</script>
+</body>
+</html>
