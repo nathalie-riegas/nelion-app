@@ -11,7 +11,7 @@ app.use(express.json({ limit: "1mb" }));
 // ─── VERSION ───────────────────────────────────────────────────────────────
 let APP_LAST_UPDATED = "unbekannt";
 try {
-  const raw = execSync("git log -1 --format=%cd --date=format:%d.%m.%Y %H:%M", {
+  const raw = execSync('git log -1 --format="%cd" "--date=format:%d.%m.%Y %H:%M"', {
     cwd: __dirname,
     encoding: "utf-8",
     stdio: ["ignore", "pipe", "ignore"],
