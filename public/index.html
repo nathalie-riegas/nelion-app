@@ -688,13 +688,20 @@ function renderContacts(contacts) {
       deleteContact(c, item);
     });
 
-    // Double-click to rename
+    // Double-click on name to rename
+    let clickTimer = null;
+    nameEl.addEventListener("click", (e) => {
+      e.stopPropagation();
+      // Delay single-click to allow dblclick to cancel it
+      clickTimer = setTimeout(() => startSessionForContact(c), 250);
+    });
     nameEl.addEventListener("dblclick", (e) => {
       e.stopPropagation();
+      if (clickTimer) { clearTimeout(clickTimer); clickTimer = null; }
       startRenameContact(c, nameEl);
     });
 
-    // Single click to start session
+    // Click anywhere else on the item starts session immediately
     item.addEventListener("click", () => startSessionForContact(c));
 
     item.appendChild(nameEl);
