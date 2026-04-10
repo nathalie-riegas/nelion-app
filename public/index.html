@@ -28,7 +28,7 @@
     --sans:       'DM Sans', sans-serif;
     --r:          10px;
     --rs:         6px;
-    --max-w:      720px;
+    --max-w:      900px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -265,21 +265,91 @@
   }
   .notes-area::placeholder { color: var(--ink-mute); }
 
-  /* ── PROGRESS BAR ────────────────────────────────────────────────────── */
-  .progress-bar {
+  /* ── PHASE SIDEBAR ────────────────────────────────────────────────────── */
+  .cockpit-layout {
     display: flex;
-    gap: 4px;
-    margin-bottom: 4px;
+    gap: 0;
+    width: 100%;
+    max-width: none;
   }
-  .progress-step {
-    flex: 1;
-    height: 4px;
+  .phase-sidebar {
+    width: 200px;
+    min-width: 200px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    border-radius: var(--r) 0 0 var(--r);
+    padding: 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+  .phase-sidebar-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    padding: 0 16px 8px;
+  }
+  .phase-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background .12s;
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--ink-dim);
+    border-left: 3px solid transparent;
+  }
+  .phase-nav-item:hover { background: var(--surface2); }
+  .phase-nav-item.active {
     background: var(--surface2);
-    border-radius: 2px;
-    transition: background .3s;
+    border-left-color: var(--accent);
+    color: var(--ink);
+    font-weight: 500;
   }
-  .progress-step.done { background: var(--accent); }
-  .progress-step.current { background: var(--ink-dim); }
+  .phase-nav-item.done { color: var(--ink-mid); }
+  .phase-nav-dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--border2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--ink-mute);
+    transition: all .2s;
+  }
+  .phase-nav-item.active .phase-nav-dot {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+  }
+  .phase-nav-item.done .phase-nav-dot {
+    border-color: var(--green);
+    background: var(--green);
+    color: #fff;
+  }
+  .phase-nav-title { flex: 1; min-width: 0; }
+  .cockpit-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 0;
+  }
 
   /* ── ANKER ───────────────────────────────────────────────────────────── */
   .btn-anker {
@@ -379,6 +449,42 @@
   }
 
   /* ── RESPONSIVE ──────────────────────────────────────────────────────── */
+  @media (max-width: 768px) {
+    .cockpit-layout { flex-direction: column; }
+    .phase-sidebar {
+      width: 100%;
+      min-width: 0;
+      flex-direction: row;
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+      border-radius: var(--r) var(--r) 0 0;
+      padding: 8px 8px;
+      gap: 0;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .phase-sidebar::-webkit-scrollbar { display: none; }
+    .phase-sidebar-label { display: none; }
+    .phase-nav-item {
+      flex-direction: column;
+      gap: 4px;
+      padding: 8px 12px;
+      border-left: none;
+      border-bottom: 3px solid transparent;
+      min-width: 0;
+      flex-shrink: 0;
+      font-size: 10px;
+      text-align: center;
+    }
+    .phase-nav-item.active { border-bottom-color: var(--accent); border-left-color: transparent; }
+    .phase-nav-dot { width: 20px; height: 20px; font-size: 9px; }
+    .phase-nav-title {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 60px;
+    }
+  }
   @media (max-width: 600px) {
     header { padding: 0 16px; height: 50px; }
     .logo-sub { display: none; }
@@ -431,17 +537,17 @@
 
 <!-- ── SCREEN: COCKPIT ───────────────────────────────────────────────────── -->
 <div class="screen" id="screenCockpit">
-  <div class="progress-bar" id="progressBar">
-    <div class="progress-step"></div>
-    <div class="progress-step"></div>
-    <div class="progress-step"></div>
-    <div class="progress-step"></div>
-    <div class="progress-step"></div>
-  </div>
   <div class="cockpit-contact" id="cockpitContact"></div>
-  <div id="phaseContent"></div>
-  <textarea class="notes-area" id="phaseNotes" placeholder="Notizen zu dieser Phase…"></textarea>
-  <div class="btn-row" id="phaseButtons"></div>
+  <div class="cockpit-layout">
+    <nav class="phase-sidebar" id="phaseSidebar">
+      <div class="phase-sidebar-label">Phasen</div>
+    </nav>
+    <div class="cockpit-content">
+      <div id="phaseContent"></div>
+      <textarea class="notes-area" id="phaseNotes" placeholder="Notizen zu dieser Phase…"></textarea>
+      <div class="btn-row" id="phaseButtons"></div>
+    </div>
+  </div>
 </div>
 
 <!-- ── SCREEN: COMPLETE ──────────────────────────────────────────────────── -->
@@ -544,7 +650,7 @@ const $contactList    = document.getElementById("contactList");
 const $contactName    = document.getElementById("contactName");
 const $contactDate    = document.getElementById("contactDate");
 const $contactNote    = document.getElementById("contactNote");
-const $progressBar    = document.getElementById("progressBar");
+const $phaseSidebar   = document.getElementById("phaseSidebar");
 const $cockpitContact = document.getElementById("cockpitContact");
 const $phaseContent   = document.getElementById("phaseContent");
 const $phaseNotes     = document.getElementById("phaseNotes");
@@ -650,17 +756,41 @@ async function startSessionForContact(contact) {
 }
 
 // ── COCKPIT ───────────────────────────────────────────────────────────────
+function renderPhaseSidebar(activeNum) {
+  // Keep the label, rebuild nav items
+  $phaseSidebar.innerHTML = '<div class="phase-sidebar-label">Phasen</div>';
+  for (let i = 0; i < PHASES.length; i++) {
+    const p = PHASES[i];
+    const phaseNum = i + 1;
+    const isDone = phaseNum < activeNum;
+    const isActive = phaseNum === activeNum;
+
+    const item = document.createElement("button");
+    item.className = "phase-nav-item"
+      + (isActive ? " active" : "")
+      + (isDone ? " done" : "");
+
+    const dot = document.createElement("span");
+    dot.className = "phase-nav-dot";
+    dot.textContent = isDone ? "\u2713" : String(phaseNum);
+
+    const title = document.createElement("span");
+    title.className = "phase-nav-title";
+    title.textContent = p.title;
+
+    item.appendChild(dot);
+    item.appendChild(title);
+    item.addEventListener("click", () => goToPhase(phaseNum));
+    $phaseSidebar.appendChild(item);
+  }
+}
+
 function renderPhase(num) {
   const phase = PHASES[num - 1];
   if (!phase) return;
 
-  // Progress
-  const steps = $progressBar.children;
-  for (let i = 0; i < steps.length; i++) {
-    steps[i].className = "progress-step"
-      + (i < num - 1 ? " done" : "")
-      + (i === num - 1 ? " current" : "");
-  }
+  // Sidebar
+  renderPhaseSidebar(num);
 
   // Content
   let html = `
