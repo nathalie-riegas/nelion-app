@@ -701,7 +701,7 @@ function renderContacts(contacts) {
     const nameEl = document.createElement("span");
     nameEl.className = "contact-name";
     nameEl.textContent = c.name;
-    nameEl.title = "Doppelklick zum Umbenennen";
+    nameEl.title = "Rechtsklick zum Umbenennen";
 
     const dateEl = document.createElement("span");
     dateEl.className = "contact-date";
@@ -716,20 +716,14 @@ function renderContacts(contacts) {
       deleteContact(c, item);
     });
 
-    // Double-click on name to rename
-    let clickTimer = null;
-    nameEl.addEventListener("click", (e) => {
+    // Right-click on name to rename
+    nameEl.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
       e.stopPropagation();
-      // Delay single-click to allow dblclick to cancel it
-      clickTimer = setTimeout(() => startSessionForContact(c), 250);
-    });
-    nameEl.addEventListener("dblclick", (e) => {
-      e.stopPropagation();
-      if (clickTimer) { clearTimeout(clickTimer); clickTimer = null; }
       startRenameContact(c, nameEl);
     });
 
-    // Click anywhere else on the item starts session immediately
+    // Click anywhere on item starts session
     item.addEventListener("click", () => startSessionForContact(c));
 
     item.appendChild(nameEl);
