@@ -4,6 +4,7 @@ const fs = require("fs");
 const crypto = require("crypto");
 const { execSync } = require("child_process");
 const { createClient } = require("@supabase/supabase-js");
+const Anthropic = require("@anthropic-ai/sdk");
 
 const app = express();
 app.use(express.json({ limit: "1mb" }));
@@ -90,18 +91,34 @@ try {
   console.error("Failed to load cockpit content:", e.message);
 }
 
+// ─── ADA SYSTEM PROMPT ────────────────────────────────────────────────────
+const ADA_PROMPT_PATH = path.join(__dirname, "content", "ada-prompt.md");
+let ADA_SYSTEM_PROMPT = "";
+try {
+  ADA_SYSTEM_PROMPT = fs.readFileSync(ADA_PROMPT_PATH, "utf-8");
+  console.log(`ADA prompt loaded (${ADA_SYSTEM_PROMPT.length} chars)`);
+} catch (e) {
+  console.warn("ADA prompt not found:", e.message);
+}
+
 // ─── ENV ───────────────────────────────────────────────────────────────────
 const SUPABASE_URL      = process.env.SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 const NELION_PASSWORD   = process.env.NELION_PASSWORD;
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
 // ─── SUPABASE ───────────────────────────────────────────────────────────────
 const supabase = (SUPABASE_URL && SUPABASE_ANON_KEY)
   ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
 
+const anthropic = ANTHROPIC_API_KEY
+  ? new Anthropic({ apiKey: ANTHROPIC_API_KEY })
+  : null;
+
 if (!supabase) console.warn("Supabase not configured — storage disabled");
 if (!NELION_PASSWORD) console.warn("NELION_PASSWORD not set — app is publicly accessible");
+if (!anthropic) console.warn("ANTHROPIC_API_KEY not set — ADA disabled");
 
 // ─── AUTH ──────────────────────────────────────────────────────────────────
 function authToken() {
@@ -302,6 +319,271 @@ app.patch("/api/consultations/:id", async (req, res) => {
     .single();
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
+});
+
+// ─── SCANS (Modul 2) ──────────────────────────────────────────────────────
+app.post("/api/scans", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { kunde_name, datum_start, anzahl_personen } = req.body || {};
+  if (!kunde_name || !kunde_name.trim()) {
+    return res.status(400).json({ error: "kunde_name erforderlich" });
+  }
+  const insert = { kunde_name: kunde_name.trim() };
+  if (datum_start) insert.datum_start = datum_start;
+  if (anzahl_personen) insert.anzahl_personen = anzahl_personen;
+  const { data, error } = await supabase.from("scans").insert(insert).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+app.get("/api/scans", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { data, error } = await supabase
+    .from("scans")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+app.get("/api/scans/:id", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { data, error } = await supabase
+    .from("scans").select("*").eq("id", req.params.id).single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+app.patch("/api/scans/:id", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const allowed = [
+    "kunde_name", "datum_start", "anzahl_personen", "status", "regime",
+    "friction_vektor", "notizen", "survey_verschickt", "survey_notizen",
+    "hypothesen_spiegel_done", "hypothesen_spiegel_notizen",
+    "mandatscheck_budget", "mandatscheck_personen", "mandatscheck_kein_krise",
+    "current_phase", "completed",
+  ];
+  const updates = {};
+  for (const key of allowed) {
+    if (req.body[key] !== undefined) updates[key] = req.body[key];
+  }
+  if (Object.keys(updates).length === 0) {
+    return res.status(400).json({ error: "Keine Felder zum Update" });
+  }
+  const { data, error } = await supabase
+    .from("scans").update(updates).eq("id", req.params.id).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+app.delete("/api/scans/:id", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { error } = await supabase.from("scans").delete().eq("id", req.params.id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ success: true });
+});
+
+// ─── SCAN AMPELN ──────────────────────────────────────────────────────────
+app.get("/api/scans/:id/ampeln", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { data, error } = await supabase
+    .from("scan_ampeln").select("*").eq("scan_id", req.params.id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+app.put("/api/scans/:id/ampeln", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { ampeln } = req.body || {};
+  if (!Array.isArray(ampeln)) return res.status(400).json({ error: "ampeln array erforderlich" });
+
+  const rows = ampeln.map(a => ({
+    scan_id: req.params.id,
+    layer: a.layer,
+    achse: a.achse,
+    wert: a.wert,
+    phase: a.phase || "survey",
+  }));
+
+  const { data, error } = await supabase
+    .from("scan_ampeln")
+    .upsert(rows, { onConflict: "scan_id,layer,achse,phase" })
+    .select();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+// ─── INTERVIEWS ───────────────────────────────────────────────────────────
+app.get("/api/scans/:id/interviews", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { data, error } = await supabase
+    .from("interviews").select("*, omission_bias_checks(*)")
+    .eq("scan_id", req.params.id).order("slot_nr");
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+app.post("/api/scans/:id/interviews", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { slot_nr, rolle } = req.body || {};
+  const insert = { scan_id: req.params.id, slot_nr: slot_nr || 1 };
+  if (rolle) insert.rolle = rolle;
+  const { data, error } = await supabase.from("interviews").insert(insert).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+app.patch("/api/scans/:sid/interviews/:iid", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const allowed = [
+    "rolle", "datum", "audio_typ",
+    "primaer_aufnahme", "backup_aufnahme", "einwilligung",
+    "audio_gesichert", "whisper_laeuft", "transkript_vault",
+    "notizen", "plan_b_aktiv",
+    "plan_b_wichtigste_aussage", "plan_b_ton_wechsel",
+    "plan_b_nicht_gesagt", "plan_b_layer",
+  ];
+  const updates = {};
+  for (const key of allowed) {
+    if (req.body[key] !== undefined) updates[key] = req.body[key];
+  }
+  if (Object.keys(updates).length === 0) {
+    return res.status(400).json({ error: "Keine Felder zum Update" });
+  }
+  const { data, error } = await supabase
+    .from("interviews").update(updates).eq("id", req.params.iid).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+// ─── OMISSION BIAS CHECKS ────────────────────────────────────────────────
+app.put("/api/scans/:sid/interviews/:iid/bias", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const allowed = [
+    "biologische_last", "systemsprache", "geschuetzte_kollegen",
+    "antrieb_gefragt", "ton_wechsel", "ton_wechsel_timestamp",
+  ];
+  const row = { interview_id: req.params.iid };
+  for (const key of allowed) {
+    if (req.body[key] !== undefined) row[key] = req.body[key];
+  }
+  const { data, error } = await supabase
+    .from("omission_bias_checks")
+    .upsert(row, { onConflict: "interview_id" })
+    .select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+// ─── HYPOTHESEN ──────────────────────────────────────────────────────────
+app.get("/api/scans/:id/hypothesen", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { data, error } = await supabase
+    .from("hypothesen").select("*").eq("scan_id", req.params.id).order("slot_nr");
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+app.post("/api/scans/:id/hypothesen", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { slot_nr, layer, mechanismus, evidenz_zitat, testfrage } = req.body || {};
+  const insert = {
+    scan_id: req.params.id,
+    slot_nr: slot_nr || 1,
+    layer: layer || "",
+    mechanismus: mechanismus || "",
+    evidenz_zitat: evidenz_zitat || "",
+    testfrage: testfrage || "",
+  };
+  const { data, error } = await supabase.from("hypothesen").insert(insert).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+app.patch("/api/scans/:sid/hypothesen/:hid", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const allowed = ["layer", "mechanismus", "evidenz_zitat", "testfrage", "bestaetigt"];
+  const updates = {};
+  for (const key of allowed) {
+    if (req.body[key] !== undefined) updates[key] = req.body[key];
+  }
+  const { data, error } = await supabase
+    .from("hypothesen").update(updates).eq("id", req.params.hid).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+// ─── BEFUND MASSNAHMEN ───────────────────────────────────────────────────
+app.get("/api/scans/:id/massnahmen", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { data, error } = await supabase
+    .from("befund_massnahmen").select("*").eq("scan_id", req.params.id).order("slot_nr");
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+app.post("/api/scans/:id/massnahmen", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { slot_nr, layer, massnahme, zeitrahmen } = req.body || {};
+  const insert = {
+    scan_id: req.params.id,
+    slot_nr: slot_nr || 1,
+    layer: layer || "",
+    massnahme: massnahme || "",
+    zeitrahmen: zeitrahmen || "",
+  };
+  const { data, error } = await supabase.from("befund_massnahmen").insert(insert).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+app.patch("/api/scans/:sid/massnahmen/:mid", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const allowed = ["layer", "massnahme", "zeitrahmen"];
+  const updates = {};
+  for (const key of allowed) {
+    if (req.body[key] !== undefined) updates[key] = req.body[key];
+  }
+  const { data, error } = await supabase
+    .from("befund_massnahmen").update(updates).eq("id", req.params.mid).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+// ─── ADA CHAT ─────────────────────────────────────────────────────────────
+app.post("/api/ada/chat", async (req, res) => {
+  if (!anthropic) return res.status(503).json({ error: "ANTHROPIC_API_KEY nicht konfiguriert" });
+  const { messages, scan_context } = req.body || {};
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return res.status(400).json({ error: "messages array erforderlich" });
+  }
+
+  let systemPrompt = ADA_SYSTEM_PROMPT;
+  if (scan_context) {
+    systemPrompt += `\n\n---\n\n## Aktueller Scan-Kontext\nKunde: ${scan_context.kunde || "unbekannt"}\nPhase: ${scan_context.phase || "unbekannt"}\nStatus: ${scan_context.status || "unbekannt"}`;
+  }
+
+  try {
+    const response = await anthropic.messages.create({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 2048,
+      system: systemPrompt,
+      messages: messages.map(m => ({
+        role: m.role,
+        content: m.content,
+      })),
+    });
+
+    const text = response.content
+      .filter(c => c.type === "text")
+      .map(c => c.text)
+      .join("");
+
+    res.json({ role: "assistant", content: text });
+  } catch (e) {
+    console.error("ADA error:", e.message);
+    res.status(500).json({ error: "ADA-Fehler: " + e.message });
+  }
 });
 
 // ─── START ─────────────────────────────────────────────────────────────────

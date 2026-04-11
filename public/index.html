@@ -24,6 +24,11 @@
     --red-bg:     #fdf2f2;
     --green:      #27ae60;
     --green-bg:   #f0faf4;
+    --yellow:     #f39c12;
+    --yellow-bg:  #fef9e7;
+    --ada-accent: #4B0082;
+    --ada-accent-h: #5B2C8D;
+    --ada-bg:     #f3eef8;
     --mono:       'DM Mono', monospace;
     --sans:       'DM Sans', sans-serif;
     --r:          10px;
@@ -66,6 +71,32 @@
   .logo-text { font-family: var(--mono); font-size: 14px; font-weight: 500; color: var(--ink); letter-spacing: 0.08em; }
   .logo-sub { font-size: 11px; color: var(--ink-mute); font-weight: 300; }
 
+  /* ── TAB NAV ─────────────────────────────────────────────────────────── */
+  .tab-nav {
+    display: flex;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    gap: 0;
+    flex-shrink: 0;
+  }
+  .tab-btn {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    color: var(--ink-dim);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { color: var(--ink); font-weight: 500; border-bottom-color: var(--accent); }
+  .tab-btn.active[data-tab="ada"] { border-bottom-color: var(--ada-accent); }
+
   /* ── MAIN ────────────────────────────────────────────────────────────── */
   .main {
     flex: 1;
@@ -76,91 +107,56 @@
     overflow-y: auto;
   }
   .container { width: 100%; max-width: var(--max-w); }
+  .module { display: none; }
+  .module.active { display: block; }
 
   /* ── SCREENS ─────────────────────────────────────────────────────────── */
   .screen { display: none; }
   .screen.active { display: flex; flex-direction: column; gap: 20px; }
 
   /* ── START SCREEN ────────────────────────────────────────────────────── */
-  .start-title {
-    font-size: 22px;
-    font-weight: 600;
-    color: var(--ink);
-    margin-bottom: 4px;
-  }
-  .start-desc {
-    font-size: 13px;
-    color: var(--ink-dim);
-    margin-bottom: 8px;
-  }
+  .start-title { font-size: 22px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+  .start-desc { font-size: 13px; color: var(--ink-dim); margin-bottom: 8px; }
   .form-group { display: flex; flex-direction: column; gap: 5px; }
   .form-label {
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-dim);
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-dim);
   }
   .form-input {
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    border-radius: var(--r);
-    color: var(--ink);
-    font-family: var(--sans);
-    font-size: 15px;
-    padding: 10px 14px;
-    outline: none;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--r); color: var(--ink); font-family: var(--sans);
+    font-size: 15px; padding: 10px 14px; outline: none;
     transition: border-color .15s, box-shadow .15s;
   }
-  .form-input:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
-  }
+  .form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,0,0,0.05); }
   .form-input::placeholder { color: var(--ink-mute); }
-  textarea.form-input {
-    resize: vertical;
-    min-height: 60px;
-    line-height: 1.5;
-  }
+  textarea.form-input { resize: vertical; min-height: 60px; line-height: 1.5; }
+  select.form-input { cursor: pointer; }
 
   /* ── BUTTONS ─────────────────────────────────────────────────────────── */
   .btn {
-    font-family: var(--sans);
-    font-size: 14px;
-    font-weight: 500;
-    border-radius: var(--r);
-    padding: 10px 22px;
-    cursor: pointer;
-    border: 1px solid;
-    transition: all .15s;
-    text-align: center;
+    font-family: var(--sans); font-size: 14px; font-weight: 500;
+    border-radius: var(--r); padding: 10px 22px; cursor: pointer;
+    border: 1px solid; transition: all .15s; text-align: center;
   }
-  .btn-primary {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-  }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
   .btn-primary:hover { background: var(--accent-h); border-color: var(--accent-h); }
   .btn-primary:disabled { opacity: .35; cursor: not-allowed; }
-  .btn-ghost {
-    background: transparent;
-    border-color: var(--border2);
-    color: var(--ink-mid);
-  }
+  .btn-ghost { background: transparent; border-color: var(--border2); color: var(--ink-mid); }
   .btn-ghost:hover { border-color: var(--ink-dim); color: var(--ink); }
+  .btn-green { background: var(--ada-accent); border-color: var(--ada-accent); color: #fff; }
+  .btn-green:hover { background: var(--ada-accent-h); border-color: var(--ada-accent-h); }
+  .btn-red { background: var(--red); border-color: var(--red); color: #fff; }
+  .btn-red:hover { background: var(--red-h); border-color: var(--red-h); }
   .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn-sm { padding: 6px 14px; font-size: 12px; }
 
   /* ── CONTACT LIST ────────────────────────────────────────────────────── */
   .contact-list { display: flex; flex-direction: column; gap: 6px; }
   .contact-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--r);
-    cursor: pointer;
+    display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); cursor: pointer;
     transition: border-color .15s, background .15s;
   }
   .contact-item:hover { border-color: var(--border2); background: var(--surface2); }
@@ -168,59 +164,35 @@
   .contact-date { font-family: var(--mono); font-size: 10px; color: var(--ink-mute); flex-shrink: 0; }
   .contact-name-edit {
     font-family: var(--sans); font-weight: 500; font-size: 14px;
-    flex: 1; min-width: 0;
-    background: var(--surface); border: 1px solid var(--accent);
-    border-radius: 4px; padding: 2px 6px; outline: none;
-    color: var(--ink);
+    flex: 1; min-width: 0; background: var(--surface); border: 1px solid var(--accent);
+    border-radius: 4px; padding: 2px 6px; outline: none; color: var(--ink);
   }
-  .btn-del-contact {
-    flex-shrink: 0; opacity: 0;
-    background: transparent; border: none;
-    color: var(--ink-mute); cursor: pointer;
-    padding: 4px 5px; border-radius: 5px;
+  .btn-del-contact, .btn-edit-contact {
+    flex-shrink: 0; opacity: 0; background: transparent; border: none;
+    color: var(--ink-mute); cursor: pointer; padding: 4px 5px; border-radius: 5px;
     display: flex; align-items: center; justify-content: center;
     transition: opacity .15s, color .15s, background .15s;
   }
   .contact-item:hover .btn-del-contact,
   .contact-item:hover .btn-edit-contact { opacity: 1; }
   .btn-del-contact:hover { color: #c0392b; background: rgba(192,57,43,0.1); }
-  .btn-edit-contact {
-    flex-shrink: 0; opacity: 0;
-    background: transparent; border: none;
-    color: var(--ink-mute); cursor: pointer;
-    padding: 4px 5px; border-radius: 5px;
-    display: flex; align-items: center; justify-content: center;
-    transition: opacity .15s, color .15s, background .15s;
-  }
   .btn-edit-contact:hover { color: var(--accent); background: rgba(0,0,0,0.05); }
   .divider {
     display: flex; align-items: center; gap: 12px;
     font-family: var(--mono); font-size: 10px; color: var(--ink-mute);
-    letter-spacing: 0.1em; text-transform: uppercase;
-    margin: 8px 0;
+    letter-spacing: 0.1em; text-transform: uppercase; margin: 8px 0;
   }
-  .divider::before, .divider::after {
-    content: ""; flex: 1; height: 1px; background: var(--border);
-  }
+  .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
 
   /* ── COCKPIT ─────────────────────────────────────────────────────────── */
   .cockpit-contact {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--ink-dim);
-    letter-spacing: 0.05em;
-    margin-bottom: -4px;
-    flex-wrap: wrap;
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--mono); font-size: 12px; color: var(--ink-dim);
+    letter-spacing: 0.05em; margin-bottom: -4px; flex-wrap: wrap;
   }
   .cockpit-contact-name {
-    font-weight: 500;
-    color: var(--ink);
-    cursor: pointer;
-    border-bottom: 1px dashed var(--border2);
-    transition: color .15s;
+    font-weight: 500; color: var(--ink); cursor: pointer;
+    border-bottom: 1px dashed var(--border2); transition: color .15s;
   }
   .cockpit-contact-name:hover { color: var(--accent); }
   .cockpit-contact-name-edit {
@@ -231,315 +203,356 @@
   }
   .cockpit-contact-date { color: var(--ink-mute); }
   .notes-label {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--ink-mute);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: 4px;
+    font-family: var(--mono); font-size: 10px; color: var(--ink-mute);
+    letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;
   }
-  .phase-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: -4px;
-  }
+  .phase-header { display: flex; align-items: center; gap: 12px; margin-bottom: -4px; }
   .phase-number {
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    flex-shrink: 0;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-mute); flex-shrink: 0;
   }
-  .phase-title {
-    font-size: 20px;
-    font-weight: 600;
-    color: var(--ink);
-  }
+  .phase-title { font-size: 20px; font-weight: 600; color: var(--ink); }
   .phase-time {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--ink-mute);
-    margin-left: auto;
-    flex-shrink: 0;
+    font-family: var(--mono); font-size: 10px; color: var(--ink-mute);
+    margin-left: auto; flex-shrink: 0;
   }
   .phase-instruction {
-    background: var(--surface2);
-    border-left: 3px solid var(--accent);
-    border-radius: 0 var(--rs) var(--rs) 0;
-    padding: 12px 16px;
-    font-size: 14px;
-    color: var(--ink-mid);
-    line-height: 1.6;
+    background: var(--surface2); border-left: 3px solid var(--accent);
+    border-radius: 0 var(--rs) var(--rs) 0; padding: 12px 16px;
+    font-size: 14px; color: var(--ink-mid); line-height: 1.6;
   }
   .guide-block {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--r);
-    padding: 16px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 16px;
   }
   .guide-label {
-    font-family: var(--mono);
-    font-size: 9px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    margin-bottom: 8px;
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--ink-mute); margin-bottom: 8px;
   }
   .guide-item {
-    padding: 6px 0;
-    font-size: 14px;
-    color: var(--ink-mid);
-    line-height: 1.5;
+    padding: 6px 0; font-size: 14px; color: var(--ink-mid); line-height: 1.5;
     border-bottom: 1px solid var(--border);
   }
   .guide-item:last-child { border-bottom: none; }
-  .guide-item em {
-    font-style: italic;
-    color: var(--ink);
-  }
+  .guide-item em { font-style: italic; color: var(--ink); }
 
   .notes-area {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    border-radius: var(--r);
-    font-family: var(--sans);
-    font-size: 14px;
-    color: var(--ink);
-    padding: 12px 14px;
-    min-height: 120px;
-    resize: vertical;
-    outline: none;
-    line-height: 1.6;
+    width: 100%; background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--r); font-family: var(--sans); font-size: 14px;
+    color: var(--ink); padding: 12px 14px; min-height: 120px;
+    resize: vertical; outline: none; line-height: 1.6;
     transition: border-color .15s, box-shadow .15s;
   }
-  .notes-area:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(0,0,0,0.04);
-  }
+  .notes-area:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,0,0,0.04); }
   .notes-area::placeholder { color: var(--ink-mute); }
 
   /* ── PHASE SIDEBAR ────────────────────────────────────────────────────── */
-  .cockpit-layout {
-    display: flex;
-    gap: 0;
-    width: 100%;
-    max-width: none;
-  }
+  .cockpit-layout { display: flex; gap: 0; width: 100%; max-width: none; }
   .phase-sidebar {
-    width: 200px;
-    min-width: 200px;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    border-radius: var(--r) 0 0 var(--r);
-    padding: 16px 0;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    flex-shrink: 0;
+    width: 200px; min-width: 200px; background: var(--surface);
+    border-right: 1px solid var(--border); border-radius: var(--r) 0 0 var(--r);
+    padding: 16px 0; display: flex; flex-direction: column; gap: 2px; flex-shrink: 0;
   }
   .phase-sidebar-label {
-    font-family: var(--mono);
-    font-size: 9px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    padding: 0 16px 8px;
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--ink-mute); padding: 0 16px 8px;
   }
   .phase-nav-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 16px;
-    cursor: pointer;
-    transition: background .12s;
-    border: none;
-    background: transparent;
-    width: 100%;
-    text-align: left;
-    font-family: var(--sans);
-    font-size: 13px;
-    color: var(--ink-dim);
+    display: flex; align-items: center; gap: 10px; padding: 10px 16px;
+    cursor: pointer; transition: background .12s; border: none;
+    background: transparent; width: 100%; text-align: left;
+    font-family: var(--sans); font-size: 13px; color: var(--ink-dim);
     border-left: 3px solid transparent;
   }
   .phase-nav-item:hover { background: var(--surface2); }
-  .phase-nav-item.active {
-    background: var(--surface2);
-    border-left-color: var(--accent);
-    color: var(--ink);
-    font-weight: 500;
-  }
+  .phase-nav-item.active { background: var(--surface2); border-left-color: var(--accent); color: var(--ink); font-weight: 500; }
   .phase-nav-item.done { color: var(--ink-mid); }
   .phase-nav-dot {
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    border: 2px solid var(--border2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    font-family: var(--mono);
-    font-size: 10px;
-    font-weight: 500;
-    color: var(--ink-mute);
-    transition: all .2s;
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 2px solid var(--border2); display: flex; align-items: center;
+    justify-content: center; flex-shrink: 0; font-family: var(--mono);
+    font-size: 10px; font-weight: 500; color: var(--ink-mute); transition: all .2s;
   }
-  .phase-nav-item.active .phase-nav-dot {
-    border-color: var(--accent);
-    background: var(--accent);
-    color: #fff;
-  }
-  .phase-nav-item.done .phase-nav-dot {
-    border-color: var(--green);
-    background: var(--green);
-    color: #fff;
-  }
+  .phase-nav-item.active .phase-nav-dot { border-color: var(--accent); background: var(--accent); color: #fff; }
+  .phase-nav-item.done .phase-nav-dot { border-color: var(--green); background: var(--green); color: #fff; }
   .phase-nav-title { flex: 1; min-width: 0; }
-  .cockpit-content {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    padding: 0;
+  .cockpit-content { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 20px; padding: 0; }
+
+  /* ── SIGNAL TRACKER ───────────────────────────────────────────────────── */
+  .signal-tracker {
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 2px;
+  }
+  .signal-tracker-label {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-mute); margin-right: 4px;
+  }
+  .signal-btn {
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    padding: 4px 10px; border-radius: 14px; cursor: pointer;
+    border: 1px solid var(--border2); background: var(--surface);
+    color: var(--ink-dim); transition: all .15s; position: relative;
+  }
+  .signal-btn:hover { border-color: var(--accent); color: var(--ink); }
+  .signal-btn:active { transform: scale(0.95); }
+  .signal-btn .signal-count {
+    display: inline-block; min-width: 14px; height: 14px;
+    border-radius: 7px; background: var(--accent); color: #fff;
+    font-size: 9px; text-align: center; line-height: 14px;
+    margin-left: 4px; padding: 0 3px;
+  }
+  .signal-btn .signal-count.zero { background: transparent; color: var(--ink-mute); }
+  .signal-btn.l1-active { border-color: #8e44ad; color: #8e44ad; background: #f5eef8; }
+  .signal-btn.l2-active { border-color: #2980b9; color: #2980b9; background: #eaf2f8; }
+  .signal-btn.l3-active { border-color: #e67e22; color: #e67e22; background: #fef5e7; }
+
+  .signal-summary {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 16px; margin-top: 4px;
+  }
+  .signal-summary-title {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-mute); margin-bottom: 10px;
+  }
+  .signal-summary-row {
+    display: flex; align-items: center; gap: 10px; padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .signal-summary-row:last-child { border-bottom: none; }
+  .signal-summary-layer {
+    font-family: var(--mono); font-size: 12px; font-weight: 500; width: 28px;
+  }
+  .signal-summary-layer.l1 { color: #8e44ad; }
+  .signal-summary-layer.l2 { color: #2980b9; }
+  .signal-summary-layer.l3 { color: #e67e22; }
+  .signal-summary-bar {
+    flex: 1; height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden;
+  }
+  .signal-summary-fill { height: 100%; border-radius: 4px; transition: width .3s; }
+  .signal-summary-fill.l1 { background: #8e44ad; }
+  .signal-summary-fill.l2 { background: #2980b9; }
+  .signal-summary-fill.l3 { background: #e67e22; }
+  .signal-summary-num {
+    font-family: var(--mono); font-size: 12px; color: var(--ink-mid); width: 20px; text-align: right;
   }
 
   /* ── ANKER ───────────────────────────────────────────────────────────── */
   .btn-anker {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    background: var(--red);
-    border: none;
-    color: #fff;
-    font-family: var(--mono);
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.05em;
-    cursor: pointer;
-    box-shadow: 0 4px 20px rgba(192,57,43,0.3);
+    position: fixed; bottom: 24px; right: 24px; width: 52px; height: 52px;
+    border-radius: 50%; background: var(--red); border: none; color: #fff;
+    font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.05em;
+    cursor: pointer; box-shadow: 0 4px 20px rgba(192,57,43,0.3);
     transition: background .15s, transform .15s, box-shadow .15s;
-    display: none;
-    z-index: 90;
+    display: none; z-index: 90;
   }
-  .btn-anker:hover {
-    background: var(--red-h);
-    transform: scale(1.06);
-    box-shadow: 0 6px 28px rgba(192,57,43,0.4);
-  }
-
-  /* ── ANKER OVERLAY ───────────────────────────────────────────────────── */
+  .btn-anker:hover { background: var(--red-h); transform: scale(1.06); box-shadow: 0 6px 28px rgba(192,57,43,0.4); }
   .anker-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.65);
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .25s;
+    position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 100;
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+    opacity: 0; pointer-events: none; transition: opacity .25s;
   }
   .anker-overlay.open { opacity: 1; pointer-events: all; }
   .anker-card {
-    background: #fff;
-    border-radius: 14px;
-    padding: 36px 32px;
-    max-width: 480px;
-    width: 100%;
-    text-align: center;
-    box-shadow: 0 24px 80px rgba(0,0,0,0.15);
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+    background: #fff; border-radius: 14px; padding: 36px 32px; max-width: 480px;
+    width: 100%; text-align: center; box-shadow: 0 24px 80px rgba(0,0,0,0.15);
+    display: flex; flex-direction: column; gap: 20px;
   }
-  .anker-line {
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 1.6;
-    color: var(--ink);
-    padding: 12px 0;
-    border-bottom: 1px solid var(--border);
-  }
+  .anker-line { font-size: 16px; font-weight: 500; line-height: 1.6; color: var(--ink); padding: 12px 0; border-bottom: 1px solid var(--border); }
   .anker-line:last-of-type { border-bottom: none; }
   .anker-line.italic { font-style: italic; color: var(--ink-mid); }
   .anker-close {
-    background: var(--accent);
-    border: none;
-    color: #fff;
-    border-radius: var(--r);
-    padding: 10px 28px;
-    font-family: var(--sans);
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background .15s;
-    align-self: center;
+    background: var(--accent); border: none; color: #fff; border-radius: var(--r);
+    padding: 10px 28px; font-family: var(--sans); font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: background .15s; align-self: center;
   }
   .anker-close:hover { background: var(--accent-h); }
 
   /* ── COMPLETE SCREEN ─────────────────────────────────────────────────── */
-  .complete-icon {
-    font-size: 48px;
-    text-align: center;
-    margin-bottom: -8px;
+  .complete-icon { font-size: 48px; text-align: center; margin-bottom: -8px; }
+  .complete-title { font-size: 20px; font-weight: 600; text-align: center; }
+  .complete-msg { font-size: 14px; color: var(--ink-dim); text-align: center; line-height: 1.6; }
+
+  /* ── FRICTION SCAN SPECIFIC ──────────────────────────────────────────── */
+  .scan-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 20px;
   }
-  .complete-title {
-    font-size: 20px;
-    font-weight: 600;
-    text-align: center;
+  .scan-card-title {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-mute); margin-bottom: 12px;
   }
-  .complete-msg {
-    font-size: 14px;
-    color: var(--ink-dim);
-    text-align: center;
-    line-height: 1.6;
+  .check-row {
+    display: flex; align-items: center; gap: 10px; padding: 8px 0;
+    border-bottom: 1px solid var(--border); font-size: 14px;
+  }
+  .check-row:last-child { border-bottom: none; }
+  .check-row input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--green); }
+  .gate-result {
+    padding: 14px 18px; border-radius: var(--r); font-size: 14px; font-weight: 500;
+    margin-top: 12px; text-align: center;
+  }
+  .gate-ok { background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
+  .gate-fail { background: var(--red-bg); color: var(--red); border: 1px solid var(--red); }
+
+  /* ── AMPEL (Traffic Light) ──────────────────────────────────────────── */
+  .ampel-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  }
+  .ampel-row {
+    display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+    background: var(--surface2); border-radius: var(--rs);
+  }
+  .ampel-label { flex: 1; font-size: 12px; color: var(--ink-mid); }
+  .ampel-dots { display: flex; gap: 4px; }
+  .ampel-dot {
+    width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border2);
+    cursor: pointer; transition: all .15s;
+  }
+  .ampel-dot.gruen { background: var(--green); border-color: var(--green); }
+  .ampel-dot.gelb { background: var(--yellow); border-color: var(--yellow); }
+  .ampel-dot.rot { background: var(--red); border-color: var(--red); }
+  .ampel-dot:hover { transform: scale(1.15); }
+  .layer-label {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-dim); margin: 12px 0 6px; grid-column: 1 / -1;
+  }
+
+  /* ── INTERVIEW CARD ─────────────────────────────────────────────────── */
+  .interview-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 20px; margin-bottom: 12px;
+  }
+  .interview-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+  }
+  .interview-num {
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    background: var(--accent); color: #fff; width: 26px; height: 26px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  }
+  .interview-title { font-weight: 500; font-size: 15px; }
+  .interview-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .kernfrage {
+    padding: 10px 14px; background: var(--surface2);
+    border-left: 3px solid var(--accent); border-radius: 0 var(--rs) var(--rs) 0;
+    font-size: 13px; color: var(--ink-mid); line-height: 1.5; margin-bottom: 6px;
+  }
+  .kernfrage-num { font-family: var(--mono); font-size: 10px; color: var(--ink-mute); }
+
+  /* ── DENZIN TABLE ───────────────────────────────────────────────────── */
+  .denzin-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .denzin-table th {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-mute); padding: 8px 10px;
+    text-align: left; border-bottom: 2px solid var(--border2);
+  }
+  .denzin-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  .star-select {
+    display: flex; gap: 2px; cursor: pointer;
+  }
+  .star-select span { font-size: 16px; color: var(--ink-mute); transition: color .1s; }
+  .star-select span.filled { color: var(--yellow); }
+
+  /* ── HYPOTHESE CARD ─────────────────────────────────────────────────── */
+  .hyp-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 16px; margin-bottom: 10px;
+  }
+  .hyp-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* ── REGIME BADGE ───────────────────────────────────────────────────── */
+  .regime-badge {
+    display: inline-block; padding: 6px 16px; border-radius: 20px;
+    font-family: var(--mono); font-size: 13px; font-weight: 500;
+    background: var(--surface2); color: var(--ink-mid); border: 1px solid var(--border2);
+  }
+
+  /* ── ADA CHAT ───────────────────────────────────────────────────────── */
+  .ada-container {
+    display: flex; flex-direction: column; height: calc(100dvh - 140px);
+    max-width: var(--max-w); width: 100%;
+  }
+  .ada-context-bar {
+    background: var(--ada-bg); border: 1px solid rgba(75,0,130,0.2);
+    border-radius: var(--r); padding: 10px 16px; margin-bottom: 12px;
+    font-family: var(--mono); font-size: 11px; color: var(--ada-accent);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .ada-messages {
+    flex: 1; overflow-y: auto; display: flex; flex-direction: column;
+    gap: 12px; padding: 8px 0; min-height: 0;
+  }
+  .ada-msg {
+    padding: 12px 16px; border-radius: var(--r); font-size: 14px;
+    line-height: 1.6; max-width: 85%; white-space: pre-wrap;
+  }
+  .ada-msg.user {
+    background: var(--surface2); color: var(--ink); align-self: flex-end;
+    border-bottom-right-radius: 4px;
+  }
+  .ada-msg.assistant {
+    background: var(--ada-bg); color: var(--ink); align-self: flex-start;
+    border-bottom-left-radius: 4px; border: 1px solid rgba(75,0,130,0.15);
+  }
+  .ada-msg.thinking {
+    background: var(--ada-bg); color: var(--ada-accent); align-self: flex-start;
+    font-style: italic; opacity: 0.7;
+  }
+  .ada-input-row {
+    display: flex; gap: 8px; padding-top: 12px; border-top: 1px solid var(--border);
+  }
+  .ada-input {
+    flex: 1; background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--r); font-family: var(--sans); font-size: 14px;
+    color: var(--ink); padding: 10px 14px; outline: none; resize: none;
+    min-height: 44px; max-height: 120px;
+    transition: border-color .15s;
+  }
+  .ada-input:focus { border-color: var(--ada-accent); }
+  .ada-input::placeholder { color: var(--ink-mute); }
+  .ada-send {
+    background: var(--ada-accent); border: none; color: #fff;
+    border-radius: var(--r); padding: 10px 18px; font-family: var(--sans);
+    font-size: 14px; font-weight: 500; cursor: pointer;
+    transition: background .15s; align-self: flex-end;
+  }
+  .ada-send:hover { background: var(--ada-accent-h); }
+  .ada-send:disabled { opacity: .4; cursor: not-allowed; }
+
+  /* ── PLAN B PANEL ───────────────────────────────────────────────────── */
+  .plan-b-panel {
+    display: none; background: var(--red-bg); border: 1px solid var(--red);
+    border-radius: var(--r); padding: 16px; margin-top: 10px;
+  }
+  .plan-b-panel.open { display: block; }
+  .plan-b-title {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--red); margin-bottom: 10px;
   }
 
   /* ── RESPONSIVE ──────────────────────────────────────────────────────── */
   @media (max-width: 768px) {
     .cockpit-layout { flex-direction: column; }
     .phase-sidebar {
-      width: 100%;
-      min-width: 0;
-      flex-direction: row;
-      border-right: none;
-      border-bottom: 1px solid var(--border);
-      border-radius: var(--r) var(--r) 0 0;
-      padding: 8px 8px;
-      gap: 0;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
+      width: 100%; min-width: 0; flex-direction: row; border-right: none;
+      border-bottom: 1px solid var(--border); border-radius: var(--r) var(--r) 0 0;
+      padding: 8px 8px; gap: 0; overflow-x: auto; -webkit-overflow-scrolling: touch;
     }
     .phase-sidebar::-webkit-scrollbar { display: none; }
     .phase-sidebar-label { display: none; }
     .phase-nav-item {
-      flex-direction: column;
-      gap: 4px;
-      padding: 8px 12px;
-      border-left: none;
-      border-bottom: 3px solid transparent;
-      min-width: 0;
-      flex-shrink: 0;
-      font-size: 10px;
-      text-align: center;
+      flex-direction: column; gap: 4px; padding: 8px 12px;
+      border-left: none; border-bottom: 3px solid transparent;
+      min-width: 0; flex-shrink: 0; font-size: 10px; text-align: center;
     }
     .phase-nav-item.active { border-bottom-color: var(--accent); border-left-color: transparent; }
     .phase-nav-dot { width: 20px; height: 20px; font-size: 9px; }
-    .phase-nav-title {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 60px;
-    }
+    .phase-nav-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60px; }
+    .ampel-grid { grid-template-columns: 1fr; }
+    .interview-fields { grid-template-columns: 1fr; }
+    .hyp-fields { grid-template-columns: 1fr; }
+    .tab-nav { padding: 0 12px; }
+    .tab-btn { padding: 8px 12px; font-size: 11px; }
   }
   @media (max-width: 600px) {
     header { padding: 0 16px; height: 50px; }
@@ -561,14 +574,24 @@
   </div>
 </header>
 
+<!-- ── TAB NAVIGATION ──────────────────────────────────────────────────── -->
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="modul1" onclick="switchTab('modul1')">Erstgespräch</button>
+  <button class="tab-btn" data-tab="modul2" onclick="switchTab('modul2')">Friction Scan</button>
+  <button class="tab-btn" data-tab="ada" onclick="switchTab('ada')">ADA</button>
+</nav>
+
 <div class="main">
 <div class="container">
 
-<!-- ── SCREEN: START ──────────────────────────────────────────────────────── -->
+<!-- ╔═══════════════════════════════════════════════════════════════════════╗ -->
+<!-- ║  MODUL 1 — ERSTGESPRÄCH                                             ║ -->
+<!-- ╚═══════════════════════════════════════════════════════════════════════╝ -->
+<div class="module active" id="moduleModul1">
+
 <div class="screen active" id="screenStart">
   <div class="start-title">Erstgespräch starten</div>
   <div class="start-desc">Kontakt anlegen oder bestehenden wählen.</div>
-
   <div class="form-group">
     <label class="form-label" for="contactName">Name *</label>
     <input class="form-input" type="text" id="contactName" placeholder="Vorname Nachname" autocomplete="off">
@@ -584,14 +607,12 @@
   <div class="btn-row">
     <button class="btn btn-primary" id="btnStartSession">Gespräch starten</button>
   </div>
-
   <div class="divider">Bestehende Kontakte</div>
   <div class="contact-list" id="contactList">
     <div style="font-size:12px;color:var(--ink-mute);text-align:center;padding:12px;">Lade…</div>
   </div>
 </div>
 
-<!-- ── SCREEN: COCKPIT ───────────────────────────────────────────────────── -->
 <div class="screen" id="screenCockpit">
   <div class="cockpit-contact" id="cockpitContact"></div>
   <div class="cockpit-layout">
@@ -607,13 +628,39 @@
   </div>
 </div>
 
-<!-- ── SCREEN: COMPLETE ──────────────────────────────────────────────────── -->
 <div class="screen" id="screenComplete">
   <div class="complete-icon">&#10003;</div>
   <div class="complete-title">Erstgespräch abgeschlossen</div>
   <div class="complete-msg" id="completeMsg"></div>
   <div class="btn-row" style="justify-content:center;">
     <button class="btn btn-primary" id="btnBackToStart">Neues Gespräch</button>
+  </div>
+</div>
+
+</div><!-- /moduleModul1 -->
+
+<!-- ╔═══════════════════════════════════════════════════════════════════════╗ -->
+<!-- ║  MODUL 2 — FRICTION SCAN                                            ║ -->
+<!-- ╚═══════════════════════════════════════════════════════════════════════╝ -->
+<div class="module" id="moduleModul2">
+  <div id="scanContent"></div>
+</div>
+
+<!-- ╔═══════════════════════════════════════════════════════════════════════╗ -->
+<!-- ║  ADA — AI ASSISTANT                                                 ║ -->
+<!-- ╚═══════════════════════════════════════════════════════════════════════╝ -->
+<div class="module" id="moduleAda">
+  <div class="ada-container">
+    <div class="ada-context-bar" id="adaContextBar">
+      <span>ADA</span> — <span id="adaContextText">Kein aktiver Scan</span>
+    </div>
+    <div class="ada-messages" id="adaMessages">
+      <div class="ada-msg assistant">Hallo Nathalie. Was steht an?</div>
+    </div>
+    <div class="ada-input-row">
+      <textarea class="ada-input" id="adaInput" placeholder="Nachricht an ADA…" rows="1"></textarea>
+      <button class="ada-send" id="adaSend">Senden</button>
+    </div>
   </div>
 </div>
 
@@ -632,17 +679,85 @@
 </div>
 
 <script>
-// ── CONTENT (loaded from /api/content at startup) ─────────────────────────
+// ══════════════════════════════════════════════════════════════════════════
+// SHARED STATE + HELPERS
+// ══════════════════════════════════════════════════════════════════════════
+let activeTab = "modul1";
+
+function switchTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+  document.querySelectorAll(".module").forEach(m => m.classList.remove("active"));
+  const modId = tab === "modul1" ? "moduleModul1" : tab === "modul2" ? "moduleModul2" : "moduleAda";
+  document.getElementById(modId).classList.add("active");
+
+  // Anker visible in cockpit screens
+  const showAnker = (tab === "modul1" && document.getElementById("screenCockpit").classList.contains("active"))
+    || (tab === "modul2" && currentScan);
+  document.getElementById("btnAnker").style.display = showAnker ? "flex" : "none";
+
+  // Update ADA context when switching to ADA
+  if (tab === "ada") updateAdaContext();
+}
+
+function escHtml(s) { return (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+
+// ══════════════════════════════════════════════════════════════════════════
+// MODUL 1 — ERSTGESPRÄCH (original code preserved)
+// ══════════════════════════════════════════════════════════════════════════
 let PHASES = [];
 let ANKER_LINES = [];
-
-// ── STATE ─────────────────────────────────────────────────────────────────
 let currentConsultation = null;
 let currentContact = null;
 let currentPhase = 1;
 let notesDirty = false;
 
-// ── DOM ───────────────────────────────────────────────────────────────────
+// Signal Tracker: counts per phase { 1: {L1:0,L2:0,L3:0}, 2: {…}, … }
+let signalCounts = { 1: {L1:0,L2:0,L3:0}, 2: {L1:0,L2:0,L3:0}, 3: {L1:0,L2:0,L3:0}, 4: {L1:0,L2:0,L3:0}, 5: {L1:0,L2:0,L3:0} };
+
+function signalTotal(layer) {
+  let t = 0; for (let p = 1; p <= 5; p++) t += (signalCounts[p]?.[layer] || 0); return t;
+}
+
+function trackSignal(layer) {
+  if (!signalCounts[currentPhase]) signalCounts[currentPhase] = {L1:0,L2:0,L3:0};
+  signalCounts[currentPhase][layer]++;
+  updateSignalButtons();
+}
+
+function updateSignalButtons() {
+  const pc = signalCounts[currentPhase] || {L1:0,L2:0,L3:0};
+  for (const l of ["L1","L2","L3"]) {
+    const btn = document.getElementById(`sig${l}`);
+    if (!btn) continue;
+    const cnt = pc[l];
+    const countEl = btn.querySelector(".signal-count");
+    if (countEl) { countEl.textContent = cnt; countEl.className = "signal-count" + (cnt === 0 ? " zero" : ""); }
+    btn.className = "signal-btn" + (cnt > 0 ? ` ${l.toLowerCase()}-active` : "");
+  }
+}
+
+function renderSignalTracker() {
+  const pc = signalCounts[currentPhase] || {L1:0,L2:0,L3:0};
+  return `<div class="signal-tracker">
+    <span class="signal-tracker-label">Signal</span>
+    <button class="signal-btn${pc.L1 ? ' l1-active' : ''}" id="sigL1" onclick="trackSignal('L1')">L1<span class="signal-count${pc.L1 ? '' : ' zero'}">${pc.L1}</span></button>
+    <button class="signal-btn${pc.L2 ? ' l2-active' : ''}" id="sigL2" onclick="trackSignal('L2')">L2<span class="signal-count${pc.L2 ? '' : ' zero'}">${pc.L2}</span></button>
+    <button class="signal-btn${pc.L3 ? ' l3-active' : ''}" id="sigL3" onclick="trackSignal('L3')">L3<span class="signal-count${pc.L3 ? '' : ' zero'}">${pc.L3}</span></button>
+  </div>`;
+}
+
+function renderSignalSummary() {
+  const t1 = signalTotal("L1"), t2 = signalTotal("L2"), t3 = signalTotal("L3");
+  const max = Math.max(t1, t2, t3, 1);
+  return `<div class="signal-summary">
+    <div class="signal-summary-title">Signal-Tracker — Zusammenfassung</div>
+    <div class="signal-summary-row"><span class="signal-summary-layer l1">L1</span><div class="signal-summary-bar"><div class="signal-summary-fill l1" style="width:${(t1/max)*100}%"></div></div><span class="signal-summary-num">${t1}</span></div>
+    <div class="signal-summary-row"><span class="signal-summary-layer l2">L2</span><div class="signal-summary-bar"><div class="signal-summary-fill l2" style="width:${(t2/max)*100}%"></div></div><span class="signal-summary-num">${t2}</span></div>
+    <div class="signal-summary-row"><span class="signal-summary-layer l3">L3</span><div class="signal-summary-bar"><div class="signal-summary-fill l3" style="width:${(t3/max)*100}%"></div></div><span class="signal-summary-num">${t3}</span></div>
+  </div>`;
+}
+
 const $screenStart    = document.getElementById("screenStart");
 const $screenCockpit  = document.getElementById("screenCockpit");
 const $screenComplete = document.getElementById("screenComplete");
@@ -658,35 +773,34 @@ const $phaseButtons   = document.getElementById("phaseButtons");
 const $btnAnker       = document.getElementById("btnAnker");
 const $ankerOverlay   = document.getElementById("ankerOverlay");
 
-// ── HELPERS ───────────────────────────────────────────────────────────────
 function showScreen(id) {
-  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.querySelectorAll("#moduleModul1 .screen").forEach(s => s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
-  $btnAnker.style.display = id === "screenCockpit" ? "flex" : "none";
+  $btnAnker.style.display = (id === "screenCockpit" && activeTab === "modul1") ? "flex" : "none";
 }
 
-function escHtml(s) { return (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
-
-// ── LOGO NAVIGATION ──────────────────────────────────────────────────────
+// Logo navigation
 document.querySelector(".logo-mark").addEventListener("click", () => {
-  showScreen("screenStart");
-  loadContacts();
+  if (activeTab === "modul1") {
+    showScreen("screenStart");
+    loadContacts();
+  } else if (activeTab === "modul2") {
+    renderScanList();
+  }
 });
 
-// ── VERSION ───────────────────────────────────────────────────────────────
+// Version
 async function loadVersion() {
   try {
     const r = await fetch("/api/version");
     if (!r.ok) return;
     const d = await r.json();
     const el = document.getElementById("logoSub");
-    if (el && d.lastUpdated) {
-      el.textContent = `aktualisiert: ${d.lastUpdated}`;
-    }
+    if (el && d.lastUpdated) el.textContent = `aktualisiert: ${d.lastUpdated}`;
   } catch {}
 }
 
-// ── CONTACTS ──────────────────────────────────────────────────────────────
+// Contacts
 async function loadContacts() {
   try {
     const r = await fetch("/api/contacts");
@@ -720,23 +834,15 @@ function renderContacts(contacts) {
     editBtn.className = "btn-edit-contact";
     editBtn.title = "Name bearbeiten";
     editBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2l3 3-7 7H0V9z"/><path d="M6 3l3 3"/></svg>';
-    editBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      startRenameContact(c, nameEl);
-    });
+    editBtn.addEventListener("click", (e) => { e.stopPropagation(); startRenameContact(c, nameEl); });
 
     const delBtn = document.createElement("button");
     delBtn.className = "btn-del-contact";
     delBtn.title = "Kontakt loeschen";
     delBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M1 3h10M4 3V1.5h4V3M2.5 3l.7 6.5a.8.8 0 00.8.7h4a.8.8 0 00.8-.7L9.5 3"/></svg>';
-    delBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      deleteContact(c, item);
-    });
+    delBtn.addEventListener("click", (e) => { e.stopPropagation(); deleteContact(c, item); });
 
-    // Click anywhere on item starts session
     item.addEventListener("click", () => startSessionForContact(c));
-
     item.appendChild(nameEl);
     item.appendChild(dateEl);
     item.appendChild(editBtn);
@@ -748,375 +854,184 @@ function renderContacts(contacts) {
 function startRenameContact(contact, nameEl) {
   const oldName = contact.name;
   const input = document.createElement("input");
-  input.type = "text";
-  input.className = "contact-name-edit";
-  input.value = oldName;
-  input.maxLength = 200;
-
-  ["click", "mousedown", "dblclick"].forEach(ev =>
-    input.addEventListener(ev, (e) => e.stopPropagation())
-  );
-
-  nameEl.replaceWith(input);
-  input.focus();
-  input.select();
-
+  input.type = "text"; input.className = "contact-name-edit";
+  input.value = oldName; input.maxLength = 200;
+  ["click", "mousedown", "dblclick"].forEach(ev => input.addEventListener(ev, (e) => e.stopPropagation()));
+  nameEl.replaceWith(input); input.focus(); input.select();
   let done = false;
   const finish = async (save) => {
-    if (done) return;
-    done = true;
+    if (done) return; done = true;
     const newName = input.value.trim();
     const replacement = document.createElement("span");
     replacement.className = "contact-name";
     replacement.title = "Doppelklick zum Umbenennen";
-    replacement.addEventListener("dblclick", (e) => {
-      e.stopPropagation();
-      startRenameContact(contact, replacement);
-    });
-
+    replacement.addEventListener("dblclick", (e) => { e.stopPropagation(); startRenameContact(contact, replacement); });
     if (save && newName && newName !== oldName) {
-      replacement.textContent = newName;
-      input.replaceWith(replacement);
-      contact.name = newName;
-      try {
-        const r = await fetch(`/api/contacts/${contact.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: newName }),
-        });
-        if (!r.ok) throw new Error("HTTP " + r.status);
-      } catch (e) {
-        replacement.textContent = oldName;
-        contact.name = oldName;
-        alert("Umbenennen fehlgeschlagen: " + e.message);
-      }
-    } else {
-      replacement.textContent = oldName;
-      input.replaceWith(replacement);
-    }
+      replacement.textContent = newName; input.replaceWith(replacement); contact.name = newName;
+      try { const r = await fetch(`/api/contacts/${contact.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: newName }) }); if (!r.ok) throw new Error("HTTP " + r.status); }
+      catch (e) { replacement.textContent = oldName; contact.name = oldName; alert("Umbenennen fehlgeschlagen: " + e.message); }
+    } else { replacement.textContent = oldName; input.replaceWith(replacement); }
   };
-
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") { e.preventDefault(); finish(true); }
-    else if (e.key === "Escape") { e.preventDefault(); finish(false); }
-  });
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); finish(true); } else if (e.key === "Escape") { e.preventDefault(); finish(false); } });
   input.addEventListener("blur", () => finish(true));
 }
 
 async function deleteContact(contact, itemEl) {
   if (!confirm(`Kontakt "${contact.name}" wirklich loeschen?\nAlle zugehoerigen Sessions werden ebenfalls geloescht.`)) return;
-  try {
-    const r = await fetch(`/api/contacts/${contact.id}`, { method: "DELETE" });
-    if (!r.ok) throw new Error("HTTP " + r.status);
-    itemEl.remove();
-    if ($contactList.children.length === 0) {
-      $contactList.innerHTML = '<div style="font-size:12px;color:var(--ink-mute);text-align:center;padding:12px;">Noch keine Kontakte.</div>';
-    }
-  } catch (e) {
-    alert("Loeschen fehlgeschlagen: " + e.message);
-  }
+  try { const r = await fetch(`/api/contacts/${contact.id}`, { method: "DELETE" }); if (!r.ok) throw new Error("HTTP " + r.status); itemEl.remove();
+    if ($contactList.children.length === 0) $contactList.innerHTML = '<div style="font-size:12px;color:var(--ink-mute);text-align:center;padding:12px;">Noch keine Kontakte.</div>';
+  } catch (e) { alert("Loeschen fehlgeschlagen: " + e.message); }
 }
 
-// ── START SESSION ─────────────────────────────────────────────────────────
+// Start Session
 document.getElementById("btnStartSession").addEventListener("click", async () => {
   const name = $contactName.value.trim();
   if (!name) { $contactName.focus(); return; }
-
   const btn = document.getElementById("btnStartSession");
-  btn.disabled = true;
-  btn.textContent = "Starte…";
-
+  btn.disabled = true; btn.textContent = "Starte…";
   try {
-    const r = await fetch("/api/contacts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, initial_note: $contactNote.value.trim() }),
-    });
-    const contact = await r.json();
-    if (contact.error) throw new Error(contact.error);
+    const r = await fetch("/api/contacts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, initial_note: $contactNote.value.trim() }) });
+    const contact = await r.json(); if (contact.error) throw new Error(contact.error);
     await startSessionForContact(contact);
-  } catch (e) {
-    alert("Fehler: " + e.message);
-  }
-  btn.disabled = false;
-  btn.textContent = "Gespräch starten";
+  } catch (e) { alert("Fehler: " + e.message); }
+  btn.disabled = false; btn.textContent = "Gespräch starten";
 });
 
 async function startSessionForContact(contact) {
   currentContact = contact;
   const dateVal = $contactDate.value || undefined;
-
   try {
-    const r = await fetch("/api/consultations", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ contact_id: contact.id, consultation_date: dateVal }),
-    });
-    const consultation = await r.json();
-    if (consultation.error) throw new Error(consultation.error);
-    currentConsultation = consultation;
-    currentPhase = 1;
-    notesDirty = false;
-    renderCockpitHeader();
-    renderPhase(currentPhase);
-    showScreen("screenCockpit");
-  } catch (e) {
-    alert("Fehler: " + e.message);
-  }
+    const r = await fetch("/api/consultations", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contact_id: contact.id, consultation_date: dateVal }) });
+    const consultation = await r.json(); if (consultation.error) throw new Error(consultation.error);
+    currentConsultation = consultation; currentPhase = 1; notesDirty = false;
+    signalCounts = { 1: {L1:0,L2:0,L3:0}, 2: {L1:0,L2:0,L3:0}, 3: {L1:0,L2:0,L3:0}, 4: {L1:0,L2:0,L3:0}, 5: {L1:0,L2:0,L3:0} };
+    renderCockpitHeader(); renderPhase(currentPhase); showScreen("screenCockpit");
+  } catch (e) { alert("Fehler: " + e.message); }
 }
 
-// ── COCKPIT ───────────────────────────────────────────────────────────────
 function renderCockpitHeader() {
   if (!currentContact) return;
   const dateStr = currentConsultation && currentConsultation.consultation_date
-    ? new Date(currentConsultation.consultation_date).toLocaleDateString("de-CH", { day: "2-digit", month: "long", year: "numeric" })
-    : "";
+    ? new Date(currentConsultation.consultation_date).toLocaleDateString("de-CH", { day: "2-digit", month: "long", year: "numeric" }) : "";
   $cockpitContact.innerHTML = "";
-
   const nameEl = document.createElement("span");
-  nameEl.className = "cockpit-contact-name";
-  nameEl.textContent = currentContact.name;
+  nameEl.className = "cockpit-contact-name"; nameEl.textContent = currentContact.name;
   nameEl.title = "Klick zum Bearbeiten";
   nameEl.addEventListener("click", () => editCockpitName(nameEl));
-
   const dateEl = document.createElement("span");
-  dateEl.className = "cockpit-contact-date";
-  dateEl.textContent = dateStr ? `— ${dateStr}` : "";
-
-  $cockpitContact.appendChild(nameEl);
-  $cockpitContact.appendChild(dateEl);
+  dateEl.className = "cockpit-contact-date"; dateEl.textContent = dateStr ? `— ${dateStr}` : "";
+  $cockpitContact.appendChild(nameEl); $cockpitContact.appendChild(dateEl);
 }
 
 function editCockpitName(nameEl) {
   const oldName = currentContact.name;
   const input = document.createElement("input");
-  input.type = "text";
-  input.className = "cockpit-contact-name-edit";
-  input.value = oldName;
-  input.maxLength = 200;
-
-  nameEl.replaceWith(input);
-  input.focus();
-  input.select();
-
+  input.type = "text"; input.className = "cockpit-contact-name-edit";
+  input.value = oldName; input.maxLength = 200;
+  nameEl.replaceWith(input); input.focus(); input.select();
   let done = false;
   const finish = async (save) => {
-    if (done) return;
-    done = true;
+    if (done) return; done = true;
     const newName = input.value.trim();
-
     const replacement = document.createElement("span");
-    replacement.className = "cockpit-contact-name";
-    replacement.title = "Klick zum Bearbeiten";
+    replacement.className = "cockpit-contact-name"; replacement.title = "Klick zum Bearbeiten";
     replacement.addEventListener("click", () => editCockpitName(replacement));
-
     if (save && newName && newName !== oldName) {
-      replacement.textContent = newName;
-      input.replaceWith(replacement);
-      currentContact.name = newName;
-      updateNotesLabel();
-      try {
-        const r = await fetch(`/api/contacts/${currentContact.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: newName }),
-        });
-        if (!r.ok) throw new Error("HTTP " + r.status);
-      } catch (e) {
-        replacement.textContent = oldName;
-        currentContact.name = oldName;
-        updateNotesLabel();
-        alert("Umbenennen fehlgeschlagen: " + e.message);
-      }
-    } else {
-      replacement.textContent = oldName;
-      input.replaceWith(replacement);
-    }
+      replacement.textContent = newName; input.replaceWith(replacement); currentContact.name = newName; updateNotesLabel();
+      try { const r = await fetch(`/api/contacts/${currentContact.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: newName }) }); if (!r.ok) throw new Error("HTTP " + r.status); }
+      catch (e) { replacement.textContent = oldName; currentContact.name = oldName; updateNotesLabel(); alert("Umbenennen fehlgeschlagen: " + e.message); }
+    } else { replacement.textContent = oldName; input.replaceWith(replacement); }
   };
-
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") { e.preventDefault(); finish(true); }
-    else if (e.key === "Escape") { e.preventDefault(); finish(false); }
-  });
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); finish(true); } else if (e.key === "Escape") { e.preventDefault(); finish(false); } });
   input.addEventListener("blur", () => finish(true));
 }
 
 function updateNotesLabel() {
   const el = document.getElementById("notesLabel");
-  if (el && currentContact) {
-    el.textContent = `Notizen — ${currentContact.name}`;
-  }
+  if (el && currentContact) el.textContent = `Notizen — ${currentContact.name}`;
 }
 
 function renderPhaseSidebar(activeNum) {
-  // Keep the label, rebuild nav items
   $phaseSidebar.innerHTML = '<div class="phase-sidebar-label">Phasen</div>';
   for (let i = 0; i < PHASES.length; i++) {
-    const p = PHASES[i];
-    const phaseNum = i + 1;
-    const isDone = phaseNum < activeNum;
-    const isActive = phaseNum === activeNum;
-
+    const p = PHASES[i]; const phaseNum = i + 1;
+    const isDone = phaseNum < activeNum; const isActive = phaseNum === activeNum;
     const item = document.createElement("button");
-    item.className = "phase-nav-item"
-      + (isActive ? " active" : "")
-      + (isDone ? " done" : "");
-
-    const dot = document.createElement("span");
-    dot.className = "phase-nav-dot";
+    item.className = "phase-nav-item" + (isActive ? " active" : "") + (isDone ? " done" : "");
+    const dot = document.createElement("span"); dot.className = "phase-nav-dot";
     dot.textContent = isDone ? "\u2713" : String(phaseNum);
-
-    const title = document.createElement("span");
-    title.className = "phase-nav-title";
-    title.textContent = p.title;
-
-    item.appendChild(dot);
-    item.appendChild(title);
+    const title = document.createElement("span"); title.className = "phase-nav-title"; title.textContent = p.title;
+    item.appendChild(dot); item.appendChild(title);
     item.addEventListener("click", () => goToPhase(phaseNum));
     $phaseSidebar.appendChild(item);
   }
 }
 
 function renderPhase(num) {
-  const phase = PHASES[num - 1];
-  if (!phase) return;
-
-  // Sidebar
+  const phase = PHASES[num - 1]; if (!phase) return;
   renderPhaseSidebar(num);
-
-  // Content
-  let html = `
-    <div class="phase-header">
-      <span class="phase-number">${escHtml(phase.num)}</span>
-      <span class="phase-title">${escHtml(phase.title)}</span>
-      <span class="phase-time">${escHtml(phase.time)}</span>
-    </div>
-    <div class="phase-instruction">${escHtml(phase.instruction)}</div>
-    <div class="guide-block">
-      <div class="guide-label">Gesprächsleitfaden</div>
-  `;
-  for (const g of phase.guide) {
-    html += `<div class="guide-item">${g.text}</div>`;
-  }
+  let html = `<div class="phase-header"><span class="phase-number">${escHtml(phase.num)}</span><span class="phase-title">${escHtml(phase.title)}</span><span class="phase-time">${escHtml(phase.time)}</span></div>`;
+  html += `<div class="phase-instruction">${escHtml(phase.instruction)}</div>`;
+  html += `<div class="guide-block"><div class="guide-label">Gesprächsleitfaden</div>`;
+  for (const g of phase.guide) html += `<div class="guide-item">${g.text}</div>`;
   html += `</div>`;
+  html += renderSignalTracker();
   $phaseContent.innerHTML = html;
-
-  // Notes
   updateNotesLabel();
   const noteKey = `phase${num}_notes`;
   $phaseNotes.value = currentConsultation[noteKey] || "";
   notesDirty = false;
-
-  // Buttons
   $phaseButtons.innerHTML = "";
-  if (num > 1) {
-    const backBtn = document.createElement("button");
-    backBtn.className = "btn btn-ghost";
-    backBtn.textContent = "Zurück";
-    backBtn.addEventListener("click", () => goToPhase(num - 1));
-    $phaseButtons.appendChild(backBtn);
-  }
-  if (num < 5) {
-    const nextBtn = document.createElement("button");
-    nextBtn.className = "btn btn-primary";
-    nextBtn.textContent = "Weiter";
-    nextBtn.addEventListener("click", () => goToPhase(num + 1));
-    $phaseButtons.appendChild(nextBtn);
-  } else {
-    const finishBtn = document.createElement("button");
-    finishBtn.className = "btn btn-primary";
-    finishBtn.textContent = "Gespräch abschliessen";
-    finishBtn.addEventListener("click", finishConsultation);
-    $phaseButtons.appendChild(finishBtn);
-  }
-
+  if (num > 1) { const b = document.createElement("button"); b.className = "btn btn-ghost"; b.textContent = "Zurück"; b.addEventListener("click", () => goToPhase(num - 1)); $phaseButtons.appendChild(b); }
+  if (num < 5) { const b = document.createElement("button"); b.className = "btn btn-primary"; b.textContent = "Weiter"; b.addEventListener("click", () => goToPhase(num + 1)); $phaseButtons.appendChild(b); }
+  else { const b = document.createElement("button"); b.className = "btn btn-primary"; b.textContent = "Gespräch abschliessen"; b.addEventListener("click", finishConsultation); $phaseButtons.appendChild(b); }
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-async function goToPhase(num) {
-  await saveCurrentNotes();
-  currentPhase = num;
-  currentConsultation.current_phase = num;
-  renderPhase(num);
-}
+async function goToPhase(num) { await saveCurrentNotes(); currentPhase = num; currentConsultation.current_phase = num; renderPhase(num); }
 
 async function saveCurrentNotes() {
   if (!currentConsultation) return;
-  const noteKey = `phase${currentPhase}_notes`;
-  const val = $phaseNotes.value;
+  const noteKey = `phase${currentPhase}_notes`; const val = $phaseNotes.value;
   currentConsultation[noteKey] = val;
-
-  try {
-    await fetch(`/api/consultations/${currentConsultation.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ [noteKey]: val, current_phase: currentPhase }),
-    });
-  } catch (e) {
-    console.warn("Save failed:", e.message);
-  }
+  try { await fetch(`/api/consultations/${currentConsultation.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ [noteKey]: val, current_phase: currentPhase }) }); }
+  catch (e) { console.warn("Save failed:", e.message); }
 }
 
 async function finishConsultation() {
   await saveCurrentNotes();
-  try {
-    await fetch(`/api/consultations/${currentConsultation.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ completed: true }),
-    });
-  } catch {}
-
-  document.getElementById("completeMsg").textContent =
-    `Gespräch mit ${currentContact.name} wurde gespeichert.`;
+  try { await fetch(`/api/consultations/${currentConsultation.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ completed: true }) }); } catch {}
+  document.getElementById("completeMsg").innerHTML = `Gespräch mit ${escHtml(currentContact.name)} wurde gespeichert.` + renderSignalSummary();
   showScreen("screenComplete");
 }
 
-// Auto-save notes on blur and periodically
 $phaseNotes.addEventListener("input", () => { notesDirty = true; });
 $phaseNotes.addEventListener("blur", () => { if (notesDirty) saveCurrentNotes(); });
 setInterval(() => { if (notesDirty && currentConsultation) saveCurrentNotes(); }, 15000);
 
-// ── ANKER ─────────────────────────────────────────────────────────────────
+// Anker
 $btnAnker.addEventListener("click", () => $ankerOverlay.classList.add("open"));
 document.getElementById("btnAnkerClose").addEventListener("click", () => $ankerOverlay.classList.remove("open"));
-$ankerOverlay.addEventListener("click", (e) => {
-  if (e.target === $ankerOverlay) $ankerOverlay.classList.remove("open");
-});
+$ankerOverlay.addEventListener("click", (e) => { if (e.target === $ankerOverlay) $ankerOverlay.classList.remove("open"); });
 
-// ── BACK TO START ─────────────────────────────────────────────────────────
+// Back to start
 document.getElementById("btnBackToStart").addEventListener("click", () => {
-  currentConsultation = null;
-  currentContact = null;
-  currentPhase = 1;
-  $contactName.value = "";
-  $contactNote.value = "";
-  loadContacts();
-  showScreen("screenStart");
+  currentConsultation = null; currentContact = null; currentPhase = 1;
+  $contactName.value = ""; $contactNote.value = "";
+  loadContacts(); showScreen("screenStart");
 });
 
-// ── CONTENT LOADER ───────────────────────────────────────────────────────
+// Content loader
 async function loadContent() {
   try {
-    const r = await fetch("/api/content");
-    if (!r.ok) return;
+    const r = await fetch("/api/content"); if (!r.ok) return;
     const d = await r.json();
-
     if (Array.isArray(d.phases) && d.phases.length > 0) {
       PHASES = d.phases.map(p => ({
-        num: p.num,
-        title: p.title,
-        time: p.time,
-        instruction: p.instruction,
-        // Format guide items: wrap quoted text in <em>
-        guide: (p.guide || []).map(g => {
-          // Auto-italicize text in quotes at start of line
-          const formatted = g.replace(/^"([^"]+)"/, '<em>"$1"</em>');
-          return { text: formatted };
-        }),
+        num: p.num, title: p.title, time: p.time, instruction: p.instruction,
+        guide: (p.guide || []).map(g => { const formatted = g.replace(/^"([^"]+)"/, '<em>"$1"</em>'); return { text: formatted }; }),
       }));
     }
-
     if (Array.isArray(d.anker) && d.anker.length > 0) {
       ANKER_LINES = d.anker;
       const $ankerContent = document.getElementById("ankerContent");
@@ -1124,21 +1039,806 @@ async function loadContent() {
       for (let i = 0; i < ANKER_LINES.length; i++) {
         const div = document.createElement("div");
         div.className = "anker-line" + (i === ANKER_LINES.length - 1 ? " italic" : "");
-        div.textContent = ANKER_LINES[i];
-        $ankerContent.appendChild(div);
+        div.textContent = ANKER_LINES[i]; $ankerContent.appendChild(div);
       }
     }
-  } catch (e) {
-    console.warn("Content load failed:", e.message);
+  } catch (e) { console.warn("Content load failed:", e.message); }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// MODUL 2 — FRICTION SCAN
+// ══════════════════════════════════════════════════════════════════════════
+let currentScan = null;
+let scanPhase = 0;
+let scanInterviews = [null, null, null];
+let scanHypothesen = [null, null, null];
+let scanMassnahmen = [null, null, null];
+let scanAmpeln = {};
+
+const SCAN_PHASES = [
+  { num: 0, title: "Mandats-Check", short: "Check" },
+  { num: 1, title: "Setup & Survey", short: "Setup" },
+  { num: 2, title: "Interviews", short: "Interviews" },
+  { num: 3, title: "Triangulation", short: "Triangulation" },
+  { num: 4, title: "Hypothesen-Spiegel", short: "Spiegel" },
+  { num: 5, title: "Befund", short: "Befund" },
+];
+
+const AMPEL_AXES = {
+  L1: ["Energie-Status", "Allostatic Load", "Verarbeitungsarchitektur", "Interoceptive Awareness"],
+  L2: ["Psychological Safety", "Immunity-Muster", "Threat-State", "Attribution Style"],
+  L3: ["Entscheidungsarchitektur", "Incentive-Struktur", "Informationsfluss", "Strukturelle Ambiguität"],
+};
+
+function renderScanList() {
+  currentScan = null;
+  const $el = document.getElementById("scanContent");
+  $el.innerHTML = `
+    <div class="start-title">Friction Scan</div>
+    <div class="start-desc">Neuen Scan starten oder bestehenden fortsetzen.</div>
+    <div class="form-group">
+      <label class="form-label">Kundenname *</label>
+      <input class="form-input" type="text" id="scanKundeName" placeholder="Firmenname / Kundenname" autocomplete="off">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btnStartScan">Scan starten</button>
+    </div>
+    <div class="divider">Bestehende Scans</div>
+    <div class="contact-list" id="scanList"><div style="font-size:12px;color:var(--ink-mute);text-align:center;padding:12px;">Lade…</div></div>
+  `;
+  document.getElementById("btnStartScan").addEventListener("click", startNewScan);
+  $btnAnker.style.display = "none";
+  loadScans();
+}
+
+async function loadScans() {
+  try {
+    const r = await fetch("/api/scans");
+    const scans = await r.json();
+    const $list = document.getElementById("scanList");
+    if (!Array.isArray(scans) || scans.length === 0) {
+      $list.innerHTML = '<div style="font-size:12px;color:var(--ink-mute);text-align:center;padding:12px;">Noch keine Scans.</div>';
+      return;
+    }
+    $list.innerHTML = "";
+    for (const s of scans) {
+      const date = new Date(s.created_at).toLocaleDateString("de-CH", { day: "2-digit", month: "2-digit", year: "2-digit" });
+      const item = document.createElement("div");
+      item.className = "contact-item";
+      item.innerHTML = `<span class="contact-name">${escHtml(s.kunde_name)}</span><span class="contact-date">${escHtml(s.status)} — ${date}</span>`;
+      item.addEventListener("click", () => openScan(s));
+      $list.appendChild(item);
+    }
+  } catch { document.getElementById("scanList").innerHTML = '<div style="font-size:12px;color:var(--ink-mute);text-align:center;padding:12px;">Scans konnten nicht geladen werden.</div>'; }
+}
+
+async function startNewScan() {
+  const name = document.getElementById("scanKundeName").value.trim();
+  if (!name) { document.getElementById("scanKundeName").focus(); return; }
+  try {
+    const r = await fetch("/api/scans", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ kunde_name: name }) });
+    const scan = await r.json(); if (scan.error) throw new Error(scan.error);
+    openScan(scan);
+  } catch (e) { alert("Fehler: " + e.message); }
+}
+
+async function openScan(scan) {
+  currentScan = scan;
+  scanPhase = scan.current_phase || 0;
+  $btnAnker.style.display = "flex";
+  renderScanPhase(scanPhase);
+}
+
+function renderScanPhaseSidebar(activeNum) {
+  let html = '<div class="phase-sidebar-label">Phasen</div>';
+  for (const p of SCAN_PHASES) {
+    const isDone = p.num < activeNum;
+    const isActive = p.num === activeNum;
+    html += `<button class="phase-nav-item${isActive ? " active" : ""}${isDone ? " done" : ""}" onclick="goToScanPhase(${p.num})">`;
+    html += `<span class="phase-nav-dot">${isDone ? "✓" : p.num}</span>`;
+    html += `<span class="phase-nav-title">${escHtml(p.short)}</span></button>`;
+  }
+  return html;
+}
+
+function renderScanPhase(num) {
+  scanPhase = num;
+  const $el = document.getElementById("scanContent");
+  let content = "";
+
+  switch (num) {
+    case 0: content = renderPhase0(); break;
+    case 1: content = renderPhase1(); break;
+    case 2: content = renderPhase2(); break;
+    case 3: content = renderPhase3(); break;
+    case 4: content = renderPhase4(); break;
+    case 5: content = renderPhase5(); break;
+  }
+
+  $el.innerHTML = `
+    <div class="cockpit-contact"><span class="cockpit-contact-name">${escHtml(currentScan.kunde_name)}</span><span class="cockpit-contact-date">— Friction Scan</span></div>
+    <div class="cockpit-layout">
+      <nav class="phase-sidebar">${renderScanPhaseSidebar(num)}</nav>
+      <div class="cockpit-content">${content}</div>
+    </div>
+  `;
+
+  bindScanPhaseEvents(num);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+async function goToScanPhase(num) {
+  await saveScanState();
+  scanPhase = num;
+  renderScanPhase(num);
+}
+
+async function saveScanState() {
+  if (!currentScan) return;
+  try {
+    await fetch(`/api/scans/${currentScan.id}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ current_phase: scanPhase }),
+    });
+  } catch (e) { console.warn("Scan save failed:", e.message); }
+}
+
+// ── PHASE 0: MANDATS-CHECK ──
+function renderPhase0() {
+  const s = currentScan;
+  return `
+    <div class="phase-header"><span class="phase-number">Phase 0</span><span class="phase-title">Mandats-Check</span></div>
+    <div class="phase-instruction">Drei Gate-Fragen — alle muessen erfuellt sein, bevor der Scan startet.</div>
+    <div class="scan-card">
+      <div class="scan-card-title">Voraussetzungen</div>
+      <div class="check-row"><input type="checkbox" id="mc1" ${s.mandatscheck_budget ? "checked" : ""}><label for="mc1">Entscheider hat Budgetmandat?</label></div>
+      <div class="check-row"><input type="checkbox" id="mc2" ${s.mandatscheck_personen ? "checked" : ""}><label for="mc2">Organisation >5 Personen?</label></div>
+      <div class="check-row"><input type="checkbox" id="mc3" ${s.mandatscheck_kein_krise ? "checked" : ""}><label for="mc3">Kein akuter Ueberlebensmodus (Liquiditaetskrise)?</label></div>
+      <div id="gateResult"></div>
+    </div>
+    <div class="btn-row" id="scanPhaseButtons"></div>
+  `;
+}
+
+// ── PHASE 1: SETUP & SURVEY ──
+function renderPhase1() {
+  const s = currentScan;
+  return `
+    <div class="phase-header"><span class="phase-number">Phase 1</span><span class="phase-title">Setup & Survey</span><span class="phase-time">Tag 1</span></div>
+    <div class="phase-instruction">Kundeninformationen erfassen, Survey verschicken, erste Einschaetzung vornehmen.</div>
+    <div class="scan-card">
+      <div class="scan-card-title">Grunddaten</div>
+      <div class="form-group"><label class="form-label">Anzahl Personen Organisation</label><input class="form-input" type="number" id="scanAnzahl" value="${s.anzahl_personen || ""}"></div>
+      <div class="form-group" style="margin-top:10px"><label class="form-label">Erste Beobachtungen</label><textarea class="form-input" id="scanNotizen" rows="3" placeholder="Erste Eindruecke, Kontext…">${escHtml(s.notizen)}</textarea></div>
+    </div>
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title">Survey</div>
+      <div class="btn-row"><button class="btn btn-ghost btn-sm" onclick="window.open('https://tally.so','_blank')">Tally-Survey senden ↗</button></div>
+      <div class="check-row" style="margin-top:8px"><input type="checkbox" id="surveyDone" ${s.survey_verschickt ? "checked" : ""}><label for="surveyDone">Survey verschickt ✓</label></div>
+      <div class="form-group" style="margin-top:8px"><label class="form-label">Survey-Beobachtungen</label><textarea class="form-input" id="surveyNotizen" rows="2" placeholder="Ruecklaufquote, auffaellige Antworten…">${escHtml(s.survey_notizen)}</textarea></div>
+    </div>
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title">Friction Profil — erste Einschaetzung</div>
+      ${renderAmpelGrid("survey")}
+    </div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-ghost" onclick="goToScanPhase(0)">Zurück</button>
+      <button class="btn btn-primary" onclick="savePhase1AndNext()">Weiter</button>
+    </div>
+  `;
+}
+
+// ── PHASE 2: INTERVIEWS ──
+function renderPhase2() {
+  return `
+    <div class="phase-header"><span class="phase-number">Phase 2</span><span class="phase-title">Interviews</span><span class="phase-time">Tag 2</span></div>
+    <div class="phase-instruction">3 strukturierte Interviews durchfuehren. Kernfragen stellen, Omission Bias pruefen.</div>
+    <div class="scan-card">
+      <div class="scan-card-title">Kernfragen (waehrend Interview anzeigen)</div>
+      <div class="kernfrage"><span class="kernfrage-num">Frage 1</span><br>"Was ist das teuerste ungeloeste Problem gerade — in Zeit, Energie oder Geld?"</div>
+      <div class="kernfrage"><span class="kernfrage-num">Frage 2</span><br>"Was habt ihr in 12–18 Monaten versucht — und was ist geblieben?"</div>
+      <div class="kernfrage"><span class="kernfrage-num">Frage 3</span><br>"Wenn ich deinen Kollegen frage wie er unter Druck reagiert — was wuerde er sagen?"</div>
+      <div class="kernfrage" style="border-left-color:var(--green)"><span class="kernfrage-num">Abschluss</span><br>"Was wuerde sich aendern wenn das Problem morgen weg waere?"</div>
+    </div>
+    ${renderInterviewSlot(1)}
+    ${renderInterviewSlot(2)}
+    ${renderInterviewSlot(3)}
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-ghost" onclick="goToScanPhase(1)">Zurück</button>
+      <button class="btn btn-primary" onclick="savePhase2AndNext()">Weiter</button>
+    </div>
+  `;
+}
+
+function renderInterviewSlot(num) {
+  const iv = scanInterviews[num - 1] || {};
+  return `
+    <div class="interview-card" id="interview${num}">
+      <div class="interview-header"><span class="interview-num">${num}</span><span class="interview-title">Interview ${num}</span></div>
+      <div class="interview-fields">
+        <div class="form-group"><label class="form-label">Rolle</label>
+          <select class="form-input" id="iv${num}Rolle"><option value="">— wählen —</option><option value="entscheider" ${iv.rolle==="entscheider"?"selected":""}>Entscheider</option><option value="fuehrungskraft" ${iv.rolle==="fuehrungskraft"?"selected":""}>Führungskraft</option><option value="operativ" ${iv.rolle==="operativ"?"selected":""}>Operative Person</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Datum + Uhrzeit</label><input class="form-input" type="datetime-local" id="iv${num}Datum" value="${iv.datum ? iv.datum.slice(0,16) : ""}"></div>
+      </div>
+      <div class="scan-card-title" style="margin-top:8px">Aufnahme-Status</div>
+      <div class="check-row"><input type="checkbox" id="iv${num}Remote" ${iv.audio_typ==="remote"?"checked":""}><label>Remote (Zoom)</label>
+        <input type="checkbox" id="iv${num}Physisch" ${iv.audio_typ==="physisch"?"checked":""}><label>Physisch</label></div>
+      <div class="check-row"><input type="checkbox" id="iv${num}Primaer" ${iv.primaer_aufnahme?"checked":""}><label>Primär-Aufnahme gestartet</label></div>
+      <div class="check-row"><input type="checkbox" id="iv${num}Backup" ${iv.backup_aufnahme?"checked":""}><label>Backup-Aufnahme gestartet</label></div>
+      <div class="check-row"><input type="checkbox" id="iv${num}Einwilligung" ${iv.einwilligung?"checked":""}><label>Einwilligung bestätigt</label></div>
+      <div class="form-group" style="margin-top:10px"><label class="form-label">Live-Notizen</label><textarea class="form-input" id="iv${num}Notizen" rows="3" placeholder="Beobachtungen während Interview…">${escHtml(iv.notizen)}</textarea></div>
+      <div class="scan-card-title" style="margin-top:12px">Omission Bias Check</div>
+      ${renderOmissionBias(num, iv)}
+      <div class="scan-card-title" style="margin-top:12px">Transkription</div>
+      <div class="check-row"><input type="checkbox" id="iv${num}Audio" ${iv.audio_gesichert?"checked":""}><label>Audio gesichert</label></div>
+      <div class="check-row"><input type="checkbox" id="iv${num}Whisper" ${iv.whisper_laeuft?"checked":""}><label>Whisper-Transkription läuft</label></div>
+      <div class="check-row"><input type="checkbox" id="iv${num}Vault" ${iv.transkript_vault?"checked":""}><label>Transkript im Vault</label></div>
+      <div style="margin-top:10px"><button class="btn btn-red btn-sm" onclick="togglePlanB(${num})">Kein Audio — Plan B aktivieren</button></div>
+      <div class="plan-b-panel ${iv.plan_b_aktiv?"open":""}" id="planB${num}">
+        <div class="plan-b-title">Plan B — Kein Audio</div>
+        <div class="form-group"><label class="form-label">Was war die wichtigste Aussage?</label><textarea class="form-input" id="pb${num}Aussage" rows="2">${escHtml(iv.plan_b_wichtigste_aussage)}</textarea></div>
+        <div class="form-group" style="margin-top:8px"><label class="form-label">Welcher Ton-Wechsel ist aufgefallen?</label><textarea class="form-input" id="pb${num}Ton" rows="2">${escHtml(iv.plan_b_ton_wechsel)}</textarea></div>
+        <div class="form-group" style="margin-top:8px"><label class="form-label">Was wurde NICHT gesagt?</label><textarea class="form-input" id="pb${num}Nicht" rows="2">${escHtml(iv.plan_b_nicht_gesagt)}</textarea></div>
+        <div class="form-group" style="margin-top:8px"><label class="form-label">Layer-Einschätzung (L1/L2/L3)</label><input class="form-input" id="pb${num}Layer" value="${escHtml(iv.plan_b_layer)}"></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderOmissionBias(num, iv) {
+  const bias = (iv.omission_bias_checks && iv.omission_bias_checks[0]) || {};
+  return `
+    <div class="check-row"><input type="checkbox" id="ob${num}Bio" ${bias.biologische_last?"checked":""}><label>Biologische Last ueber Systemsprache?</label></div>
+    <div class="check-row"><input type="checkbox" id="ob${num}Passiert" ${bias.systemsprache?"checked":""}><label>Person beschreibt was ihr "passiert"?</label></div>
+    <div class="check-row"><input type="checkbox" id="ob${num}Geschuetzt" ${bias.geschuetzte_kollegen?"checked":""}><label>Geschuetzte Kollegen nie als Reibungsquelle?</label></div>
+    <div class="check-row"><input type="checkbox" id="ob${num}Antrieb" ${bias.antrieb_gefragt?"checked":""}><label>Was treibt Person an — nie gefragt?</label></div>
+    <div class="check-row"><input type="checkbox" id="ob${num}Ton" ${bias.ton_wechsel?"checked":""}><label>Ton-Wechsel Timestamp markiert?</label></div>
+  `;
+}
+
+function togglePlanB(num) {
+  const panel = document.getElementById(`planB${num}`);
+  panel.classList.toggle("open");
+}
+
+// ── PHASE 3: TRIANGULATION ──
+function renderPhase3() {
+  return `
+    <div class="phase-header"><span class="phase-number">Phase 3</span><span class="phase-title">Triangulation & Analyse</span><span class="phase-time">zwischen Tag 2 und 3</span></div>
+    <div class="phase-instruction">Friction Profil aktualisieren, Denzin-Konvergenz pruefen, Hypothesen formulieren.</div>
+    <div class="scan-card">
+      <div class="scan-card-title">Friction Profil — nach Interviews + Survey</div>
+      ${renderAmpelGrid("interview")}
+    </div>
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title">Denzin-Konvergenz-Check</div>
+      <table class="denzin-table">
+        <tr><th>Layer</th><th>Survey</th><th>Interview</th><th>Konvergenz</th></tr>
+        ${renderDenzinRow("L1")}
+        ${renderDenzinRow("L2")}
+        ${renderDenzinRow("L3")}
+      </table>
+    </div>
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title">Hypothesen</div>
+      ${renderHypotheseSlot(1)}
+      ${renderHypotheseSlot(2)}
+      ${renderHypotheseSlot(3)}
+    </div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-ghost" onclick="goToScanPhase(2)">Zurück</button>
+      <button class="btn btn-primary" onclick="savePhase3AndNext()">Weiter</button>
+    </div>
+  `;
+}
+
+function renderDenzinRow(layer) {
+  return `<tr><td style="font-weight:500">${layer}</td>
+    <td>${renderStarSelect(`denzin_${layer}_survey`)}</td>
+    <td>${renderStarSelect(`denzin_${layer}_interview`)}</td>
+    <td>${renderStarSelect(`denzin_${layer}_konvergenz`)}</td></tr>`;
+}
+
+function renderStarSelect(id) {
+  return `<div class="star-select" data-stars="${id}" onclick="toggleStar(event, '${id}')">
+    <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span></div>`;
+}
+
+function toggleStar(e, id) {
+  const val = parseInt(e.target.dataset.v);
+  if (!val) return;
+  const container = document.querySelector(`[data-stars="${id}"]`);
+  container.querySelectorAll("span").forEach(s => {
+    s.classList.toggle("filled", parseInt(s.dataset.v) <= val);
+  });
+}
+
+function renderHypotheseSlot(num) {
+  const h = scanHypothesen[num - 1] || {};
+  return `
+    <div class="hyp-card">
+      <div style="font-weight:500;margin-bottom:8px">Hypothese ${num}</div>
+      <div class="hyp-fields">
+        <div class="form-group"><label class="form-label">Layer + Mechanismus</label><input class="form-input" id="hyp${num}Layer" value="${escHtml(h.layer)}" placeholder="z.B. L2 Immunity"></div>
+        <div class="form-group"><label class="form-label">Evidenz (direktes Zitat)</label><input class="form-input" id="hyp${num}Evidenz" value="${escHtml(h.evidenz_zitat)}" placeholder="Zitat aus Interview"></div>
+      </div>
+      <div class="form-group" style="margin-top:8px"><label class="form-label">Testfrage fuer Hypothesen-Spiegel</label><input class="form-input" id="hyp${num}Testfrage" value="${escHtml(h.testfrage)}" placeholder="Frage die die Hypothese testet"></div>
+    </div>
+  `;
+}
+
+// ── PHASE 4: HYPOTHESEN-SPIEGEL ──
+function renderPhase4() {
+  const s = currentScan;
+  return `
+    <div class="phase-header"><span class="phase-number">Phase 4</span><span class="phase-title">Hypothesen-Spiegel</span><span class="phase-time">Tag 3 Morgen, 30 Min</span></div>
+    <div class="phase-instruction">3 vorläufige Hypothesen praesentieren. Je 2 Saetze, Frage, schweigen, notieren.</div>
+    <div class="scan-card">
+      <div class="scan-card-title">Gesprächsstruktur</div>
+      <div class="guide-item"><em>"Ich habe drei vorläufige Hypothesen — bevor ich schreibe."</em></div>
+      <div class="guide-item">Je Hypothese: 2 Sätze → Frage → schweigen → notieren</div>
+      <div class="guide-item"><em>"Danke. Befund kommt in [X Stunden]."</em></div>
+    </div>
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title">Kunden-Reaktionen + Korrekturen</div>
+      <textarea class="form-input" id="spiegelNotizen" rows="6" placeholder="Reaktionen auf Hypothesen, Korrekturen, Ergaenzungen…">${escHtml(s.hypothesen_spiegel_notizen)}</textarea>
+    </div>
+    <div class="check-row" style="margin-top:12px"><input type="checkbox" id="spiegelDone" ${s.hypothesen_spiegel_done?"checked":""}><label for="spiegelDone">Hypothesen-Spiegel abgeschlossen ✓</label></div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-ghost" onclick="goToScanPhase(3)">Zurück</button>
+      <button class="btn btn-primary" onclick="savePhase4AndNext()">Weiter</button>
+    </div>
+  `;
+}
+
+// ── PHASE 5: BEFUND ──
+function renderPhase5() {
+  const s = currentScan;
+  return `
+    <div class="phase-header"><span class="phase-number">Phase 5</span><span class="phase-title">Befund</span><span class="phase-time">Tag 3 Nachmittag</span></div>
+    <div class="phase-instruction">Finale Ampeln setzen, Friction-Vektor bestimmen, Regime-Routing und Sofort-Massnahmen definieren.</div>
+    <div class="scan-card">
+      <div class="scan-card-title">Friction Profil — Final</div>
+      ${renderAmpelGrid("final")}
+    </div>
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title">Primaerer Friction-Vektor</div>
+      <textarea class="form-input" id="frictionVektor" rows="2" placeholder="Layer + Kurzbeschreibung">${escHtml(s.friction_vektor)}</textarea>
+    </div>
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title">Regime-Routing</div>
+      <div style="font-size:13px;color:var(--ink-mid);margin-bottom:8px">Automatischer Vorschlag basierend auf Ampeln:</div>
+      <div id="regimeRouting"><span class="regime-badge">— wird berechnet —</span></div>
+      <div style="font-size:11px;color:var(--ink-mute);margin-top:8px">
+        L1 rot → Regime 3 · L1 gelb + L2 hoch → Regime 2 · L3 dominant → Regime 1 · L3 rot + L2 Immunity → Regime 2b
+      </div>
+    </div>
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title">3 Sofort-Massnahmen</div>
+      ${renderMassnahmeSlot(1)}
+      ${renderMassnahmeSlot(2)}
+      ${renderMassnahmeSlot(3)}
+    </div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-ghost" onclick="goToScanPhase(4)">Zurück</button>
+      <button class="btn btn-primary" onclick="finishScan()">Befund abschliessen</button>
+      <button class="btn btn-ghost" disabled title="Kommt in Phase 2">Export → PowerPoint</button>
+    </div>
+  `;
+}
+
+function renderMassnahmeSlot(num) {
+  const m = scanMassnahmen[num - 1] || {};
+  return `
+    <div class="hyp-card">
+      <div style="font-weight:500;margin-bottom:8px">Massnahme ${num}</div>
+      <div class="hyp-fields">
+        <div class="form-group"><label class="form-label">Layer</label><input class="form-input" id="mn${num}Layer" value="${escHtml(m.layer)}" placeholder="L1 / L2 / L3"></div>
+        <div class="form-group"><label class="form-label">Zeitrahmen</label><input class="form-input" id="mn${num}Zeit" value="${escHtml(m.zeitrahmen)}" placeholder="z.B. 2 Wochen"></div>
+      </div>
+      <div class="form-group" style="margin-top:8px"><label class="form-label">Massnahme</label><textarea class="form-input" id="mn${num}Text" rows="2" placeholder="Konkrete Massnahme…">${escHtml(m.massnahme)}</textarea></div>
+    </div>
+  `;
+}
+
+// ── AMPEL GRID RENDERER ──
+function renderAmpelGrid(phase) {
+  let html = '<div class="ampel-grid">';
+  for (const [layer, axes] of Object.entries(AMPEL_AXES)) {
+    html += `<div class="layer-label">${layer}</div>`;
+    for (const achse of axes) {
+      const key = `${layer}_${achse}_${phase}`;
+      const current = scanAmpeln[key] || "grau";
+      html += `<div class="ampel-row"><span class="ampel-label">${escHtml(achse)}</span><div class="ampel-dots">`;
+      for (const farbe of ["gruen", "gelb", "rot"]) {
+        html += `<div class="ampel-dot ${current === farbe ? farbe : ""}" data-key="${key}" data-farbe="${farbe}" onclick="setAmpel(this)"></div>`;
+      }
+      html += `</div></div>`;
+    }
+  }
+  html += '</div>';
+  return html;
+}
+
+function setAmpel(dot) {
+  const key = dot.dataset.key;
+  const farbe = dot.dataset.farbe;
+  scanAmpeln[key] = farbe;
+  // Update UI
+  dot.parentElement.querySelectorAll(".ampel-dot").forEach(d => {
+    d.className = "ampel-dot" + (d.dataset.farbe === farbe ? " " + farbe : "");
+  });
+  // Recalculate regime if on phase 5
+  if (scanPhase === 5) calculateRegime();
+}
+
+function calculateRegime() {
+  const el = document.getElementById("regimeRouting");
+  if (!el) return;
+
+  const getVal = (layer, achse) => scanAmpeln[`${layer}_${achse}_final`] || "grau";
+  const l1Vals = AMPEL_AXES.L1.map(a => getVal("L1", a));
+  const l2Vals = AMPEL_AXES.L2.map(a => getVal("L2", a));
+  const l3Vals = AMPEL_AXES.L3.map(a => getVal("L3", a));
+
+  const hasRot = arr => arr.includes("rot");
+  const countRot = arr => arr.filter(v => v === "rot").length;
+  const hasGelb = arr => arr.includes("gelb");
+
+  let regime = "";
+  if (hasRot(l1Vals)) regime = "Regime 3 — Biologisch zuerst";
+  else if (hasGelb(l1Vals) && countRot(l2Vals) >= 2) regime = "Regime 2 — Psychologisch + Biologisch";
+  else if (hasRot(l3Vals) && l2Vals[1] === "rot") regime = "Regime 2b — Immunity durchbrechen";
+  else if (countRot(l3Vals) >= 2 || (countRot(l3Vals) >= 1 && !hasRot(l1Vals) && !hasRot(l2Vals))) regime = "Regime 1 — Strukturell";
+  else regime = "— Noch nicht bestimmbar —";
+
+  el.innerHTML = `<span class="regime-badge">${escHtml(regime)}</span>`;
+}
+
+// ── PHASE SAVE HELPERS ──
+function bindScanPhaseEvents(num) {
+  if (num === 0) {
+    const checks = ["mc1", "mc2", "mc3"];
+    const updateGate = () => {
+      const all = checks.every(id => document.getElementById(id)?.checked);
+      const $result = document.getElementById("gateResult");
+      const $btns = document.getElementById("scanPhaseButtons");
+      if (all) {
+        $result.innerHTML = '<div class="gate-result gate-ok">Scan freigegeben ✓</div>';
+        $btns.innerHTML = '<button class="btn btn-primary" onclick="savePhase0AndNext()">Weiter zu Phase 1</button>';
+      } else {
+        let reason = "";
+        if (!document.getElementById("mc1").checked) reason = "Kein Budgetmandat vorhanden.";
+        else if (!document.getElementById("mc2").checked) reason = "Organisation hat weniger als 5 Personen.";
+        else reason = "Akuter Ueberlebensmodus — Scan nicht geeignet.";
+        $result.innerHTML = `<div class="gate-result gate-fail">Scan nicht geeignet — ${escHtml(reason)}</div>`;
+        $btns.innerHTML = '';
+      }
+    };
+    checks.forEach(id => document.getElementById(id)?.addEventListener("change", updateGate));
+    updateGate();
+  }
+  if (num === 5) calculateRegime();
+}
+
+async function savePhase0AndNext() {
+  currentScan.mandatscheck_budget = document.getElementById("mc1").checked;
+  currentScan.mandatscheck_personen = document.getElementById("mc2").checked;
+  currentScan.mandatscheck_kein_krise = document.getElementById("mc3").checked;
+  currentScan.status = "setup";
+  await patchScan({ mandatscheck_budget: currentScan.mandatscheck_budget, mandatscheck_personen: currentScan.mandatscheck_personen, mandatscheck_kein_krise: currentScan.mandatscheck_kein_krise, status: "setup", current_phase: 1 });
+  goToScanPhase(1);
+}
+
+async function savePhase1AndNext() {
+  const anzahl = document.getElementById("scanAnzahl")?.value;
+  currentScan.anzahl_personen = anzahl ? parseInt(anzahl) : null;
+  currentScan.notizen = document.getElementById("scanNotizen")?.value || "";
+  currentScan.survey_verschickt = document.getElementById("surveyDone")?.checked || false;
+  currentScan.survey_notizen = document.getElementById("surveyNotizen")?.value || "";
+  currentScan.status = "interviews";
+  await patchScan({ anzahl_personen: currentScan.anzahl_personen, notizen: currentScan.notizen, survey_verschickt: currentScan.survey_verschickt, survey_notizen: currentScan.survey_notizen, status: "interviews", current_phase: 2 });
+  await saveAmpeln("survey");
+  // Create interview slots if needed
+  await ensureInterviewSlots();
+  goToScanPhase(2);
+}
+
+async function savePhase2AndNext() {
+  await saveAllInterviews();
+  currentScan.status = "triangulation";
+  await patchScan({ status: "triangulation", current_phase: 3 });
+  // Ensure hypotheses slots
+  await ensureHypothesenSlots();
+  goToScanPhase(3);
+}
+
+async function savePhase3AndNext() {
+  await saveAmpeln("interview");
+  await saveAllHypothesen();
+  currentScan.status = "spiegel";
+  await patchScan({ status: "spiegel", current_phase: 4 });
+  goToScanPhase(4);
+}
+
+async function savePhase4AndNext() {
+  currentScan.hypothesen_spiegel_notizen = document.getElementById("spiegelNotizen")?.value || "";
+  currentScan.hypothesen_spiegel_done = document.getElementById("spiegelDone")?.checked || false;
+  currentScan.status = "befund";
+  await patchScan({ hypothesen_spiegel_notizen: currentScan.hypothesen_spiegel_notizen, hypothesen_spiegel_done: currentScan.hypothesen_spiegel_done, status: "befund", current_phase: 5 });
+  // Ensure massnahmen slots
+  await ensureMassnahmenSlots();
+  goToScanPhase(5);
+}
+
+async function finishScan() {
+  await saveAmpeln("final");
+  currentScan.friction_vektor = document.getElementById("frictionVektor")?.value || "";
+  await saveAllMassnahmen();
+  currentScan.completed = true;
+  currentScan.status = "abgeschlossen";
+  await patchScan({ friction_vektor: currentScan.friction_vektor, completed: true, status: "abgeschlossen", current_phase: 5 });
+  alert("Befund abgeschlossen und gespeichert.");
+  renderScanList();
+}
+
+// ── API HELPERS ──
+async function patchScan(updates) {
+  if (!currentScan) return;
+  try { await fetch(`/api/scans/${currentScan.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updates) }); }
+  catch (e) { console.warn("Scan patch failed:", e.message); }
+}
+
+async function saveAmpeln(phase) {
+  const ampeln = [];
+  for (const [layer, axes] of Object.entries(AMPEL_AXES)) {
+    for (const achse of axes) {
+      const key = `${layer}_${achse}_${phase}`;
+      const wert = scanAmpeln[key] || "grau";
+      if (wert !== "grau") ampeln.push({ layer, achse, wert, phase });
+    }
+  }
+  if (ampeln.length === 0) return;
+  try { await fetch(`/api/scans/${currentScan.id}/ampeln`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ampeln }) }); }
+  catch (e) { console.warn("Ampeln save failed:", e.message); }
+}
+
+async function ensureInterviewSlots() {
+  try {
+    const r = await fetch(`/api/scans/${currentScan.id}/interviews`);
+    const existing = await r.json();
+    scanInterviews = [null, null, null];
+    for (const iv of existing) { if (iv.slot_nr >= 1 && iv.slot_nr <= 3) scanInterviews[iv.slot_nr - 1] = iv; }
+    for (let i = 1; i <= 3; i++) {
+      if (!scanInterviews[i - 1]) {
+        const r2 = await fetch(`/api/scans/${currentScan.id}/interviews`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slot_nr: i }) });
+        scanInterviews[i - 1] = await r2.json();
+      }
+    }
+  } catch (e) { console.warn("Interview slots:", e.message); }
+}
+
+async function saveAllInterviews() {
+  for (let i = 1; i <= 3; i++) {
+    const iv = scanInterviews[i - 1];
+    if (!iv) continue;
+    const remote = document.getElementById(`iv${i}Remote`)?.checked;
+    const physisch = document.getElementById(`iv${i}Physisch`)?.checked;
+    const updates = {
+      rolle: document.getElementById(`iv${i}Rolle`)?.value || "",
+      datum: document.getElementById(`iv${i}Datum`)?.value || null,
+      audio_typ: remote ? "remote" : physisch ? "physisch" : "",
+      primaer_aufnahme: document.getElementById(`iv${i}Primaer`)?.checked || false,
+      backup_aufnahme: document.getElementById(`iv${i}Backup`)?.checked || false,
+      einwilligung: document.getElementById(`iv${i}Einwilligung`)?.checked || false,
+      audio_gesichert: document.getElementById(`iv${i}Audio`)?.checked || false,
+      whisper_laeuft: document.getElementById(`iv${i}Whisper`)?.checked || false,
+      transkript_vault: document.getElementById(`iv${i}Vault`)?.checked || false,
+      notizen: document.getElementById(`iv${i}Notizen`)?.value || "",
+      plan_b_aktiv: document.getElementById(`planB${i}`)?.classList.contains("open") || false,
+      plan_b_wichtigste_aussage: document.getElementById(`pb${i}Aussage`)?.value || "",
+      plan_b_ton_wechsel: document.getElementById(`pb${i}Ton`)?.value || "",
+      plan_b_nicht_gesagt: document.getElementById(`pb${i}Nicht`)?.value || "",
+      plan_b_layer: document.getElementById(`pb${i}Layer`)?.value || "",
+    };
+    try { await fetch(`/api/scans/${currentScan.id}/interviews/${iv.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updates) }); }
+    catch (e) { console.warn(`Interview ${i} save:`, e.message); }
+    // Bias check
+    const bias = {
+      biologische_last: document.getElementById(`ob${i}Bio`)?.checked || false,
+      systemsprache: document.getElementById(`ob${i}Passiert`)?.checked || false,
+      geschuetzte_kollegen: document.getElementById(`ob${i}Geschuetzt`)?.checked || false,
+      antrieb_gefragt: document.getElementById(`ob${i}Antrieb`)?.checked || false,
+      ton_wechsel: document.getElementById(`ob${i}Ton`)?.checked || false,
+    };
+    try { await fetch(`/api/scans/${currentScan.id}/interviews/${iv.id}/bias`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bias) }); }
+    catch (e) { console.warn(`Bias ${i} save:`, e.message); }
   }
 }
 
-// ── INIT ──────────────────────────────────────────────────────────────────
+async function ensureHypothesenSlots() {
+  try {
+    const r = await fetch(`/api/scans/${currentScan.id}/hypothesen`);
+    const existing = await r.json();
+    scanHypothesen = [null, null, null];
+    for (const h of existing) { if (h.slot_nr >= 1 && h.slot_nr <= 3) scanHypothesen[h.slot_nr - 1] = h; }
+    for (let i = 1; i <= 3; i++) {
+      if (!scanHypothesen[i - 1]) {
+        const r2 = await fetch(`/api/scans/${currentScan.id}/hypothesen`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slot_nr: i }) });
+        scanHypothesen[i - 1] = await r2.json();
+      }
+    }
+  } catch (e) { console.warn("Hypothesen slots:", e.message); }
+}
+
+async function saveAllHypothesen() {
+  for (let i = 1; i <= 3; i++) {
+    const h = scanHypothesen[i - 1];
+    if (!h) continue;
+    const updates = {
+      layer: document.getElementById(`hyp${i}Layer`)?.value || "",
+      evidenz_zitat: document.getElementById(`hyp${i}Evidenz`)?.value || "",
+      testfrage: document.getElementById(`hyp${i}Testfrage`)?.value || "",
+    };
+    try { await fetch(`/api/scans/${currentScan.id}/hypothesen/${h.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updates) }); }
+    catch (e) { console.warn(`Hypothese ${i} save:`, e.message); }
+  }
+}
+
+async function ensureMassnahmenSlots() {
+  try {
+    const r = await fetch(`/api/scans/${currentScan.id}/massnahmen`);
+    const existing = await r.json();
+    scanMassnahmen = [null, null, null];
+    for (const m of existing) { if (m.slot_nr >= 1 && m.slot_nr <= 3) scanMassnahmen[m.slot_nr - 1] = m; }
+    for (let i = 1; i <= 3; i++) {
+      if (!scanMassnahmen[i - 1]) {
+        const r2 = await fetch(`/api/scans/${currentScan.id}/massnahmen`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slot_nr: i }) });
+        scanMassnahmen[i - 1] = await r2.json();
+      }
+    }
+  } catch (e) { console.warn("Massnahmen slots:", e.message); }
+}
+
+async function saveAllMassnahmen() {
+  for (let i = 1; i <= 3; i++) {
+    const m = scanMassnahmen[i - 1];
+    if (!m) continue;
+    const updates = {
+      layer: document.getElementById(`mn${i}Layer`)?.value || "",
+      massnahme: document.getElementById(`mn${i}Text`)?.value || "",
+      zeitrahmen: document.getElementById(`mn${i}Zeit`)?.value || "",
+    };
+    try { await fetch(`/api/scans/${currentScan.id}/massnahmen/${m.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updates) }); }
+    catch (e) { console.warn(`Massnahme ${i} save:`, e.message); }
+  }
+}
+
+async function loadScanData(scanId) {
+  // Load ampeln
+  try {
+    const r = await fetch(`/api/scans/${scanId}/ampeln`);
+    const data = await r.json();
+    scanAmpeln = {};
+    for (const a of data) scanAmpeln[`${a.layer}_${a.achse}_${a.phase}`] = a.wert;
+  } catch {}
+  // Load interviews
+  await ensureInterviewSlots();
+  // Load hypothesen
+  try {
+    const r = await fetch(`/api/scans/${scanId}/hypothesen`);
+    const data = await r.json();
+    scanHypothesen = [null, null, null];
+    for (const h of data) { if (h.slot_nr >= 1 && h.slot_nr <= 3) scanHypothesen[h.slot_nr - 1] = h; }
+  } catch {}
+  // Load massnahmen
+  try {
+    const r = await fetch(`/api/scans/${scanId}/massnahmen`);
+    const data = await r.json();
+    scanMassnahmen = [null, null, null];
+    for (const m of data) { if (m.slot_nr >= 1 && m.slot_nr <= 3) scanMassnahmen[m.slot_nr - 1] = m; }
+  } catch {}
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// ADA — AI CHAT
+// ══════════════════════════════════════════════════════════════════════════
+let adaMessages = [];
+let adaSending = false;
+
+const $adaMessages = document.getElementById("adaMessages");
+const $adaInput = document.getElementById("adaInput");
+const $adaSend = document.getElementById("adaSend");
+
+function updateAdaContext() {
+  const $ctx = document.getElementById("adaContextText");
+  if (currentScan) {
+    $ctx.textContent = `${currentScan.kunde_name} — Phase ${scanPhase} (${SCAN_PHASES[scanPhase]?.title || "?"})`;
+  } else {
+    $ctx.textContent = "Kein aktiver Scan";
+  }
+}
+
+$adaSend.addEventListener("click", sendAdaMessage);
+$adaInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendAdaMessage(); }
+});
+
+// Auto-resize input
+$adaInput.addEventListener("input", () => {
+  $adaInput.style.height = "auto";
+  $adaInput.style.height = Math.min($adaInput.scrollHeight, 120) + "px";
+});
+
+async function sendAdaMessage() {
+  const text = $adaInput.value.trim();
+  if (!text || adaSending) return;
+
+  adaSending = true;
+  $adaSend.disabled = true;
+
+  // Add user message
+  adaMessages.push({ role: "user", content: text });
+  appendAdaMsg("user", text);
+  $adaInput.value = "";
+  $adaInput.style.height = "auto";
+
+  // Show thinking
+  const thinkEl = document.createElement("div");
+  thinkEl.className = "ada-msg thinking";
+  thinkEl.textContent = "denkt…";
+  $adaMessages.appendChild(thinkEl);
+  $adaMessages.scrollTop = $adaMessages.scrollHeight;
+
+  try {
+    const scanCtx = currentScan ? {
+      kunde: currentScan.kunde_name,
+      phase: `Phase ${scanPhase} — ${SCAN_PHASES[scanPhase]?.title || "?"}`,
+      status: currentScan.status,
+    } : null;
+
+    const r = await fetch("/api/ada/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: adaMessages, scan_context: scanCtx }),
+    });
+    const data = await r.json();
+    thinkEl.remove();
+
+    if (data.error) {
+      appendAdaMsg("assistant", "Fehler: " + data.error);
+    } else {
+      adaMessages.push({ role: "assistant", content: data.content });
+      appendAdaMsg("assistant", data.content);
+    }
+  } catch (e) {
+    thinkEl.remove();
+    appendAdaMsg("assistant", "Verbindungsfehler: " + e.message);
+  }
+
+  adaSending = false;
+  $adaSend.disabled = false;
+  $adaInput.focus();
+}
+
+function appendAdaMsg(role, text) {
+  const div = document.createElement("div");
+  div.className = `ada-msg ${role}`;
+  div.textContent = text;
+  $adaMessages.appendChild(div);
+  $adaMessages.scrollTop = $adaMessages.scrollHeight;
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════════════
 async function init() {
   loadVersion();
   await loadContent();
   $contactDate.value = new Date().toISOString().slice(0, 10);
   loadContacts();
+  renderScanList();
 }
 init();
 </script>
