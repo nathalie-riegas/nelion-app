@@ -1205,8 +1205,9 @@ function switchTab(tab) {
     document.querySelector(".main").style.display = "none";
     adaFS.style.display = "flex";
     document.getElementById("btnAnker").style.display = "none";
+    initAdaListeners();
     updateAdaContext();
-    if (adaSessions.length === 0) loadAdaSessions();
+    loadAdaSessions();
     return;
   }
 
@@ -2285,13 +2286,16 @@ let adaMessages = [];
 let adaSending = false;
 let adaSessions = [];
 let currentAdaSession = null;
+let adaInitialized = false;
 
-const $adaMessages = document.getElementById("adaMessages");
-const $adaInput = document.getElementById("adaInput");
-const $adaSend = document.getElementById("adaSend");
+// Use getters so DOM refs are always fresh
+function $adaMessages() { return document.getElementById("adaMessages"); }
+function $adaInput() { return document.getElementById("adaInput"); }
+function $adaSend() { return document.getElementById("adaSend"); }
 
 function updateAdaContext() {
   const $ctx = document.getElementById("adaContextText");
+  if (!$ctx) return;
   if (currentScan) {
     $ctx.textContent = `${currentScan.kunde_name} — Phase ${scanPhase} (${SCAN_PHASES[scanPhase]?.title || "?"})`;
   } else {
@@ -2299,33 +2303,41 @@ function updateAdaContext() {
   }
 }
 
-$adaSend.addEventListener("click", sendAdaMessage);
-$adaInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendAdaMessage(); }
-});
-
-$adaInput.addEventListener("input", () => {
-  $adaInput.style.height = "auto";
-  $adaInput.style.height = Math.min($adaInput.scrollHeight, 120) + "px";
-});
+function initAdaListeners() {
+  if (adaInitialized) return;
+  adaInitialized = true;
+  const send = $adaSend();
+  const input = $adaInput();
+  if (send) send.addEventListener("click", sendAdaMessage);
+  if (input) {
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendAdaMessage(); }
+    });
+    input.addEventListener("input", () => {
+      input.style.height = "auto";
+      input.style.height = Math.min(input.scrollHeight, 120) + "px";
+    });
+  }
+}
 
 async function sendAdaMessage() {
-  const text = $adaInput.value.trim();
+  const inp = $adaInput();
+  const send = $adaSend();
+  const msgs = $adaMessages();
+  const text = inp ? inp.value.trim() : "";
   if (!text || adaSending) return;
 
   adaSending = true;
-  $adaSend.disabled = true;
+  if (send) send.disabled = true;
 
   adaMessages.push({ role: "user", content: text });
   appendAdaMsg("user", text);
-  $adaInput.value = "";
-  $adaInput.style.height = "auto";
+  if (inp) { inp.value = ""; inp.style.height = "auto"; }
 
   const thinkEl = document.createElement("div");
   thinkEl.className = "ada-msg thinking";
   thinkEl.textContent = "denkt…";
-  $adaMessages.appendChild(thinkEl);
-  $adaMessages.scrollTop = $adaMessages.scrollHeight;
+  if (msgs) { msgs.appendChild(thinkEl); msgs.scrollTop = msgs.scrollHeight; }
 
   try {
     const scanCtx = currentScan ? {
@@ -2354,14 +2366,16 @@ async function sendAdaMessage() {
   }
 
   adaSending = false;
-  $adaSend.disabled = false;
-  $adaInput.focus();
+  if (send) send.disabled = false;
+  if (inp) inp.focus();
 
   // Auto-save session
   if (currentAdaSession) saveAdaSession();
 }
 
 function appendAdaMsg(role, text) {
+  const msgs = $adaMessages();
+  if (!msgs) return;
   const div = document.createElement("div");
   div.className = `ada-msg ${role}`;
   div.textContent = text;
@@ -2379,8 +2393,8 @@ function appendAdaMsg(role, text) {
     };
     div.appendChild(btn);
   }
-  $adaMessages.appendChild(div);
-  $adaMessages.scrollTop = $adaMessages.scrollHeight;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
 }
 
 // ── ADA SESSION MANAGEMENT ────────────────────────────────────────────────
@@ -2393,11 +2407,11 @@ async function loadAdaSessions() {
     if (adaSessions.length === 0) await createAdaSession();
     else await loadAdaSession(adaSessions[0].id);
   } catch {
-    // Fallback: work without sessions (in-memory only)
     adaSessions = [];
     currentAdaSession = null;
     renderAdaSessionList();
-    $adaMessages.innerHTML = '<div class="ada-msg assistant">Hallo Nathalie. Was steht an?</div>';
+    const msgs = $adaMessages();
+    if (msgs) msgs.innerHTML = '<div class="ada-msg assistant">Hallo Nathalie. Was steht an?</div>';
   }
 }
 
@@ -2427,11 +2441,11 @@ async function createAdaSession() {
     adaSessions.unshift(session);
     currentAdaSession = session;
   } catch {
-    // Fallback: in-memory session
     currentAdaSession = { id: "local-" + Date.now(), title: "Neue Session" };
   }
   adaMessages = [];
-  $adaMessages.innerHTML = '<div class="ada-msg assistant">Hallo Nathalie. Was steht an?</div>';
+  const msgs = $adaMessages();
+  if (msgs) msgs.innerHTML = '<div class="ada-msg assistant">Hallo Nathalie. Was steht an?</div>';
   renderAdaSessionList();
 }
 
@@ -2441,25 +2455,28 @@ async function loadAdaSession(id) {
     const session = await r.json();
     currentAdaSession = session;
     adaMessages = Array.isArray(session.messages) ? session.messages : [];
-    renderAdaSessionList();
-    // Render messages
-    $adaMessages.innerHTML = "";
-    if (adaMessages.length === 0) {
-      $adaMessages.innerHTML = '<div class="ada-msg assistant">Hallo Nathalie. Was steht an?</div>';
-    } else {
-      for (const m of adaMessages) {
-        const div = document.createElement("div");
-        div.className = `ada-msg ${m.role}`;
-        div.textContent = m.content;
-        $adaMessages.appendChild(div);
-      }
+  } catch {
+    adaMessages = [];
+  }
+  renderAdaSessionList();
+  const msgs = $adaMessages();
+  if (!msgs) return;
+  msgs.innerHTML = "";
+  if (adaMessages.length === 0) {
+    msgs.innerHTML = '<div class="ada-msg assistant">Hallo Nathalie. Was steht an?</div>';
+  } else {
+    for (const m of adaMessages) {
+      const div = document.createElement("div");
+      div.className = `ada-msg ${m.role}`;
+      div.textContent = m.content;
+      msgs.appendChild(div);
     }
-    $adaMessages.scrollTop = $adaMessages.scrollHeight;
-  } catch {}
+  }
+  msgs.scrollTop = msgs.scrollHeight;
 }
 
 async function saveAdaSession() {
-  if (!currentAdaSession) return;
+  if (!currentAdaSession || String(currentAdaSession.id).startsWith("local-")) return;
   try {
     await fetch(`/api/ada/sessions/${currentAdaSession.id}`, {
       method: "PUT",
@@ -2477,7 +2494,8 @@ async function deleteAdaSession(id) {
     if (currentAdaSession && currentAdaSession.id === id) {
       currentAdaSession = null;
       adaMessages = [];
-      $adaMessages.innerHTML = '<div class="ada-msg assistant">Hallo Nathalie. Was steht an?</div>';
+      const msgs = $adaMessages();
+      if (msgs) msgs.innerHTML = '<div class="ada-msg assistant">Hallo Nathalie. Was steht an?</div>';
     }
     renderAdaSessionList();
     if (adaSessions.length > 0 && !currentAdaSession) {
