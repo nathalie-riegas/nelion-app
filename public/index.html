@@ -1173,7 +1173,7 @@
   <!-- Task Drawer -->
   <div class="task-drawer" id="taskDrawer">
     <div class="task-drawer-header">
-      <div class="task-drawer-title">Offene Tasks</div>
+      <div class="task-drawer-title">Diese Woche + Gate-kritisch</div>
       <button class="task-drawer-close" onclick="toggleTaskDrawer()">&times;</button>
     </div>
     <div class="task-drawer-list" id="taskDrawerList"></div>
@@ -2124,11 +2124,31 @@ function renderInterviewSlot(num) {
 function renderOmissionBias(num, iv) {
   const bias = (iv.omission_bias_checks && iv.omission_bias_checks[0]) || {};
   return `
-    <div class="check-row"><input type="checkbox" id="ob${num}Bio" ${bias.biologische_last?"checked":""}><label>Biologische Last über Systemsprache?</label></div>
-    <div class="check-row"><input type="checkbox" id="ob${num}Passiert" ${bias.systemsprache?"checked":""}><label>Person beschreibt was ihr "passiert"?</label></div>
-    <div class="check-row"><input type="checkbox" id="ob${num}Geschuetzt" ${bias.geschuetzte_kollegen?"checked":""}><label>Geschützte Kollegen nie als Reibungsquelle?</label></div>
-    <div class="check-row"><input type="checkbox" id="ob${num}Antrieb" ${bias.antrieb_gefragt?"checked":""}><label>Was treibt Person an — nie gefragt?</label></div>
-    <div class="check-row"><input type="checkbox" id="ob${num}Ton" ${bias.ton_wechsel?"checked":""}><label>Ton-Wechsel Timestamp markiert?</label></div>
+    <div style="margin-bottom:10px">
+      <div class="check-row"><input type="checkbox" id="ob${num}Bio" ${bias.biologische_last?"checked":""}><label><strong>F1 — Biologische Last externalisiert?</strong></label></div>
+      <div style="font-size:11px;color:var(--ink-mute);margin-left:26px">Systemsprache statt L1? z.B. "Team ist zu langsam" statt "Ich bin erschöpft"</div>
+      <div class="form-group" style="margin-left:26px;margin-top:4px"><textarea class="form-input" id="ob${num}BioText" rows="1" placeholder="Finding notieren..." style="font-size:12px"></textarea></div>
+    </div>
+    <div style="margin-bottom:10px">
+      <div class="check-row"><input type="checkbox" id="ob${num}Passiert" ${bias.systemsprache?"checked":""}><label><strong>F2 — Passiv-Rhetorik?</strong></label></div>
+      <div style="font-size:11px;color:var(--ink-mute);margin-left:26px">Entscheidungen ohne Akteur? "Es passiert" statt "Ich habe entschieden"</div>
+      <div class="form-group" style="margin-left:26px;margin-top:4px"><textarea class="form-input" id="ob${num}PassiertText" rows="1" placeholder="Timestamps + Finding..." style="font-size:12px"></textarea></div>
+    </div>
+    <div style="margin-bottom:10px">
+      <div class="check-row"><input type="checkbox" id="ob${num}Geschuetzt" ${bias.geschuetzte_kollegen?"checked":""}><label><strong>F3 — Geschützte Kollegen?</strong></label></div>
+      <div style="font-size:11px;color:var(--ink-mute);margin-left:26px">Wer wird nie kritisiert? Tonwechsel wenn Name fällt?</div>
+      <div class="form-group" style="margin-left:26px;margin-top:4px"><textarea class="form-input" id="ob${num}GeschuetztText" rows="1" placeholder="Name + Beobachtung..." style="font-size:12px"></textarea></div>
+    </div>
+    <div style="margin-bottom:10px">
+      <div class="check-row"><input type="checkbox" id="ob${num}Antrieb" ${bias.antrieb_gefragt?"checked":""}><label><strong>F4 — Antrieb unklar?</strong></label></div>
+      <div style="font-size:11px;color:var(--ink-mute);margin-left:26px">Was treibt Person an? Nie gefragt / nicht freiwillig genannt?</div>
+      <div class="form-group" style="margin-left:26px;margin-top:4px"><textarea class="form-input" id="ob${num}AntriebText" rows="1" placeholder="Hypothese..." style="font-size:12px"></textarea></div>
+    </div>
+    <div style="margin-bottom:10px">
+      <div class="check-row"><input type="checkbox" id="ob${num}Ton" ${bias.ton_wechsel?"checked":""}><label><strong>F5 — Ton-Wechsel?</strong></label></div>
+      <div style="font-size:11px;color:var(--ink-mute);margin-left:26px">Sachlich → emotional. Welche Themen lösen es aus?</div>
+      <div class="form-group" style="margin-left:26px;margin-top:4px"><textarea class="form-input" id="ob${num}TonText" rows="1" placeholder="Timestamps + Thema..." style="font-size:12px"></textarea></div>
+    </div>
   `;
 }
 
@@ -2830,19 +2850,44 @@ function toggleTranskriptUpload(num) {
   if (el) el.style.display = el.style.display === "none" ? "block" : "none";
 }
 
+function gatherObFindings(slotNum) {
+  const fields = [
+    { id: `ob${slotNum}Bio`, textId: `ob${slotNum}BioText`, label: "F1 Biologische Last externalisiert" },
+    { id: `ob${slotNum}Passiert`, textId: `ob${slotNum}PassiertText`, label: "F2 Passiv-Rhetorik" },
+    { id: `ob${slotNum}Geschuetzt`, textId: `ob${slotNum}GeschuetztText`, label: "F3 Geschützte Kollegen" },
+    { id: `ob${slotNum}Antrieb`, textId: `ob${slotNum}AntriebText`, label: "F4 Antrieb unklar" },
+    { id: `ob${slotNum}Ton`, textId: `ob${slotNum}TonText`, label: "F5 Ton-Wechsel" },
+  ];
+  let findings = "";
+  for (const f of fields) {
+    const checked = document.getElementById(f.id)?.checked;
+    const text = document.getElementById(f.textId)?.value?.trim() || "";
+    findings += `${f.label}: ${checked ? "JA" : "NEIN"}${text ? " — " + text : ""}\n`;
+  }
+  return findings;
+}
+
 async function analyseTranskript(slotNum) {
   const text = document.getElementById(`transkriptText${slotNum}`)?.value?.trim();
   if (!text) { alert("Bitte Transkript-Text einfügen."); return; }
 
+  const obFindings = gatherObFindings(slotNum);
+  const rolle = document.getElementById(`iv${slotNum}Rolle`)?.value || "unbekannt";
+
   const resultEl = document.getElementById(`transkriptResult${slotNum}`);
-  if (resultEl) resultEl.innerHTML = '<div class="ada-msg thinking" style="font-size:13px">ADA analysiert Transkript...</div>';
+  if (resultEl) resultEl.innerHTML = '<div class="ada-msg thinking" style="font-size:13px">ADA analysiert Transkript mit OB-Findings...</div>';
+
+  const fullPrompt = TRANSKRIPT_ANALYSE_PROMPT +
+    `\n\n---\n\nInterview [${rolle}]:\n${text}` +
+    `\n\n---\n\nOB-Findings [${rolle}]:\n${obFindings}` +
+    `\n\nZusätzlich analysiere:\n- Welche biologische Last ist NICHT benannt worden?\n- Welche Machtdynamiken sind versteckt?\n- Welche Beziehungs-Trigger sind echte Friction-Punkte?`;
 
   try {
     const r = await fetch("/api/ada/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        messages: [{ role: "user", content: TRANSKRIPT_ANALYSE_PROMPT + "\n\n---\n\nTRANSKRIPT:\n" + text }],
+        messages: [{ role: "user", content: fullPrompt }],
         scan_context: currentScan ? { kunde: currentScan.kunde_name, phase: "Phase 2 — Interviews", status: currentScan.status } : null,
       }),
     });
@@ -3133,8 +3178,20 @@ function toggleTaskDrawer() {
 async function loadTasks() {
   try {
     const r = await fetch("/api/tasks?status=offen");
-    taskList = await r.json();
-    if (!Array.isArray(taskList)) taskList = [];
+    let all = await r.json();
+    if (!Array.isArray(all)) all = [];
+    // Filter: Prio 1, OR gate_bezug with deadline < 30 days, OR ADA-Vorschlag nicht abgesegnet
+    const now = new Date();
+    taskList = all.filter(t => {
+      if (t.prioritaet === 1) return true;
+      if (t.gate_bezug && t.deadline) {
+        const dl = new Date(t.deadline);
+        const days = (dl - now) / (1000 * 60 * 60 * 24);
+        if (days < 30) return true;
+      }
+      if (t.ada_vorschlag && !t.nathalie_approved) return true;
+      return false;
+    });
     renderTaskDrawer();
   } catch { taskList = []; }
 }

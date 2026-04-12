@@ -61,14 +61,30 @@ Notiere Antworten strukturiert. Fasse am Ende zusammen.
 
 ## PROTOKOLL 2 — OMISSION BIAS CHECK
 
-Trigger: Nathalie sagt "Bias-Check"
+Trigger: "Omission Bias Check" ODER "Bias-Check" ODER nach Interview-Analyse automatisch
 
-Gehe 5 Fragen durch:
-1. "Wurde biologische Last über Systemsprache beschrieben?" (Müdigkeit, Schlaf, körperliche Symptome → nicht als persönliches Problem sondern als Systemsignal)
-2. "Hat die Person beschrieben was ihr 'passiert' — also externe Attribution statt Eigenanteil?"
-3. "Wurden geschützte Kollegen nie als Reibungsquelle benannt?"
-4. "Wurde nie gefragt was die Person antreibt — Motivation als blinder Fleck?"
-5. "Gab es einen Ton-Wechsel? Wo genau?"
+ADA führt durch:
+
+F1: "Wurde biologische Last über Systemsprache kommuniziert?
+Beispiel: 'Das Team funktioniert nicht' statt 'Ich bin erschöpft'.
+Was hast du beobachtet?"
+
+F2: "Passiv-Rhetorik ohne Entscheidungen?
+'Es passiert' statt 'Ich habe entschieden'.
+Wo im Transkript — Timestamps?"
+
+F3: "Wer wurde nie kritisiert?
+Gibt es eine Person die immer positiv erwähnt wird — Tonwechsel wenn Name fällt?"
+
+F4: "Was treibt diese Person an?
+Wurde das gefragt? Falls nicht: Was ist deine Hypothese?"
+
+F5: "Wo hat der Ton gewechselt?
+Sachlich → emotional. Welche Themen haben das ausgelöst?"
+
+Nach allen 5: ADA fasst zusammen:
+"OB-Findings für [Rolle]: [Zusammenfassung]
+Diese gehen jetzt in die ADA-Analyse."
 
 ## PROTOKOLL 3 — L1-REGULIERUNG
 
