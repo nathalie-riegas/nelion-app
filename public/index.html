@@ -562,21 +562,328 @@
     .anker-card { padding: 28px 20px; }
     .btn-anker { bottom: 16px; right: 16px; width: 46px; height: 46px; font-size: 10px; }
   }
+
+  /* ── DATETIME DISPLAY ──────────────────────────────────────────────── */
+  .datetime-display {
+    font-family: var(--mono); color: var(--ink-dim); font-size: 12px;
+  }
+  .datetime-display.large {
+    font-size: 15px; color: var(--ink-mid); font-weight: 500;
+  }
+  .datetime-top-right {
+    position: absolute; top: 12px; right: 0;
+    font-family: var(--mono); font-size: 11px; color: var(--ink-mute);
+  }
+
+  /* ── LANDING PAGE ──────────────────────────────────────────────────── */
+  .landing-page {
+    max-width: 700px; width: 100%; padding: 0;
+  }
+  .landing-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 32px;
+  }
+  .landing-header-left { display: flex; align-items: center; gap: 10px; }
+  .landing-greeting {
+    font-size: 28px; font-weight: 300; color: var(--ink);
+    margin-bottom: 4px; line-height: 1.3;
+  }
+  .landing-datetime {
+    font-family: var(--mono); font-size: 14px; color: var(--ink-dim);
+    margin-bottom: 32px;
+  }
+  .landing-section {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 20px; margin-bottom: 16px;
+  }
+  .landing-section-title {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-mute); margin-bottom: 12px;
+  }
+  .landing-scan-name {
+    font-size: 16px; font-weight: 500; color: var(--ink); margin-bottom: 4px;
+  }
+  .landing-scan-phase {
+    font-size: 13px; color: var(--ink-dim);
+  }
+  .landing-scan-empty {
+    font-size: 14px; color: var(--ink-mute); font-style: italic;
+  }
+  .landing-tasks-toggle {
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; user-select: none;
+  }
+  .landing-tasks-toggle:hover { opacity: 0.8; }
+  .landing-tasks-count {
+    font-size: 15px; color: var(--ink); font-weight: 500;
+  }
+  .landing-tasks-arrow {
+    font-size: 16px; color: var(--ink-mute); transition: transform .2s;
+  }
+  .landing-tasks-arrow.open { transform: rotate(180deg); }
+  .landing-tasks-list {
+    display: none; margin-top: 12px; border-top: 1px solid var(--border);
+    padding-top: 12px;
+  }
+  .landing-tasks-list.open { display: block; }
+  .landing-task-item {
+    display: flex; align-items: center; gap: 10px; padding: 6px 0;
+    font-size: 14px; color: var(--ink);
+  }
+  .landing-task-prio {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .landing-task-prio.p1 { background: var(--red); }
+  .landing-task-prio.p2 { background: var(--yellow); }
+  .landing-task-prio.p3 { background: #3498db; }
+
+  /* ── GATES ────────────────────────────────────────────────────────── */
+  .landing-gates {
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .gate-row {
+    display: flex; align-items: center; gap: 12px; font-size: 14px;
+  }
+  .gate-dot {
+    width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
+  }
+  .gate-dot.g1 { background: var(--red); }
+  .gate-dot.g2 { background: var(--yellow); }
+  .gate-dot.g3 { background: #3498db; }
+  .gate-label { font-weight: 500; color: var(--ink); min-width: 60px; }
+  .gate-days {
+    font-family: var(--mono); font-size: 13px; color: var(--ink-mid);
+    background: var(--surface2); padding: 2px 8px; border-radius: 4px;
+  }
+  .gate-desc { font-size: 12px; color: var(--ink-mute); }
+
+  .landing-buttons {
+    display: flex; gap: 10px; margin-top: 24px; flex-wrap: wrap;
+  }
+  .landing-btn {
+    flex: 1; min-width: 160px; padding: 14px 20px; border: 1px solid var(--border2);
+    border-radius: var(--r); background: var(--surface); color: var(--ink);
+    font-family: var(--sans); font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: all .15s; text-align: center;
+  }
+  .landing-btn:hover { background: var(--surface2); border-color: var(--accent); }
+  .landing-btn.primary {
+    background: var(--accent); color: #fff; border-color: var(--accent);
+  }
+  .landing-btn.primary:hover { background: var(--accent-h); }
+  .landing-btn.ada {
+    background: var(--ada-accent); color: #fff; border-color: var(--ada-accent);
+  }
+  .landing-btn.ada:hover { background: var(--ada-accent-h); }
+
+  /* ── ADA FULLSCREEN ────────────────────────────────────────────────── */
+  .ada-fullscreen {
+    display: flex; height: 100dvh; width: 100vw;
+    position: fixed; top: 0; left: 0; z-index: 1000;
+    background: var(--bg);
+  }
+  .ada-sidebar {
+    width: 260px; background: #1a1a1a; color: #fff;
+    display: flex; flex-direction: column; flex-shrink: 0;
+    border-right: 1px solid rgba(255,255,255,0.08);
+  }
+  .ada-sidebar-header {
+    padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .ada-back-btn {
+    font-family: var(--mono); font-size: 12px; color: rgba(255,255,255,0.6);
+    background: none; border: none; cursor: pointer; padding: 4px 0;
+    transition: color .15s; letter-spacing: 0.05em;
+  }
+  .ada-back-btn:hover { color: #fff; }
+  .ada-new-session-btn {
+    width: 100%; margin-top: 12px; padding: 10px 16px;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: var(--rs); color: #fff; font-family: var(--sans);
+    font-size: 13px; cursor: pointer; transition: background .15s;
+  }
+  .ada-new-session-btn:hover { background: rgba(255,255,255,0.14); }
+  .ada-session-list {
+    flex: 1; overflow-y: auto; padding: 8px 0;
+  }
+  .ada-session-item {
+    padding: 10px 20px; cursor: pointer; font-size: 13px;
+    color: rgba(255,255,255,0.7); transition: all .15s;
+    display: flex; align-items: center; justify-content: space-between;
+    border-left: 3px solid transparent;
+  }
+  .ada-session-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+  .ada-session-item.active {
+    background: rgba(75,0,130,0.3); color: #fff;
+    border-left-color: var(--ada-accent);
+  }
+  .ada-session-title {
+    flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .ada-session-delete {
+    opacity: 0; background: none; border: none; color: rgba(255,255,255,0.4);
+    cursor: pointer; font-size: 14px; padding: 2px 6px; transition: all .15s;
+  }
+  .ada-session-item:hover .ada-session-delete { opacity: 1; }
+  .ada-session-delete:hover { color: var(--red-h); }
+
+  .ada-chat-panel {
+    flex: 1; display: flex; flex-direction: column; min-width: 0;
+  }
+  .ada-chat-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 24px; background: var(--ada-accent); color: #fff;
+    font-family: var(--mono); font-size: 12px; flex-shrink: 0;
+  }
+  .ada-chat-topbar-left { display: flex; align-items: center; gap: 12px; }
+  .ada-chat-topbar-right { display: flex; align-items: center; gap: 16px; }
+  .ada-chat-datetime {
+    font-size: 11px; color: rgba(255,255,255,0.5);
+  }
+  .ada-task-toggle {
+    background: rgba(255,255,255,0.15); border: none; color: #fff;
+    border-radius: var(--rs); padding: 6px 10px; cursor: pointer;
+    font-size: 13px; transition: background .15s;
+  }
+  .ada-task-toggle:hover { background: rgba(255,255,255,0.25); }
+  .ada-chat-body {
+    flex: 1; display: flex; flex-direction: column; padding: 20px 24px;
+    min-height: 0;
+  }
+  .ada-chat-messages {
+    flex: 1; overflow-y: auto; display: flex; flex-direction: column;
+    gap: 12px; padding-bottom: 12px; min-height: 0;
+  }
+  .ada-chat-input-row {
+    display: flex; gap: 8px; padding-top: 12px; border-top: 1px solid var(--border);
+  }
+  .ada-chat-input {
+    flex: 1; background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--r); font-family: var(--sans); font-size: 14px;
+    color: var(--ink); padding: 10px 14px; outline: none; resize: none;
+    min-height: 44px; max-height: 120px; transition: border-color .15s;
+  }
+  .ada-chat-input:focus { border-color: var(--ada-accent); }
+  .ada-chat-input::placeholder { color: var(--ink-mute); }
+  .ada-chat-send {
+    background: var(--ada-accent); border: none; color: #fff;
+    border-radius: var(--r); padding: 10px 18px; font-family: var(--sans);
+    font-size: 14px; font-weight: 500; cursor: pointer;
+    transition: background .15s; align-self: flex-end;
+  }
+  .ada-chat-send:hover { background: var(--ada-accent-h); }
+  .ada-chat-send:disabled { opacity: .4; cursor: not-allowed; }
+
+  /* ── TASK DRAWER ───────────────────────────────────────────────────── */
+  .task-drawer {
+    width: 0; overflow: hidden; background: var(--surface);
+    border-left: 1px solid var(--border); transition: width .25s ease;
+    display: flex; flex-direction: column; flex-shrink: 0;
+  }
+  .task-drawer.open { width: 320px; }
+  .task-drawer-header {
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .task-drawer-title {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--ink-dim);
+  }
+  .task-drawer-close {
+    background: none; border: none; cursor: pointer; color: var(--ink-mute);
+    font-size: 16px; padding: 4px;
+  }
+  .task-drawer-close:hover { color: var(--ink); }
+  .task-drawer-list {
+    flex: 1; overflow-y: auto; padding: 12px 20px;
+  }
+  .task-drawer-item {
+    display: flex; align-items: flex-start; gap: 10px; padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .task-drawer-item:last-child { border-bottom: none; }
+  .task-checkbox {
+    margin-top: 2px; width: 16px; height: 16px; cursor: pointer;
+    accent-color: var(--ada-accent);
+  }
+  .task-drawer-content { flex: 1; min-width: 0; }
+  .task-drawer-item-title {
+    font-size: 13px; color: var(--ink); line-height: 1.4;
+  }
+  .task-drawer-badges {
+    display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap;
+  }
+  .task-badge {
+    font-family: var(--mono); font-size: 9px; padding: 2px 6px;
+    border-radius: 3px; letter-spacing: 0.03em;
+  }
+  .task-badge.prio1 { background: var(--red-bg); color: var(--red); }
+  .task-badge.prio2 { background: var(--yellow-bg); color: var(--yellow); }
+  .task-badge.prio3 { background: #e8f0fe; color: #3498db; }
+  .task-badge.gate { background: var(--surface2); color: var(--ink-dim); }
+  .task-badge.ada-badge { background: var(--ada-bg); color: var(--ada-accent); }
+  .task-badge.approve {
+    background: var(--ada-accent); color: #fff; cursor: pointer;
+  }
+  .task-badge.approve:hover { background: var(--ada-accent-h); }
+  .task-drawer-add {
+    padding: 12px 20px; border-top: 1px solid var(--border); flex-shrink: 0;
+  }
+  .task-drawer-add-row {
+    display: flex; gap: 6px;
+  }
+  .task-drawer-add-input {
+    flex: 1; border: 1px solid var(--border2); border-radius: var(--rs);
+    padding: 8px 10px; font-family: var(--sans); font-size: 13px;
+    outline: none; color: var(--ink);
+  }
+  .task-drawer-add-input:focus { border-color: var(--ada-accent); }
+  .task-drawer-add-btn {
+    background: var(--ada-accent); color: #fff; border: none;
+    border-radius: var(--rs); padding: 8px 12px; font-size: 13px;
+    cursor: pointer; transition: background .15s;
+  }
+  .task-drawer-add-btn:hover { background: var(--ada-accent-h); }
+
+  /* ── ADA TASK SUGGEST BUTTON ───────────────────────────────────────── */
+  .ada-task-suggest-btn {
+    display: inline-block; margin-top: 8px; padding: 4px 12px;
+    background: var(--ada-bg); border: 1px solid rgba(75,0,130,0.3);
+    border-radius: var(--rs); font-size: 12px; color: var(--ada-accent);
+    cursor: pointer; font-family: var(--sans); transition: all .15s;
+  }
+  .ada-task-suggest-btn:hover {
+    background: var(--ada-accent); color: #fff;
+  }
+
+  @media (max-width: 768px) {
+    .ada-sidebar { width: 200px; }
+    .task-drawer.open { width: 260px; }
+    .landing-buttons { flex-direction: column; }
+    .landing-btn { min-width: 0; }
+  }
+  @media (max-width: 600px) {
+    .ada-sidebar { display: none; }
+    .task-drawer.open { width: 100%; position: absolute; right: 0; top: 0; height: 100%; z-index: 10; }
+    .landing-greeting { font-size: 22px; }
+  }
 </style>
 </head>
 <body>
 
-<header>
+<header id="appHeader">
   <div class="header-left">
-    <div class="logo-mark">N</div>
+    <div class="logo-mark" onclick="switchTab('landing')">N</div>
     <div class="logo-text">NELION</div>
     <span class="logo-sub" id="logoSub">Cockpit</span>
   </div>
+  <div class="datetime-display" id="headerDateTime"></div>
 </header>
 
 <!-- ── TAB NAVIGATION ──────────────────────────────────────────────────── -->
-<nav class="tab-nav">
-  <button class="tab-btn active" data-tab="modul1" onclick="switchTab('modul1')">Erstgespräch</button>
+<nav class="tab-nav" id="appTabNav">
+  <button class="tab-btn" data-tab="modul1" onclick="switchTab('modul1')">Erstgespräch</button>
   <button class="tab-btn" data-tab="modul2" onclick="switchTab('modul2')">Friction Scan</button>
   <button class="tab-btn" data-tab="ada" onclick="switchTab('ada')">ADA</button>
 </nav>
@@ -585,11 +892,55 @@
 <div class="container">
 
 <!-- ╔═══════════════════════════════════════════════════════════════════════╗ -->
+<!-- ║  LANDING PAGE                                                       ║ -->
+<!-- ╚═══════════════════════════════════════════════════════════════════════╝ -->
+<div class="module active" id="moduleLanding">
+  <div class="landing-page">
+
+    <div class="landing-greeting" id="landingGreeting">Guten Tag, Nathalie.</div>
+    <div class="landing-datetime datetime-display large" id="landingDateTime"></div>
+
+    <div class="landing-section" style="margin-top:28px;">
+      <div class="landing-section-title">Aktiver Scan</div>
+      <div id="landingActiveScan">
+        <div class="landing-scan-empty">Kein aktiver Scan — Erstgespräch starten?</div>
+      </div>
+    </div>
+
+    <div class="landing-section">
+      <div class="landing-tasks-toggle" onclick="toggleLandingTasks()">
+        <div>
+          <div class="landing-section-title" style="margin-bottom:0;">Heute</div>
+          <div class="landing-tasks-count" id="landingTasksCount">0 offene Tasks</div>
+        </div>
+        <div class="landing-tasks-arrow" id="landingTasksArrow">&#9660;</div>
+      </div>
+      <div class="landing-tasks-list" id="landingTasksList"></div>
+    </div>
+
+    <div class="landing-section">
+      <div class="landing-section-title">Gates</div>
+      <div class="landing-gates" id="landingGates"></div>
+    </div>
+
+    <div class="landing-buttons">
+      <button class="landing-btn" onclick="switchTab('modul1')">Erstgespräch starten</button>
+      <button class="landing-btn" onclick="switchTab('modul2')">Friction Scan</button>
+      <button class="landing-btn ada" onclick="switchTab('ada')">ADA öffnen</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ╔═══════════════════════════════════════════════════════════════════════╗ -->
 <!-- ║  MODUL 1 — ERSTGESPRÄCH                                             ║ -->
 <!-- ╚═══════════════════════════════════════════════════════════════════════╝ -->
-<div class="module active" id="moduleModul1">
+<div class="module" id="moduleModul1">
 
 <div class="screen active" id="screenStart">
+  <div style="position:relative;">
+    <div class="datetime-top-right datetime-display" id="modul1DateTime"></div>
+  </div>
   <div class="start-title">Erstgespräch starten</div>
   <div class="start-desc">Kontakt anlegen oder bestehenden wählen.</div>
   <div class="form-group">
@@ -643,23 +994,59 @@
 <!-- ║  MODUL 2 — FRICTION SCAN                                            ║ -->
 <!-- ╚═══════════════════════════════════════════════════════════════════════╝ -->
 <div class="module" id="moduleModul2">
+  <div style="position:relative;">
+    <div class="datetime-top-right datetime-display" id="modul2DateTime"></div>
+  </div>
   <div id="scanContent"></div>
 </div>
 
 <!-- ╔═══════════════════════════════════════════════════════════════════════╗ -->
-<!-- ║  ADA — AI ASSISTANT                                                 ║ -->
+<!-- ║  ADA — AI ASSISTANT (Fullscreen)                                    ║ -->
 <!-- ╚═══════════════════════════════════════════════════════════════════════╝ -->
-<div class="module" id="moduleAda">
-  <div class="ada-container">
-    <div class="ada-context-bar" id="adaContextBar">
-      <span>ADA</span> — <span id="adaContextText">Kein aktiver Scan</span>
+<div class="ada-fullscreen" id="adaFullscreen" style="display:none;">
+  <!-- Sidebar -->
+  <div class="ada-sidebar">
+    <div class="ada-sidebar-header">
+      <button class="ada-back-btn" onclick="switchTab('landing')">&larr; NELION</button>
+      <button class="ada-new-session-btn" onclick="createAdaSession()">+ Neue Session</button>
     </div>
-    <div class="ada-messages" id="adaMessages">
-      <div class="ada-msg assistant">Hallo Nathalie. Was steht an?</div>
+    <div class="ada-session-list" id="adaSessionList"></div>
+  </div>
+
+  <!-- Chat Panel -->
+  <div class="ada-chat-panel">
+    <div class="ada-chat-topbar">
+      <div class="ada-chat-topbar-left">
+        <span>ADA</span> — <span id="adaContextText">Kein aktiver Scan</span>
+      </div>
+      <div class="ada-chat-topbar-right">
+        <span class="ada-chat-datetime datetime-display" id="adaDateTime"></span>
+        <button class="ada-task-toggle" onclick="toggleTaskDrawer()" title="Tasks">&#9776; Tasks</button>
+      </div>
     </div>
-    <div class="ada-input-row">
-      <textarea class="ada-input" id="adaInput" placeholder="Nachricht an ADA…" rows="1"></textarea>
-      <button class="ada-send" id="adaSend">Senden</button>
+    <div class="ada-chat-body">
+      <div class="ada-chat-messages" id="adaMessages">
+        <div class="ada-msg assistant">Hallo Nathalie. Was steht an?</div>
+      </div>
+      <div class="ada-chat-input-row">
+        <textarea class="ada-chat-input" id="adaInput" placeholder="Nachricht an ADA…" rows="1"></textarea>
+        <button class="ada-chat-send" id="adaSend">Senden</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task Drawer -->
+  <div class="task-drawer" id="taskDrawer">
+    <div class="task-drawer-header">
+      <div class="task-drawer-title">Offene Tasks</div>
+      <button class="task-drawer-close" onclick="toggleTaskDrawer()">&times;</button>
+    </div>
+    <div class="task-drawer-list" id="taskDrawerList"></div>
+    <div class="task-drawer-add">
+      <div class="task-drawer-add-row">
+        <input class="task-drawer-add-input" id="taskAddInput" placeholder="+ Task hinzufügen" onkeydown="if(event.key==='Enter'){addTaskFromDrawer();}">
+        <button class="task-drawer-add-btn" onclick="addTaskFromDrawer()">+</button>
+      </div>
     </div>
   </div>
 </div>
@@ -682,22 +1069,172 @@
 // ══════════════════════════════════════════════════════════════════════════
 // SHARED STATE + HELPERS
 // ══════════════════════════════════════════════════════════════════════════
-let activeTab = "modul1";
+let activeTab = "landing";
 
+// ── DATETIME HELPER ──────────────────────────────────────────────────────
+const DE_DAYS = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+const DE_MONTHS = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+
+function formatDateTime(now) {
+  if (!now) now = new Date();
+  const day = DE_DAYS[now.getDay()];
+  const d = now.getDate();
+  const month = DE_MONTHS[now.getMonth()];
+  const year = now.getFullYear();
+  const h = String(now.getHours()).padStart(2, "0");
+  const m = String(now.getMinutes()).padStart(2, "0");
+  return `${day}, ${d}. ${month} ${year} — ${h}:${m}`;
+}
+
+function updateAllDateTimes() {
+  const dt = formatDateTime();
+  const ids = ["headerDateTime", "landingDateTime", "modul1DateTime", "modul2DateTime", "adaDateTime"];
+  for (const id of ids) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = dt;
+  }
+}
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Guten Morgen";
+  if (h < 18) return "Guten Nachmittag";
+  return "Guten Abend";
+}
+
+// ── GATES ─────────────────────────────────────────────────────────────────
+const GATES = [
+  { nr: 1, date: new Date(2026, 5, 30), label: "Gate 1", desc: "Ende Juni 2026: 1 bezahlter Scan", css: "g1" },
+  { nr: 2, date: new Date(2026, 8, 30), label: "Gate 2", desc: "Ende September 2026: 3 Scans", css: "g2" },
+  { nr: 3, date: new Date(2027, 2, 31), label: "Gate 3", desc: "Ende März 2027: CHF 3'000/Monat", css: "g3" },
+];
+
+function daysUntil(target) {
+  const now = new Date();
+  const diff = target.getTime() - now.getTime();
+  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+}
+
+function renderGates() {
+  const el = document.getElementById("landingGates");
+  if (!el) return;
+  el.innerHTML = GATES.map(g => {
+    const days = daysUntil(g.date);
+    const emoji = g.nr === 1 ? "🔴" : g.nr === 2 ? "🟡" : "🔵";
+    return `<div class="gate-row">
+      <span class="gate-dot ${g.css}"></span>
+      <span class="gate-label">${g.label}</span>
+      <span class="gate-days">${days} Tage</span>
+      <span class="gate-desc">${g.desc}</span>
+    </div>`;
+  }).join("");
+}
+
+// ── LANDING PAGE ──────────────────────────────────────────────────────────
+async function renderLanding() {
+  // Greeting
+  const greetEl = document.getElementById("landingGreeting");
+  if (greetEl) greetEl.textContent = `${getGreeting()}, Nathalie.`;
+
+  // DateTime
+  updateAllDateTimes();
+
+  // Gates
+  renderGates();
+
+  // Active Scan
+  try {
+    const r = await fetch("/api/scans");
+    const scans = await r.json();
+    const active = Array.isArray(scans) ? scans.find(s => !s.completed) : null;
+    const el = document.getElementById("landingActiveScan");
+    if (el) {
+      if (active) {
+        const phaseName = SCAN_PHASES[active.current_phase]?.title || "?";
+        el.innerHTML = `<div class="landing-scan-name">${escHtml(active.kunde_name)} — Phase ${active.current_phase}</div>
+          <div class="landing-scan-phase">${escHtml(phaseName)}</div>`;
+      } else {
+        el.innerHTML = `<div class="landing-scan-empty">Kein aktiver Scan — Erstgespräch starten?</div>`;
+      }
+    }
+  } catch {}
+
+  // Tasks
+  await renderLandingTasks();
+}
+
+async function renderLandingTasks() {
+  try {
+    const r = await fetch("/api/tasks?status=offen");
+    const tasks = await r.json();
+    const countEl = document.getElementById("landingTasksCount");
+    const listEl = document.getElementById("landingTasksList");
+    if (!Array.isArray(tasks)) return;
+    if (countEl) countEl.textContent = `${tasks.length} offene Tasks`;
+    if (listEl) {
+      if (tasks.length === 0) {
+        listEl.innerHTML = `<div style="font-size:13px;color:var(--ink-mute);">Keine offenen Tasks.</div>`;
+      } else {
+        listEl.innerHTML = tasks.map(t => `<div class="landing-task-item">
+          <div class="landing-task-prio p${t.prioritaet}"></div>
+          <span>${escHtml(t.titel)}</span>
+        </div>`).join("");
+      }
+    }
+  } catch {}
+}
+
+function toggleLandingTasks() {
+  const list = document.getElementById("landingTasksList");
+  const arrow = document.getElementById("landingTasksArrow");
+  if (list) list.classList.toggle("open");
+  if (arrow) arrow.classList.toggle("open");
+}
+
+// ── SWITCH TAB ────────────────────────────────────────────────────────────
 function switchTab(tab) {
   activeTab = tab;
+  const header = document.getElementById("appHeader");
+  const tabNav = document.getElementById("appTabNav");
+  const adaFS = document.getElementById("adaFullscreen");
+
+  // ADA fullscreen: hide header/tabs, show fullscreen
+  if (tab === "ada") {
+    header.style.display = "none";
+    tabNav.style.display = "none";
+    document.querySelector(".main").style.display = "none";
+    adaFS.style.display = "flex";
+    document.getElementById("btnAnker").style.display = "none";
+    updateAdaContext();
+    if (adaSessions.length === 0) loadAdaSessions();
+    return;
+  }
+
+  // Leaving ADA: restore header/tabs
+  header.style.display = "";
+  tabNav.style.display = "";
+  document.querySelector(".main").style.display = "";
+  adaFS.style.display = "none";
+
+  // Tab buttons
   document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+  // Modules
   document.querySelectorAll(".module").forEach(m => m.classList.remove("active"));
-  const modId = tab === "modul1" ? "moduleModul1" : tab === "modul2" ? "moduleModul2" : "moduleAda";
-  document.getElementById(modId).classList.add("active");
+
+  if (tab === "landing") {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.getElementById("moduleLanding").classList.add("active");
+    renderLanding();
+  } else if (tab === "modul1") {
+    document.getElementById("moduleModul1").classList.add("active");
+  } else if (tab === "modul2") {
+    document.getElementById("moduleModul2").classList.add("active");
+  }
 
   // Anker visible in cockpit screens
   const showAnker = (tab === "modul1" && document.getElementById("screenCockpit").classList.contains("active"))
     || (tab === "modul2" && currentScan);
   document.getElementById("btnAnker").style.display = showAnker ? "flex" : "none";
-
-  // Update ADA context when switching to ADA
-  if (tab === "ada") updateAdaContext();
 }
 
 function escHtml(s) { return (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
@@ -1742,10 +2279,12 @@ async function loadScanData(scanId) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════
-// ADA — AI CHAT
+// ADA — AI CHAT WITH SESSION MANAGEMENT
 // ══════════════════════════════════════════════════════════════════════════
 let adaMessages = [];
 let adaSending = false;
+let adaSessions = [];
+let currentAdaSession = null;
 
 const $adaMessages = document.getElementById("adaMessages");
 const $adaInput = document.getElementById("adaInput");
@@ -1765,7 +2304,6 @@ $adaInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendAdaMessage(); }
 });
 
-// Auto-resize input
 $adaInput.addEventListener("input", () => {
   $adaInput.style.height = "auto";
   $adaInput.style.height = Math.min($adaInput.scrollHeight, 120) + "px";
@@ -1778,13 +2316,11 @@ async function sendAdaMessage() {
   adaSending = true;
   $adaSend.disabled = true;
 
-  // Add user message
   adaMessages.push({ role: "user", content: text });
   appendAdaMsg("user", text);
   $adaInput.value = "";
   $adaInput.style.height = "auto";
 
-  // Show thinking
   const thinkEl = document.createElement("div");
   thinkEl.className = "ada-msg thinking";
   thinkEl.textContent = "denkt…";
@@ -1820,14 +2356,251 @@ async function sendAdaMessage() {
   adaSending = false;
   $adaSend.disabled = false;
   $adaInput.focus();
+
+  // Auto-save session
+  if (currentAdaSession) saveAdaSession();
 }
 
 function appendAdaMsg(role, text) {
   const div = document.createElement("div");
   div.className = `ada-msg ${role}`;
   div.textContent = text;
+  // Add "Als Task speichern" button for assistant messages
+  if (role === "assistant") {
+    const btn = document.createElement("button");
+    btn.className = "ada-task-suggest-btn";
+    btn.textContent = "Als Task speichern";
+    btn.onclick = () => {
+      const title = text.length > 80 ? text.substring(0, 80) + "…" : text;
+      saveAdaTaskSuggestion(title);
+      btn.textContent = "Gespeichert ✓";
+      btn.disabled = true;
+      btn.style.opacity = "0.5";
+    };
+    div.appendChild(btn);
+  }
   $adaMessages.appendChild(div);
   $adaMessages.scrollTop = $adaMessages.scrollHeight;
+}
+
+// ── ADA SESSION MANAGEMENT ────────────────────────────────────────────────
+async function loadAdaSessions() {
+  try {
+    const r = await fetch("/api/ada/sessions");
+    adaSessions = await r.json();
+    if (!Array.isArray(adaSessions)) adaSessions = [];
+    renderAdaSessionList();
+    // Auto-create first session if none exist
+    if (adaSessions.length === 0) await createAdaSession();
+    else await loadAdaSession(adaSessions[0].id);
+  } catch { adaSessions = []; }
+}
+
+function renderAdaSessionList() {
+  const el = document.getElementById("adaSessionList");
+  if (!el) return;
+  el.innerHTML = adaSessions.map(s => {
+    const active = currentAdaSession && currentAdaSession.id === s.id ? " active" : "";
+    const title = escHtml(s.title || "Neue Session");
+    return `<div class="ada-session-item${active}" data-sid="${s.id}" onclick="loadAdaSession('${s.id}')" ondblclick="renameAdaSession('${s.id}', this)">
+      <span class="ada-session-title">${title}</span>
+      <button class="ada-session-delete" onclick="event.stopPropagation(); deleteAdaSession('${s.id}')">&times;</button>
+    </div>`;
+  }).join("");
+}
+
+async function createAdaSession() {
+  try {
+    const r = await fetch("/api/ada/sessions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: "Neue Session" }),
+    });
+    const session = await r.json();
+    adaSessions.unshift(session);
+    currentAdaSession = session;
+    adaMessages = [];
+    $adaMessages.innerHTML = '<div class="ada-msg assistant">Hallo Nathalie. Was steht an?</div>';
+    renderAdaSessionList();
+  } catch {}
+}
+
+async function loadAdaSession(id) {
+  try {
+    const r = await fetch(`/api/ada/sessions/${id}`);
+    const session = await r.json();
+    currentAdaSession = session;
+    adaMessages = Array.isArray(session.messages) ? session.messages : [];
+    renderAdaSessionList();
+    // Render messages
+    $adaMessages.innerHTML = "";
+    if (adaMessages.length === 0) {
+      $adaMessages.innerHTML = '<div class="ada-msg assistant">Hallo Nathalie. Was steht an?</div>';
+    } else {
+      for (const m of adaMessages) {
+        const div = document.createElement("div");
+        div.className = `ada-msg ${m.role}`;
+        div.textContent = m.content;
+        $adaMessages.appendChild(div);
+      }
+    }
+    $adaMessages.scrollTop = $adaMessages.scrollHeight;
+  } catch {}
+}
+
+async function saveAdaSession() {
+  if (!currentAdaSession) return;
+  try {
+    await fetch(`/api/ada/sessions/${currentAdaSession.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: adaMessages }),
+    });
+  } catch {}
+}
+
+async function deleteAdaSession(id) {
+  if (!confirm("Session löschen?")) return;
+  try {
+    await fetch(`/api/ada/sessions/${id}`, { method: "DELETE" });
+    adaSessions = adaSessions.filter(s => s.id !== id);
+    if (currentAdaSession && currentAdaSession.id === id) {
+      currentAdaSession = null;
+      adaMessages = [];
+      $adaMessages.innerHTML = '<div class="ada-msg assistant">Hallo Nathalie. Was steht an?</div>';
+    }
+    renderAdaSessionList();
+    if (adaSessions.length > 0 && !currentAdaSession) {
+      await loadAdaSession(adaSessions[0].id);
+    }
+  } catch {}
+}
+
+function renameAdaSession(id, el) {
+  const titleSpan = el.querySelector(".ada-session-title");
+  if (!titleSpan) return;
+  const oldTitle = titleSpan.textContent;
+  const input = document.createElement("input");
+  input.type = "text";
+  input.value = oldTitle;
+  input.style.cssText = "background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);color:#fff;font-size:13px;padding:2px 6px;border-radius:4px;width:100%;";
+  titleSpan.replaceWith(input);
+  input.focus();
+  input.select();
+
+  const finish = async () => {
+    const newTitle = input.value.trim() || oldTitle;
+    const span = document.createElement("span");
+    span.className = "ada-session-title";
+    span.textContent = newTitle;
+    input.replaceWith(span);
+    if (newTitle !== oldTitle) {
+      try {
+        await fetch(`/api/ada/sessions/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: newTitle }),
+        });
+        const s = adaSessions.find(s => s.id === id);
+        if (s) s.title = newTitle;
+      } catch {}
+    }
+  };
+  input.addEventListener("blur", finish);
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); input.blur(); } });
+}
+
+// ── TASK PANEL ────────────────────────────────────────────────────────────
+let taskDrawerOpen = false;
+let taskList = [];
+
+function toggleTaskDrawer() {
+  taskDrawerOpen = !taskDrawerOpen;
+  const el = document.getElementById("taskDrawer");
+  if (el) el.classList.toggle("open", taskDrawerOpen);
+  if (taskDrawerOpen) loadTasks();
+}
+
+async function loadTasks() {
+  try {
+    const r = await fetch("/api/tasks?status=offen");
+    taskList = await r.json();
+    if (!Array.isArray(taskList)) taskList = [];
+    renderTaskDrawer();
+  } catch { taskList = []; }
+}
+
+function renderTaskDrawer() {
+  const el = document.getElementById("taskDrawerList");
+  if (!el) return;
+  if (taskList.length === 0) {
+    el.innerHTML = '<div style="font-size:13px;color:var(--ink-mute);padding:8px 0;">Keine offenen Tasks.</div>';
+    return;
+  }
+  el.innerHTML = taskList.map(t => {
+    const prioCls = `prio${t.prioritaet}`;
+    const badges = [`<span class="task-badge ${prioCls}">P${t.prioritaet}</span>`];
+    if (t.gate_bezug) badges.push(`<span class="task-badge gate">Gate ${t.gate_bezug}</span>`);
+    if (t.ada_vorschlag) badges.push(`<span class="task-badge ada-badge">ADA</span>`);
+    if (t.ada_vorschlag && !t.nathalie_approved) {
+      badges.push(`<span class="task-badge approve" onclick="approveTask('${t.id}')">Absegnen?</span>`);
+    }
+    return `<div class="task-drawer-item">
+      <input type="checkbox" class="task-checkbox" onchange="toggleTaskStatus('${t.id}')">
+      <div class="task-drawer-content">
+        <div class="task-drawer-item-title">${escHtml(t.titel)}</div>
+        <div class="task-drawer-badges">${badges.join("")}</div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+async function addTaskFromDrawer() {
+  const input = document.getElementById("taskAddInput");
+  const titel = input.value.trim();
+  if (!titel) return;
+  try {
+    await fetch("/api/tasks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ titel, nathalie_approved: true }),
+    });
+    input.value = "";
+    await loadTasks();
+  } catch {}
+}
+
+async function toggleTaskStatus(id) {
+  try {
+    await fetch(`/api/tasks/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "erledigt" }),
+    });
+    await loadTasks();
+  } catch {}
+}
+
+async function approveTask(id) {
+  try {
+    await fetch(`/api/tasks/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nathalie_approved: true }),
+    });
+    await loadTasks();
+  } catch {}
+}
+
+async function saveAdaTaskSuggestion(titel) {
+  try {
+    await fetch("/api/tasks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ titel, ada_vorschlag: true, nathalie_approved: false }),
+    });
+    if (taskDrawerOpen) await loadTasks();
+  } catch {}
 }
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -1839,6 +2612,13 @@ async function init() {
   $contactDate.value = new Date().toISOString().slice(0, 10);
   loadContacts();
   renderScanList();
+
+  // Start on landing page
+  switchTab("landing");
+
+  // Update datetime every minute
+  updateAllDateTimes();
+  setInterval(updateAllDateTimes, 60000);
 }
 init();
 </script>

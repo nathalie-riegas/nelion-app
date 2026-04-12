@@ -550,6 +550,97 @@ app.patch("/api/scans/:sid/massnahmen/:mid", async (req, res) => {
   res.json(data);
 });
 
+// ─── TASKS ────────────────────────────────────────────────────────────────
+app.get("/api/tasks", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  let query = supabase.from("tasks").select("*").order("prioritaet", { ascending: true }).order("created_at", { ascending: false });
+  if (req.query.status) query = query.eq("status", req.query.status);
+  const { data, error } = await query;
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+app.post("/api/tasks", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { titel, prioritaet, deadline, gate_bezug, ada_vorschlag, nathalie_approved } = req.body || {};
+  if (!titel) return res.status(400).json({ error: "titel erforderlich" });
+  const { data, error } = await supabase.from("tasks").insert({
+    titel,
+    prioritaet: prioritaet || 2,
+    deadline: deadline || null,
+    gate_bezug: gate_bezug || null,
+    ada_vorschlag: ada_vorschlag || false,
+    nathalie_approved: nathalie_approved !== undefined ? nathalie_approved : true,
+  }).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+app.patch("/api/tasks/:id", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const allowed = ["titel", "prioritaet", "deadline", "gate_bezug", "status", "ada_vorschlag", "nathalie_approved"];
+  const updates = {};
+  for (const key of allowed) {
+    if (req.body[key] !== undefined) updates[key] = req.body[key];
+  }
+  const { data, error } = await supabase.from("tasks").update(updates).eq("id", req.params.id).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+app.delete("/api/tasks/:id", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { error } = await supabase.from("tasks").delete().eq("id", req.params.id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ success: true });
+});
+
+// ─── ADA SESSIONS ─────────────────────────────────────────────────────────
+app.get("/api/ada/sessions", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { data, error } = await supabase.from("ada_sessions").select("id, scan_id, created_at, updated_at, title").order("updated_at", { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+app.post("/api/ada/sessions", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { scan_id, title } = req.body || {};
+  const { data, error } = await supabase.from("ada_sessions").insert({
+    scan_id: scan_id || null,
+    title: title || "Neue Session",
+    messages: [],
+  }).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+app.get("/api/ada/sessions/:id", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { data, error } = await supabase.from("ada_sessions").select("*").eq("id", req.params.id).single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+app.put("/api/ada/sessions/:id", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const allowed = ["messages", "title", "scan_id"];
+  const updates = { updated_at: new Date().toISOString() };
+  for (const key of allowed) {
+    if (req.body[key] !== undefined) updates[key] = req.body[key];
+  }
+  const { data, error } = await supabase.from("ada_sessions").update(updates).eq("id", req.params.id).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+app.delete("/api/ada/sessions/:id", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { error } = await supabase.from("ada_sessions").delete().eq("id", req.params.id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ success: true });
+});
+
 // ─── ADA CHAT ─────────────────────────────────────────────────────────────
 app.post("/api/ada/chat", async (req, res) => {
   if (!anthropic) return res.status(503).json({ error: "ANTHROPIC_API_KEY nicht konfiguriert" });
