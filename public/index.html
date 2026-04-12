@@ -2387,13 +2387,18 @@ function appendAdaMsg(role, text) {
 async function loadAdaSessions() {
   try {
     const r = await fetch("/api/ada/sessions");
-    adaSessions = await r.json();
-    if (!Array.isArray(adaSessions)) adaSessions = [];
+    const json = await r.json();
+    adaSessions = Array.isArray(json) ? json : [];
     renderAdaSessionList();
-    // Auto-create first session if none exist
     if (adaSessions.length === 0) await createAdaSession();
     else await loadAdaSession(adaSessions[0].id);
-  } catch { adaSessions = []; }
+  } catch {
+    // Fallback: work without sessions (in-memory only)
+    adaSessions = [];
+    currentAdaSession = null;
+    renderAdaSessionList();
+    $adaMessages.innerHTML = '<div class="ada-msg assistant">Hallo Nathalie. Was steht an?</div>';
+  }
 }
 
 function renderAdaSessionList() {
@@ -2416,13 +2421,18 @@ async function createAdaSession() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title: "Neue Session" }),
     });
+    if (!r.ok) throw new Error("API error");
     const session = await r.json();
+    if (session.error) throw new Error(session.error);
     adaSessions.unshift(session);
     currentAdaSession = session;
-    adaMessages = [];
-    $adaMessages.innerHTML = '<div class="ada-msg assistant">Hallo Nathalie. Was steht an?</div>';
-    renderAdaSessionList();
-  } catch {}
+  } catch {
+    // Fallback: in-memory session
+    currentAdaSession = { id: "local-" + Date.now(), title: "Neue Session" };
+  }
+  adaMessages = [];
+  $adaMessages.innerHTML = '<div class="ada-msg assistant">Hallo Nathalie. Was steht an?</div>';
+  renderAdaSessionList();
 }
 
 async function loadAdaSession(id) {

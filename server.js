@@ -552,11 +552,11 @@ app.patch("/api/scans/:sid/massnahmen/:mid", async (req, res) => {
 
 // ─── TASKS ────────────────────────────────────────────────────────────────
 app.get("/api/tasks", async (req, res) => {
-  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  if (!supabase) return res.json([]);
   let query = supabase.from("tasks").select("*").order("prioritaet", { ascending: true }).order("created_at", { ascending: false });
   if (req.query.status) query = query.eq("status", req.query.status);
   const { data, error } = await query;
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) return res.json([]);  // table may not exist yet
   res.json(data);
 });
 
@@ -597,21 +597,31 @@ app.delete("/api/tasks/:id", async (req, res) => {
 
 // ─── ADA SESSIONS ─────────────────────────────────────────────────────────
 app.get("/api/ada/sessions", async (req, res) => {
-  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
-  const { data, error } = await supabase.from("ada_sessions").select("id, scan_id, created_at, updated_at, title").order("updated_at", { ascending: false });
-  if (error) return res.status(500).json({ error: error.message });
+  if (!supabase) return res.json([]);
+  // Try with title column first, fall back without it
+  let { data, error } = await supabase.from("ada_sessions").select("id, scan_id, created_at, updated_at, title").order("updated_at", { ascending: false });
+  if (error) {
+    // title column may not exist yet — retry without it
+    const r2 = await supabase.from("ada_sessions").select("id, scan_id, created_at, updated_at").order("updated_at", { ascending: false });
+    if (r2.error) return res.json([]);
+    data = (r2.data || []).map(s => ({ ...s, title: "Session" }));
+  }
   res.json(data);
 });
 
 app.post("/api/ada/sessions", async (req, res) => {
   if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
   const { scan_id, title } = req.body || {};
-  const { data, error } = await supabase.from("ada_sessions").insert({
-    scan_id: scan_id || null,
-    title: title || "Neue Session",
-    messages: [],
-  }).select().single();
-  if (error) return res.status(500).json({ error: error.message });
+  // Try with title, fall back without
+  let ins = { scan_id: scan_id || null, messages: [] };
+  let { data, error } = await supabase.from("ada_sessions").insert({ ...ins, title: title || "Neue Session" }).select().single();
+  if (error && error.message.includes("title")) {
+    const r2 = await supabase.from("ada_sessions").insert(ins).select().single();
+    if (r2.error) return res.status(500).json({ error: r2.error.message });
+    data = { ...r2.data, title: title || "Neue Session" };
+  } else if (error) {
+    return res.status(500).json({ error: error.message });
+  }
   res.json(data);
 });
 
@@ -629,8 +639,15 @@ app.put("/api/ada/sessions/:id", async (req, res) => {
   for (const key of allowed) {
     if (req.body[key] !== undefined) updates[key] = req.body[key];
   }
-  const { data, error } = await supabase.from("ada_sessions").update(updates).eq("id", req.params.id).select().single();
-  if (error) return res.status(500).json({ error: error.message });
+  let { data, error } = await supabase.from("ada_sessions").update(updates).eq("id", req.params.id).select().single();
+  if (error && updates.title && error.message.includes("title")) {
+    delete updates.title;
+    const r2 = await supabase.from("ada_sessions").update(updates).eq("id", req.params.id).select().single();
+    if (r2.error) return res.status(500).json({ error: r2.error.message });
+    data = r2.data;
+  } else if (error) {
+    return res.status(500).json({ error: error.message });
+  }
   res.json(data);
 });
 
