@@ -846,6 +846,138 @@
   }
   .task-drawer-add-btn:hover { background: var(--ada-accent-h); }
 
+  /* ── FEATURE OVERLAYS (Signal-Radar, Regime-Referenz, Kaskaden) ──── */
+  .feature-overlay {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); z-index: 500; justify-content: center; align-items: center;
+  }
+  .feature-overlay.open { display: flex; }
+  .feature-card {
+    background: var(--surface); border-radius: var(--r); padding: 28px 28px 20px;
+    max-width: 700px; width: 90%; max-height: 85vh; overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  }
+  .feature-card-title {
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--ink-dim); margin-bottom: 16px;
+  }
+  .feature-card-close {
+    float: right; background: none; border: none; font-size: 18px;
+    color: var(--ink-mute); cursor: pointer; padding: 4px 8px;
+  }
+  .feature-card-close:hover { color: var(--ink); }
+
+  .signal-item {
+    padding: 12px 0; border-bottom: 1px solid var(--border);
+  }
+  .signal-item:last-child { border-bottom: none; }
+  .signal-quote {
+    font-style: italic; font-size: 14px; color: var(--ink); margin-bottom: 4px;
+  }
+  .signal-meaning {
+    font-size: 12px; color: var(--ink-dim); line-height: 1.5;
+  }
+
+  .regime-block {
+    padding: 12px 0; border-bottom: 1px solid var(--border);
+  }
+  .regime-block:last-child { border-bottom: none; }
+  .regime-name {
+    font-weight: 600; font-size: 14px; margin-bottom: 4px;
+  }
+  .regime-condition { font-size: 12px; color: var(--ink-mid); }
+  .regime-lever { font-size: 12px; color: var(--ink-dim); margin-top: 2px; }
+
+  .kaskade-item {
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+  }
+  .kaskade-item:last-child { border-bottom: none; }
+  .kaskade-name { font-weight: 600; font-size: 13px; margin-bottom: 2px; }
+  .kaskade-chain { font-size: 12px; color: var(--ink-mid); }
+  .kaskade-fix { font-size: 12px; color: var(--green); margin-top: 2px; }
+
+  /* ── FEATURE BUTTONS (inline in phases) ────────────────────────────── */
+  .feature-btn-row {
+    display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap;
+  }
+  .feature-btn {
+    padding: 8px 14px; border: 1px solid var(--border2); border-radius: var(--rs);
+    background: var(--surface); color: var(--ink-mid); font-family: var(--mono);
+    font-size: 11px; cursor: pointer; transition: all .15s; letter-spacing: 0.03em;
+  }
+  .feature-btn:hover { background: var(--surface2); color: var(--ink); border-color: var(--accent); }
+
+  /* ── CLT AUDIT ─────────────────────────────────────────────────────── */
+  .clt-panel {
+    display: none; background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--r); padding: 16px 20px; margin: 12px 0;
+  }
+  .clt-panel.open { display: block; }
+  .clt-row {
+    display: flex; align-items: center; gap: 12px; padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .clt-row:last-of-type { border-bottom: none; }
+  .clt-label { flex: 1; font-size: 13px; color: var(--ink); }
+  .clt-input {
+    width: 70px; border: 1px solid var(--border2); border-radius: var(--rs);
+    padding: 6px 8px; font-size: 13px; text-align: center; outline: none;
+  }
+  .clt-input:focus { border-color: var(--ada-accent); }
+  .clt-ampel {
+    width: 24px; height: 24px; border-radius: 50%; background: #ddd;
+    flex-shrink: 0;
+  }
+  .clt-ampel.gruen { background: var(--green); }
+  .clt-ampel.gelb { background: var(--yellow); }
+  .clt-ampel.rot { background: var(--red); }
+  .clt-result {
+    display: flex; align-items: center; gap: 10px; padding: 12px 0;
+    font-weight: 500; font-size: 14px;
+  }
+
+  /* ── DIAGNOSTISCHER KOMPASS ────────────────────────────────────────── */
+  .kompass-panel {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--r); padding: 16px 20px; margin: 12px 0;
+  }
+  .kompass-check {
+    display: flex; align-items: flex-start; gap: 10px; padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .kompass-check:last-of-type { border-bottom: none; }
+  .kompass-check input[type="checkbox"] { margin-top: 3px; accent-color: var(--ada-accent); }
+  .kompass-check-label { font-size: 13px; font-weight: 500; color: var(--ink); }
+  .kompass-check-hint { font-size: 11px; color: var(--ink-dim); }
+
+  /* ── FÜNF-KERN-CHECK ───────────────────────────────────────────────── */
+  .kern-check-panel {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--r); padding: 16px 20px; margin: 12px 0;
+  }
+  .kern-check-counter {
+    font-family: var(--mono); font-size: 13px; color: var(--ink-dim);
+    margin-top: 8px;
+  }
+  .kern-check-warn {
+    font-size: 12px; color: var(--red); margin-top: 4px; display: none;
+  }
+  .kern-check-warn.show { display: block; }
+
+  /* ── MRB-02 TOOLS ──────────────────────────────────────────────────── */
+  .mrb-tools-panel {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--r); padding: 16px 20px; margin: 12px 0;
+  }
+  .mrb-tool-item {
+    display: flex; align-items: center; gap: 10px; padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .mrb-tool-item:last-child { border-bottom: none; }
+  .mrb-tool-item input[type="checkbox"] { accent-color: var(--ada-accent); }
+  .mrb-tool-name { font-size: 13px; color: var(--ink); }
+  .mrb-tool-time { font-size: 11px; color: var(--ink-mute); }
+
   /* ── ADA TASK SUGGEST BUTTON ───────────────────────────────────────── */
   .ada-task-suggest-btn {
     display: inline-block; margin-top: 8px; padding: 4px 12px;
@@ -1062,6 +1194,66 @@
   <div class="anker-card">
     <div id="ankerContent"></div>
     <button class="anker-close" id="btnAnkerClose">Zurück</button>
+  </div>
+</div>
+
+<!-- ── SIGNAL-RADAR OVERLAY ──────────────────────────────────────────────── -->
+<div class="feature-overlay" id="signalRadarOverlay" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="feature-card">
+    <button class="feature-card-close" onclick="document.getElementById('signalRadarOverlay').classList.remove('open')">&times;</button>
+    <div class="feature-card-title">Signal-Radar — 5 Universalsignale</div>
+    <div class="signal-item"><div class="signal-quote">"Wir haben das schon X-mal versucht"</div><div class="signal-meaning">Wiederholung ohne Lernen — L1+L2+L3 pruefen. Warum scheitert es immer wieder?</div></div>
+    <div class="signal-item"><div class="signal-quote">"Er ist eigentlich kompetent — aber hier nicht"</div><div class="signal-meaning">Kontext vs. Person — L1+Cross pruefen. Ist es die Person oder das System?</div></div>
+    <div class="signal-item"><div class="signal-quote">"Eigentlich laeuft alles gut"</div><div class="signal-meaning">Fassaden-Signal — Nachfragen: "Was waere anders wenn es noch besser liefe?"</div></div>
+    <div class="signal-item"><div class="signal-quote">"Ich weiss was ich tun sollte, aber..."</div><div class="signal-meaning">Wissen-Handlungs-Luecke — L1 Freeze oder L2 Blockade? Was verhindert die Umsetzung?</div></div>
+    <div class="signal-item"><div class="signal-quote">"Wir sind alle irgendwie muede"</div><div class="signal-meaning">Diffuse Erschoepfung — L1-Tiefgang: seit wann, was hat sich veraendert?</div></div>
+  </div>
+</div>
+
+<!-- ── REGIME-REFERENZ OVERLAY ────────────────────────────────────────────── -->
+<div class="feature-overlay" id="regimeRefOverlay" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="feature-card">
+    <button class="feature-card-close" onclick="document.getElementById('regimeRefOverlay').classList.remove('open')">&times;</button>
+    <div class="feature-card-title">Regime-Referenz + Routing</div>
+    <div class="regime-block"><div class="regime-name">Regime 1 — Optimierung</div><div class="regime-condition">L1 gruen/gelb + L2 gruen + L3 beliebig</div><div class="regime-lever">Hebel: L3-Anpassungen</div></div>
+    <div class="regime-block"><div class="regime-name">Regime 2 — Kalibrierung</div><div class="regime-condition">L1 gruen/gelb + L2 gelb/rot + L3 gruen/gelb</div><div class="regime-lever">Hebel: L2 vor L3</div></div>
+    <div class="regime-block"><div class="regime-name">Regime 2b — L3 erzeugt L2-Blockade</div><div class="regime-condition">L1 gruen/gelb + L2 gelb/rot + L3 rot</div><div class="regime-lever">Erkennungssignal: "Wenn Struktur anders waere — waere L2-Problem weg?"<br>Hebel: L2 benennen → L3 fixen</div></div>
+    <div class="regime-block"><div class="regime-name">Regime 3 — Stabilisierung</div><div class="regime-condition">L1 rot ODER L1 gelb + L2 rot + WoT zu</div><div class="regime-lever">Hebel: L1 zuerst, immer</div></div>
+    <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border)">
+      <div style="font-weight:600;font-size:13px;margin-bottom:8px">Routing-Logik</div>
+      <div style="font-size:12px;color:var(--ink-mid);line-height:1.8">
+        L1 rot → Regime 3<br>
+        L1 gelb + L2 rot → WoT-Check<br>
+        L3 rot + L2 gelb/rot → 2b-Check<br>
+        L2 gelb/rot + L3 gruen → Regime 2<br>
+        Sonst → Regime 1
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── KASKADEN-REFERENZ OVERLAY ──────────────────────────────────────────── -->
+<div class="feature-overlay" id="kaskadenOverlay" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="feature-card">
+    <button class="feature-card-close" onclick="document.getElementById('kaskadenOverlay').classList.remove('open')">&times;</button>
+    <div class="feature-card-title">Friction-Kaskaden — 7 Muster</div>
+    <div class="kaskade-item"><div class="kaskade-name">K1 — Burnout-Pfad</div><div class="kaskade-chain">L3 Prozess-Overload → L1 Erschoepfung → erscheint als L2 Motivation</div><div class="kaskade-fix">Fix: L3-Entlastung zuerst</div></div>
+    <div class="kaskade-item"><div class="kaskade-name">K2 — Angstkultur-Spirale</div><div class="kaskade-chain">L3 Blame-Kultur → L2 Safety kollabiert → L1 Freeze</div><div class="kaskade-fix">Fix: L3-Struktur aendern</div></div>
+    <div class="kaskade-item"><div class="kaskade-name">K3 — Reorg-Kaskade</div><div class="kaskade-chain">L3 Ambiguitaet → L2 Ownership weg → L1 Prediction Error Overload</div><div class="kaskade-fix">Fix: L3-Klarheit herstellen</div></div>
+    <div class="kaskade-item"><div class="kaskade-name">K4 — Lern-Blockade</div><div class="kaskade-chain">L3 Keine Fehlertoleranz → L2 Lernangst → L1 CLT ueberlastet</div><div class="kaskade-fix">Fix: L3-Raum schaffen</div></div>
+    <div class="kaskade-item"><div class="kaskade-name">K5 — Neurodivergenz-Falle</div><div class="kaskade-chain">L3 One-Size-Fits-All → L1 Ueberlastung → erscheint als L2 Charakter</div><div class="kaskade-fix">Fix: L3-Design anpassen</div></div>
+    <div class="kaskade-item"><div class="kaskade-name">K6 — Vertrauens-Erosion</div><div class="kaskade-chain">L3 Inkonsistenz → L2 Vertrauen weg → L1 chronische Wachsamkeit</div><div class="kaskade-fix">Fix: L3-Konsistenz herstellen</div></div>
+    <div class="kaskade-item"><div class="kaskade-name">K7 — Change-Fatigue</div><div class="kaskade-chain">L3 Zu viele Initiativen → L2 ITC maximal → L1 Decision Fatigue</div><div class="kaskade-fix">Fix: Portfolio reduzieren</div></div>
+    <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border)">
+      <div style="font-weight:600;font-size:13px;margin-bottom:8px">L2-Gegencheck — 5 Pflicht-Gegenfragen</div>
+      <div style="font-size:12px;color:var(--ink-mid);line-height:1.8">
+        1. Waere das Problem weg, wenn die Struktur anders waere?<br>
+        2. Zeigt die Person das Verhalten auch in anderen Kontexten?<br>
+        3. Gibt es ein L1-Signal das die L2-Reaktion erklaert?<br>
+        4. Was hat die Person versucht zu aendern — und warum blieb es?<br>
+        5. Wuerde ein anderer Mensch in derselben Struktur gleich reagieren?
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1508,6 +1700,15 @@ function renderPhase(num) {
   renderPhaseSidebar(num);
   let html = `<div class="phase-header"><span class="phase-number">${escHtml(phase.num)}</span><span class="phase-title">${escHtml(phase.title)}</span><span class="phase-time">${escHtml(phase.time)}</span></div>`;
   html += `<div class="phase-instruction">${escHtml(phase.instruction)}</div>`;
+  // Phase 2 features: Signal-Radar, CLT-Audit, Diagnostischer Kompass
+  if (num === 2) {
+    html += `<div class="feature-btn-row">
+      <button class="feature-btn" onclick="document.getElementById('signalRadarOverlay').classList.add('open')">Signal-Radar</button>
+      <button class="feature-btn" onclick="toggleCltPanel()">CLT-Check</button>
+    </div>`;
+    html += renderCltPanel();
+    html += renderDiagnostischerKompass();
+  }
   html += `<div class="guide-block"><div class="guide-label">Gesprächsleitfaden</div>`;
   for (const g of phase.guide) html += `<div class="guide-item">${g.text}</div>`;
   html += `</div>`;
@@ -1769,6 +1970,10 @@ function renderPhase2() {
   return `
     <div class="phase-header"><span class="phase-number">Phase 2</span><span class="phase-title">Interviews</span><span class="phase-time">Tag 2</span></div>
     <div class="phase-instruction">3 strukturierte Interviews durchfuehren. Kernfragen stellen, Omission Bias pruefen.</div>
+    <div class="feature-btn-row">
+      <button class="feature-btn" onclick="document.getElementById('signalRadarOverlay').classList.add('open')">Signal-Radar</button>
+      <button class="feature-btn" onclick="document.getElementById('kaskadenOverlay').classList.add('open')">Kaskaden-Referenz</button>
+    </div>
     <div class="scan-card">
       <div class="scan-card-title">Kernfragen (waehrend Interview anzeigen)</div>
       <div class="kernfrage"><span class="kernfrage-num">Frage 1</span><br>"Was ist das teuerste ungeloeste Problem gerade — in Zeit, Energie oder Geld?"</div>
@@ -1843,6 +2048,9 @@ function renderPhase3() {
   return `
     <div class="phase-header"><span class="phase-number">Phase 3</span><span class="phase-title">Triangulation & Analyse</span><span class="phase-time">zwischen Tag 2 und 3</span></div>
     <div class="phase-instruction">Friction Profil aktualisieren, Denzin-Konvergenz pruefen, Hypothesen formulieren.</div>
+    <div class="feature-btn-row">
+      <button class="feature-btn" onclick="document.getElementById('regimeRefOverlay').classList.add('open')">Regime-Referenz</button>
+    </div>
     <div class="scan-card">
       <div class="scan-card-title">Friction Profil — nach Interviews + Survey</div>
       ${renderAmpelGrid("interview")}
@@ -1934,6 +2142,9 @@ function renderPhase5() {
   return `
     <div class="phase-header"><span class="phase-number">Phase 5</span><span class="phase-title">Befund</span><span class="phase-time">Tag 3 Nachmittag</span></div>
     <div class="phase-instruction">Finale Ampeln setzen, Friction-Vektor bestimmen, Regime-Routing und Sofort-Massnahmen definieren.</div>
+    <div class="feature-btn-row">
+      <button class="feature-btn" onclick="document.getElementById('regimeRefOverlay').classList.add('open')">Regime-Referenz</button>
+    </div>
     <div class="scan-card">
       <div class="scan-card-title">Friction Profil — Final</div>
       ${renderAmpelGrid("final")}
@@ -1950,15 +2161,17 @@ function renderPhase5() {
         L1 rot → Regime 3 · L1 gelb + L2 hoch → Regime 2 · L3 dominant → Regime 1 · L3 rot + L2 Immunity → Regime 2b
       </div>
     </div>
+    ${renderMrb02Tools()}
     <div class="scan-card" style="margin-top:12px">
       <div class="scan-card-title">3 Sofort-Massnahmen</div>
       ${renderMassnahmeSlot(1)}
       ${renderMassnahmeSlot(2)}
       ${renderMassnahmeSlot(3)}
     </div>
+    ${renderFuenfKernCheck()}
     <div class="btn-row" style="margin-top:12px">
       <button class="btn btn-ghost" onclick="goToScanPhase(4)">Zurück</button>
-      <button class="btn btn-primary" onclick="finishScan()">Befund abschliessen</button>
+      <button class="btn btn-primary" id="btnFinishScan" onclick="finishScan()">Befund abschliessen</button>
       <button class="btn btn-ghost" disabled title="Kommt in Phase 2">Export → PowerPoint</button>
     </div>
   `;
@@ -2275,6 +2488,173 @@ async function loadScanData(scanId) {
     scanMassnahmen = [null, null, null];
     for (const m of data) { if (m.slot_nr >= 1 && m.slot_nr <= 3) scanMassnahmen[m.slot_nr - 1] = m; }
   } catch {}
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// PRIO-1 FEATURES — Render Helpers
+// ══════════════════════════════════════════════════════════════════════════
+
+// ── CLT-AUDIT LITE (Modul 1 Phase 2) ──
+function renderCltPanel() {
+  return `
+    <div class="clt-panel" id="cltPanel">
+      <div class="scan-card-title">CLT-Audit Lite — L1 Energie-Status</div>
+      <div class="clt-row">
+        <div class="clt-label">F1: Laengster Fokusblock heute? (Minuten)</div>
+        <input type="number" class="clt-input" id="cltFokus" placeholder="Min" oninput="updateClt()">
+        <div class="clt-ampel" id="cltA1"></div>
+      </div>
+      <div class="clt-row">
+        <div class="clt-label">F2: Parallele Projekte pro Person?</div>
+        <input type="number" class="clt-input" id="cltProjekte" placeholder="Anz" oninput="updateClt()">
+        <div class="clt-ampel" id="cltA2"></div>
+      </div>
+      <div class="clt-row">
+        <div class="clt-label">F3: Meetings pro Tag?</div>
+        <input type="number" class="clt-input" id="cltMeetings" placeholder="Anz" oninput="updateClt()">
+        <div class="clt-ampel" id="cltA3"></div>
+      </div>
+      <div class="clt-result">
+        <span>L1 Energie-Status:</span>
+        <div class="clt-ampel" id="cltGesamt"></div>
+        <span id="cltGesamtLabel">—</span>
+      </div>
+    </div>
+  `;
+}
+
+function toggleCltPanel() {
+  const el = document.getElementById("cltPanel");
+  if (el) el.classList.toggle("open");
+}
+
+function updateClt() {
+  const fokus = parseInt(document.getElementById("cltFokus")?.value);
+  const projekte = parseInt(document.getElementById("cltProjekte")?.value);
+  const meetings = parseInt(document.getElementById("cltMeetings")?.value);
+
+  function ampelClass(val) {
+    if (!val && val !== 0) return "";
+    return val;
+  }
+
+  // F1: Fokus
+  let a1 = "";
+  if (!isNaN(fokus)) { a1 = fokus < 45 ? "rot" : fokus <= 90 ? "gelb" : "gruen"; }
+  const e1 = document.getElementById("cltA1");
+  if (e1) { e1.className = "clt-ampel " + a1; }
+
+  // F2: Projekte
+  let a2 = "";
+  if (!isNaN(projekte)) { a2 = projekte > 3 ? "rot" : projekte >= 2 ? "gelb" : "gruen"; }
+  const e2 = document.getElementById("cltA2");
+  if (e2) { e2.className = "clt-ampel " + a2; }
+
+  // F3: Meetings
+  let a3 = "";
+  if (!isNaN(meetings)) { a3 = meetings > 6 ? "rot" : meetings >= 4 ? "gelb" : "gruen"; }
+  const e3 = document.getElementById("cltA3");
+  if (e3) { e3.className = "clt-ampel " + a3; }
+
+  // Gesamt: schlechteste
+  const vals = [a1, a2, a3].filter(v => v);
+  let gesamt = "";
+  if (vals.length > 0) {
+    if (vals.includes("rot")) gesamt = "rot";
+    else if (vals.includes("gelb")) gesamt = "gelb";
+    else gesamt = "gruen";
+  }
+  const eg = document.getElementById("cltGesamt");
+  const el = document.getElementById("cltGesamtLabel");
+  if (eg) eg.className = "clt-ampel " + gesamt;
+  if (el) el.textContent = gesamt ? (gesamt === "rot" ? "Rot" : gesamt === "gelb" ? "Gelb" : "Gruen") : "—";
+}
+
+// ── DIAGNOSTISCHER KOMPASS (Modul 1 Phase 2) ──
+function renderDiagnostischerKompass() {
+  return `
+    <div class="kompass-panel">
+      <div class="scan-card-title">Diagnostischer Kompass</div>
+      <div class="kompass-check">
+        <input type="checkbox" id="kompPS">
+        <div><div class="kompass-check-label">Psychological Safety</div><div class="kompass-check-hint">Werden Fehler offen angesprochen?</div></div>
+      </div>
+      <div class="kompass-check">
+        <input type="checkbox" id="kompCLT">
+        <div><div class="kompass-check-label">Cognitive Load Theory</div><div class="kompass-check-hint">Ist das Team kognitiv ueberlastet?</div></div>
+      </div>
+      <div class="kompass-check">
+        <input type="checkbox" id="kompSM">
+        <div><div class="kompass-check-label">Stacey Matrix</div><div class="kompass-check-hint">Wie komplex/unklar ist das Problem?</div></div>
+      </div>
+      <div class="kompass-check">
+        <input type="checkbox" id="kompPV">
+        <div><div class="kompass-check-label">Polyvagal Theory</div><div class="kompass-check-hint">Ist das System im Threat-State?</div></div>
+      </div>
+      <div class="kompass-check">
+        <input type="checkbox" id="kompITC">
+        <div><div class="kompass-check-label">Immunity to Change</div><div class="kompass-check-hint">Was wurde versucht — was blieb?</div></div>
+      </div>
+      <div class="form-group" style="margin-top:12px">
+        <label class="form-label">Erste Hypothese: welche 2-3 dominieren?</label>
+        <textarea class="form-input" id="kompHypothese" rows="2" placeholder="Freitext…"></textarea>
+      </div>
+    </div>
+  `;
+}
+
+// ── FÜNF-KERN-CHECK (Modul 2 Phase 5) ──
+function renderFuenfKernCheck() {
+  return `
+    <div class="kern-check-panel" style="margin-top:12px">
+      <div class="scan-card-title">Fuenf-Kern-Check — vor Befund-Export</div>
+      <div class="kompass-check"><input type="checkbox" class="kern-cb" onchange="updateKernCheck()"><div><div class="kompass-check-label">Psychological Safety erwaehnt?</div></div></div>
+      <div class="kompass-check"><input type="checkbox" class="kern-cb" onchange="updateKernCheck()"><div><div class="kompass-check-label">Cognitive Load Theory erwaehnt?</div></div></div>
+      <div class="kompass-check"><input type="checkbox" class="kern-cb" onchange="updateKernCheck()"><div><div class="kompass-check-label">Stacey Matrix erwaehnt?</div></div></div>
+      <div class="kompass-check"><input type="checkbox" class="kern-cb" onchange="updateKernCheck()"><div><div class="kompass-check-label">Polyvagal Theory erwaehnt?</div></div></div>
+      <div class="kompass-check"><input type="checkbox" class="kern-cb" onchange="updateKernCheck()"><div><div class="kompass-check-label">Immunity to Change erwaehnt?</div></div></div>
+      <div class="kern-check-counter" id="kernCounter">0 von 5 Kern-Konzepten</div>
+      <div class="kern-check-warn" id="kernWarn">Mind. 3 Kern-Konzepte muessen im Befund erscheinen.</div>
+    </div>
+  `;
+}
+
+function updateKernCheck() {
+  const checks = document.querySelectorAll(".kern-cb");
+  let count = 0;
+  checks.forEach(cb => { if (cb.checked) count++; });
+  const counter = document.getElementById("kernCounter");
+  const warn = document.getElementById("kernWarn");
+  const btn = document.getElementById("btnFinishScan");
+  if (counter) counter.textContent = `${count} von 5 Kern-Konzepten`;
+  if (warn) warn.classList.toggle("show", count < 3);
+  if (btn) {
+    btn.disabled = count < 3;
+    btn.style.opacity = count < 3 ? "0.4" : "1";
+  }
+}
+
+// ── MRB-02 LITE TOOLS (Modul 2 Phase 5) ──
+function renderMrb02Tools() {
+  return `
+    <div class="mrb-tools-panel" style="margin-top:12px">
+      <div class="scan-card-title">MRB-02 Lite — Operative Tools</div>
+      <div id="mrbToolsContent">
+        <div style="font-size:12px;color:var(--ink-mute);margin-bottom:8px">Tools werden nach Regime-Routing angezeigt. Alle Regime:</div>
+        <div style="font-weight:500;font-size:12px;margin-top:10px;color:var(--red)">Regime 3 — Stabilisierung</div>
+        <div class="mrb-tool-item"><input type="checkbox" class="mrb-cb"><div class="mrb-tool-name">L1-Stabilisierungs-Check</div><div class="mrb-tool-time">30 Min</div></div>
+        <div class="mrb-tool-item"><input type="checkbox" class="mrb-cb"><div class="mrb-tool-name">Minimale L3-Anker-Intervention</div><div class="mrb-tool-time">20 Min</div></div>
+        <div style="font-weight:500;font-size:12px;margin-top:10px;color:var(--yellow)">Regime 2b — L3 erzeugt L2-Blockade</div>
+        <div class="mrb-tool-item"><input type="checkbox" class="mrb-cb"><div class="mrb-tool-name">L3→L2 Kausaldiagnose</div><div class="mrb-tool-time">30 Min</div></div>
+        <div class="mrb-tool-item"><input type="checkbox" class="mrb-cb"><div class="mrb-tool-name">Incentive-Audit Lite</div><div class="mrb-tool-time">15 Min</div></div>
+        <div style="font-weight:500;font-size:12px;margin-top:10px;color:var(--ink-mid)">Regime 2 — Kalibrierung</div>
+        <div class="mrb-tool-item"><input type="checkbox" class="mrb-cb"><div class="mrb-tool-name">ITC Quick-Mapping</div><div class="mrb-tool-time">30-45 Min</div></div>
+        <div class="mrb-tool-item"><input type="checkbox" class="mrb-cb"><div class="mrb-tool-name">CLT-Audit Lite</div><div class="mrb-tool-time">10 Min</div></div>
+        <div style="font-weight:500;font-size:12px;margin-top:10px;color:var(--green)">Regime 1 — Optimierung</div>
+        <div class="mrb-tool-item"><input type="checkbox" class="mrb-cb"><div class="mrb-tool-name">Leverage Point Scan</div><div class="mrb-tool-time">45 Min</div></div>
+      </div>
+    </div>
+  `;
 }
 
 // ══════════════════════════════════════════════════════════════════════════
