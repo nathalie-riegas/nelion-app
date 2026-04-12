@@ -1202,7 +1202,6 @@ function switchTab(tab) {
   if (tab === "ada") {
     header.style.display = "none";
     tabNav.style.display = "none";
-    document.querySelector(".main").style.display = "none";
     adaFS.style.display = "flex";
     document.getElementById("btnAnker").style.display = "none";
     initAdaListeners();
@@ -1214,7 +1213,6 @@ function switchTab(tab) {
   // Leaving ADA: restore header/tabs
   header.style.display = "";
   tabNav.style.display = "";
-  document.querySelector(".main").style.display = "";
   adaFS.style.display = "none";
 
   // Tab buttons
