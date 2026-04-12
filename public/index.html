@@ -727,6 +727,14 @@
   .ada-session-item:hover .ada-session-delete { opacity: 1; }
   .ada-session-delete:hover { color: var(--red-h); }
 
+  .ada-sidebar-resize {
+    width: 4px; cursor: col-resize; background: transparent;
+    transition: background .15s; flex-shrink: 0;
+  }
+  .ada-sidebar-resize:hover, .ada-sidebar-resize.dragging {
+    background: rgba(255,255,255,0.15);
+  }
+
   .ada-chat-panel {
     flex: 1; display: flex; flex-direction: column; min-width: 0;
   }
@@ -1147,6 +1155,9 @@
     </div>
     <div class="ada-session-list" id="adaSessionList"></div>
   </div>
+
+  <!-- Sidebar Resize Handle -->
+  <div class="ada-sidebar-resize" id="adaSidebarResize"></div>
 
   <!-- Chat Panel -->
   <div class="ada-chat-panel">
@@ -1815,11 +1826,23 @@ function renderScanList() {
   currentScan = null;
   const $el = document.getElementById("scanContent");
   $el.innerHTML = `
-    <div class="start-title">Friction Scan</div>
-    <div class="start-desc">Neuen Scan starten oder bestehenden fortsetzen.</div>
+    <div class="start-title">Friction Scan starten</div>
+    <div class="start-desc">Scan anlegen oder bestehenden wählen.</div>
     <div class="form-group">
-      <label class="form-label">Kundenname *</label>
+      <label class="form-label" for="scanKundeName">Name *</label>
       <input class="form-input" type="text" id="scanKundeName" placeholder="Firmenname / Kundenname" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="scanDatum">Datum</label>
+      <input class="form-input" type="date" id="scanDatum" value="${new Date().toISOString().slice(0,10)}">
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="scanOrg">Organisation (optional)</label>
+      <input class="form-input" type="text" id="scanOrg" placeholder="Firma / Abteilung" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="scanNotizStart">Notiz (optional)</label>
+      <textarea class="form-input" id="scanNotizStart" placeholder="Kontext, Quelle, erster Eindruck…" rows="2"></textarea>
     </div>
     <div class="btn-row">
       <button class="btn btn-primary" id="btnStartScan">Scan starten</button>
@@ -1851,9 +1874,12 @@ async function loadScans() {
       nameEl.className = "contact-name";
       nameEl.textContent = s.kunde_name;
 
+      const phaseLabel = s.completed ? "Abgeschlossen" : `Phase ${s.current_phase || 0}`;
+      const badgeColor = s.completed ? "var(--green)" : s.current_phase > 0 ? "#3498db" : "var(--ink-mute)";
+
       const dateEl = document.createElement("span");
       dateEl.className = "contact-date";
-      dateEl.textContent = `${s.status} — ${date}`;
+      dateEl.innerHTML = `<span style="display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-family:var(--mono);background:${badgeColor};color:#fff;margin-right:6px">${phaseLabel}</span>${date}`;
 
       const editBtn = document.createElement("button");
       editBtn.className = "btn-edit-contact";
@@ -1880,8 +1906,15 @@ async function loadScans() {
 async function startNewScan() {
   const name = document.getElementById("scanKundeName").value.trim();
   if (!name) { document.getElementById("scanKundeName").focus(); return; }
+  const datum = document.getElementById("scanDatum")?.value || undefined;
+  const org = document.getElementById("scanOrg")?.value?.trim() || undefined;
+  const notiz = document.getElementById("scanNotizStart")?.value?.trim() || undefined;
   try {
-    const r = await fetch("/api/scans", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ kunde_name: name }) });
+    const body = { kunde_name: name };
+    if (datum) body.datum_start = datum;
+    if (org) body.organisation = org;
+    if (notiz) body.notizen = notiz;
+    const r = await fetch("/api/scans", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     const scan = await r.json(); if (scan.error) throw new Error(scan.error);
     openScan(scan);
   } catch (e) { alert("Fehler: " + e.message); }
@@ -2944,6 +2977,31 @@ function initAdaListeners() {
       input.style.height = Math.min(input.scrollHeight, 120) + "px";
     });
   }
+  // Sidebar resize
+  const sidebar = document.querySelector(".ada-sidebar");
+  const handle = document.getElementById("adaSidebarResize");
+  if (sidebar && handle) {
+    const saved = localStorage.getItem("adaSidebarWidth");
+    if (saved) sidebar.style.width = saved + "px";
+    handle.addEventListener("mousedown", (e) => {
+      e.preventDefault();
+      handle.classList.add("dragging");
+      const onMove = (ev) => {
+        let w = ev.clientX;
+        if (w < 160) w = 160;
+        if (w > 400) w = 400;
+        sidebar.style.width = w + "px";
+      };
+      const onUp = () => {
+        handle.classList.remove("dragging");
+        localStorage.setItem("adaSidebarWidth", parseInt(sidebar.style.width));
+        document.removeEventListener("mousemove", onMove);
+        document.removeEventListener("mouseup", onUp);
+      };
+      document.addEventListener("mousemove", onMove);
+      document.addEventListener("mouseup", onUp);
+    });
+  }
 }
 
 async function sendAdaMessage() {
@@ -2956,8 +3014,9 @@ async function sendAdaMessage() {
   adaSending = true;
   if (send) send.disabled = true;
 
-  adaMessages.push({ role: "user", content: text });
-  appendAdaMsg("user", text);
+  const now = new Date().toISOString();
+  adaMessages.push({ role: "user", content: text, timestamp: now });
+  appendAdaMsg("user", text, now);
   if (inp) { inp.value = ""; inp.style.height = "auto"; }
 
   const thinkEl = document.createElement("div");
@@ -2983,8 +3042,9 @@ async function sendAdaMessage() {
     if (data.error) {
       appendAdaMsg("assistant", "Fehler: " + data.error);
     } else {
-      adaMessages.push({ role: "assistant", content: data.content });
-      appendAdaMsg("assistant", data.content);
+      const aNow = new Date().toISOString();
+      adaMessages.push({ role: "assistant", content: data.content, timestamp: aNow });
+      appendAdaMsg("assistant", data.content, aNow);
     }
   } catch (e) {
     thinkEl.remove();
@@ -2999,13 +3059,39 @@ async function sendAdaMessage() {
   if (currentAdaSession) saveAdaSession();
 }
 
-function appendAdaMsg(role, text) {
+function appendAdaMsg(role, text, timestamp) {
   const msgs = $adaMessages();
   if (!msgs) return;
+  const wrapper = document.createElement("div");
+  wrapper.style.cssText = role === "user" ? "align-self:flex-end;max-width:85%;" : "align-self:flex-start;max-width:85%;";
+
+  // Timestamp
+  const ts = document.createElement("div");
+  ts.style.cssText = "font-size:10px;color:var(--ink-mute);margin-bottom:3px;font-family:var(--mono);";
+  ts.textContent = formatDateTime(timestamp ? new Date(timestamp) : new Date());
+  wrapper.appendChild(ts);
+
   const div = document.createElement("div");
   div.className = `ada-msg ${role}`;
+  div.style.maxWidth = "100%";
   div.textContent = text;
-  // Add "Als Task speichern" button for assistant messages
+
+  // User messages: edit/delete on hover
+  if (role === "user") {
+    const msgIdx = adaMessages.length - 1;
+    wrapper.style.position = "relative";
+    const actions = document.createElement("div");
+    actions.style.cssText = "display:none;position:absolute;top:18px;right:-40px;flex-direction:column;gap:2px;";
+    actions.innerHTML = `<button style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--ink-mute);padding:2px;" title="Bearbeiten" data-action="edit">&#9998;</button>
+      <button style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--ink-mute);padding:2px;" title="Löschen" data-action="del">&#128465;</button>`;
+    wrapper.addEventListener("mouseenter", () => actions.style.display = "flex");
+    wrapper.addEventListener("mouseleave", () => actions.style.display = "none");
+    actions.querySelector("[data-action=edit]").onclick = () => editAdaMsg(div, wrapper);
+    actions.querySelector("[data-action=del]").onclick = () => deleteAdaMsg(div, wrapper);
+    wrapper.appendChild(actions);
+  }
+
+  // Assistant: "Als Task speichern"
   if (role === "assistant") {
     const btn = document.createElement("button");
     btn.className = "ada-task-suggest-btn";
@@ -3019,8 +3105,48 @@ function appendAdaMsg(role, text) {
     };
     div.appendChild(btn);
   }
-  msgs.appendChild(div);
+  wrapper.appendChild(div);
+  msgs.appendChild(wrapper);
   msgs.scrollTop = msgs.scrollHeight;
+}
+
+function editAdaMsg(msgDiv, wrapper) {
+  const oldText = msgDiv.textContent;
+  const textarea = document.createElement("textarea");
+  textarea.className = "ada-chat-input";
+  textarea.value = oldText;
+  textarea.style.cssText = "min-height:44px;max-height:200px;margin:0;";
+  const btnRow = document.createElement("div");
+  btnRow.style.cssText = "display:flex;gap:6px;margin-top:4px;";
+  btnRow.innerHTML = '<button class="btn btn-primary btn-sm" data-action="save">Speichern</button><button class="btn btn-ghost btn-sm" data-action="cancel">Abbrechen</button>';
+  msgDiv.replaceWith(textarea);
+  wrapper.appendChild(btnRow);
+  textarea.focus();
+
+  btnRow.querySelector("[data-action=save]").onclick = () => {
+    const newText = textarea.value.trim();
+    if (newText) {
+      const idx = adaMessages.findIndex(m => m.role === "user" && m.content === oldText);
+      if (idx >= 0) adaMessages[idx].content = newText;
+      msgDiv.textContent = newText;
+    }
+    textarea.replaceWith(msgDiv);
+    btnRow.remove();
+    if (currentAdaSession) saveAdaSession();
+  };
+  btnRow.querySelector("[data-action=cancel]").onclick = () => {
+    textarea.replaceWith(msgDiv);
+    btnRow.remove();
+  };
+}
+
+function deleteAdaMsg(msgDiv, wrapper) {
+  if (!confirm("Nachricht löschen?")) return;
+  const text = msgDiv.textContent;
+  const idx = adaMessages.findIndex(m => m.role === "user" && m.content === text);
+  if (idx >= 0) adaMessages.splice(idx, 1);
+  wrapper.remove();
+  if (currentAdaSession) saveAdaSession();
 }
 
 // ── ADA SESSION MANAGEMENT ────────────────────────────────────────────────
@@ -3041,17 +3167,25 @@ async function loadAdaSessions() {
   }
 }
 
+let adaClickTimer = null;
 function renderAdaSessionList() {
   const el = document.getElementById("adaSessionList");
   if (!el) return;
-  el.innerHTML = adaSessions.map(s => {
+  el.innerHTML = "";
+  for (const s of adaSessions) {
     const active = currentAdaSession && currentAdaSession.id === s.id ? " active" : "";
-    const title = escHtml(s.title || "Neue Session");
-    return `<div class="ada-session-item${active}" data-sid="${s.id}" onclick="loadAdaSession('${s.id}')" ondblclick="renameAdaSession('${s.id}', this)">
-      <span class="ada-session-title">${title}</span>
-      <button class="ada-session-delete" onclick="event.stopPropagation(); deleteAdaSession('${s.id}')">&times;</button>
-    </div>`;
-  }).join("");
+    const item = document.createElement("div");
+    item.className = "ada-session-item" + active;
+    item.innerHTML = `<span class="ada-session-title">${escHtml(s.title || "Neue Session")}</span><button class="ada-session-delete">&times;</button>`;
+    // Single click = load, double click = rename (debounced)
+    item.addEventListener("click", (e) => {
+      if (e.target.classList.contains("ada-session-delete")) return;
+      if (adaClickTimer) { clearTimeout(adaClickTimer); adaClickTimer = null; renameAdaSession(s.id, item); return; }
+      adaClickTimer = setTimeout(() => { adaClickTimer = null; loadAdaSession(s.id); }, 250);
+    });
+    item.querySelector(".ada-session-delete").addEventListener("click", (e) => { e.stopPropagation(); deleteAdaSession(s.id); });
+    el.appendChild(item);
+  }
 }
 
 async function createAdaSession() {
@@ -3092,10 +3226,7 @@ async function loadAdaSession(id) {
     msgs.innerHTML = '<div class="ada-msg assistant">Hallo Nathalie. Was steht an?</div>';
   } else {
     for (const m of adaMessages) {
-      const div = document.createElement("div");
-      div.className = `ada-msg ${m.role}`;
-      div.textContent = m.content;
-      msgs.appendChild(div);
+      appendAdaMsg(m.role, m.content, m.timestamp);
     }
   }
   msgs.scrollTop = msgs.scrollHeight;
@@ -3141,14 +3272,17 @@ function renameAdaSession(id, el) {
   titleSpan.replaceWith(input);
   input.focus();
   input.select();
+  let done = false;
 
-  const finish = async () => {
+  const finish = async (save) => {
+    if (done) return;
+    done = true;
     const newTitle = input.value.trim() || oldTitle;
     const span = document.createElement("span");
     span.className = "ada-session-title";
-    span.textContent = newTitle;
+    span.textContent = save ? newTitle : oldTitle;
     input.replaceWith(span);
-    if (newTitle !== oldTitle) {
+    if (save && newTitle !== oldTitle) {
       try {
         await fetch(`/api/ada/sessions/${id}`, {
           method: "PUT",
@@ -3160,8 +3294,11 @@ function renameAdaSession(id, el) {
       } catch {}
     }
   };
-  input.addEventListener("blur", finish);
-  input.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); input.blur(); } });
+  input.addEventListener("blur", () => finish(true));
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); finish(true); }
+    if (e.key === "Escape") { e.preventDefault(); finish(false); }
+  });
 }
 
 // ── TASK PANEL ────────────────────────────────────────────────────────────

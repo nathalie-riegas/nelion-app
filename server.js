@@ -324,13 +324,15 @@ app.patch("/api/consultations/:id", async (req, res) => {
 // ─── SCANS (Modul 2) ──────────────────────────────────────────────────────
 app.post("/api/scans", async (req, res) => {
   if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
-  const { kunde_name, datum_start, anzahl_personen } = req.body || {};
+  const { kunde_name, datum_start, anzahl_personen, organisation, notizen } = req.body || {};
   if (!kunde_name || !kunde_name.trim()) {
     return res.status(400).json({ error: "kunde_name erforderlich" });
   }
   const insert = { kunde_name: kunde_name.trim() };
   if (datum_start) insert.datum_start = datum_start;
   if (anzahl_personen) insert.anzahl_personen = anzahl_personen;
+  if (organisation) insert.organisation = organisation;
+  if (notizen) insert.notizen = notizen;
   const { data, error } = await supabase.from("scans").insert(insert).select().single();
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
@@ -357,7 +359,7 @@ app.get("/api/scans/:id", async (req, res) => {
 app.patch("/api/scans/:id", async (req, res) => {
   if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
   const allowed = [
-    "kunde_name", "datum_start", "anzahl_personen", "status", "regime",
+    "kunde_name", "datum_start", "anzahl_personen", "status", "regime", "organisation",
     "friction_vektor", "notizen", "survey_verschickt", "survey_notizen",
     "hypothesen_spiegel_done", "hypothesen_spiegel_notizen",
     "mandatscheck_budget", "mandatscheck_personen", "mandatscheck_kein_krise",
