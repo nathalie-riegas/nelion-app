@@ -102,10 +102,13 @@ try {
 }
 
 // ─── ENV ───────────────────────────────────────────────────────────────────
-const SUPABASE_URL      = process.env.SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
-const NELION_PASSWORD   = process.env.NELION_PASSWORD;
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+const SUPABASE_URL       = process.env.SUPABASE_URL;
+const SUPABASE_ANON_KEY  = process.env.SUPABASE_ANON_KEY;
+const NELION_PASSWORD    = process.env.NELION_PASSWORD;
+const ANTHROPIC_API_KEY  = process.env.ANTHROPIC_API_KEY;
+const GITHUB_TOKEN       = process.env.GITHUB_TOKEN;
+const GITHUB_REPO        = process.env.GITHUB_REPO;
+const GITHUB_CONTEXT_PATH = process.env.GITHUB_CONTEXT_PATH;
 
 // ─── SUPABASE ───────────────────────────────────────────────────────────────
 const supabase = (SUPABASE_URL && SUPABASE_ANON_KEY)
@@ -119,6 +122,26 @@ const anthropic = ANTHROPIC_API_KEY
 if (!supabase) console.warn("Supabase not configured — storage disabled");
 if (!NELION_PASSWORD) console.warn("NELION_PASSWORD not set — app is publicly accessible");
 if (!anthropic) console.warn("ANTHROPIC_API_KEY not set — ADA disabled");
+if (!GITHUB_TOKEN || !GITHUB_REPO || !GITHUB_CONTEXT_PATH) console.warn("GitHub context not configured — Master Context disabled");
+
+// ─── GITHUB CONTEXT ───────────────────────────────────────────────────────
+async function githubGetContextFile() {
+  if (!GITHUB_CONTEXT_PATH || !GITHUB_TOKEN || !GITHUB_REPO) return { content: null };
+  const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_CONTEXT_PATH}`;
+  const res = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${GITHUB_TOKEN}`,
+      Accept: "application/vnd.github+json",
+    },
+  });
+  if (!res.ok) {
+    if (res.status === 404) return { content: null };
+    throw new Error(`GitHub GET context failed: ${res.status}`);
+  }
+  const data = await res.json();
+  const content = Buffer.from(data.content, "base64").toString("utf-8");
+  return { content };
+}
 
 // ─── AUTH ──────────────────────────────────────────────────────────────────
 function authToken() {
@@ -668,7 +691,20 @@ app.post("/api/ada/chat", async (req, res) => {
     return res.status(400).json({ error: "messages array erforderlich" });
   }
 
+  // Build system prompt: ADA prompt + Master Context + Scan Context
   let systemPrompt = ADA_SYSTEM_PROMPT;
+
+  // Fetch shared NELION Master Context from GitHub
+  try {
+    const { content: masterContext } = await githubGetContextFile();
+    if (masterContext) {
+      systemPrompt += `\n\n─── NELION MASTER CONTEXT (read-only) ───\n${masterContext}\n─── ENDE CONTEXT ───`;
+    }
+  } catch (e) {
+    console.warn("Master Context fetch failed:", e.message);
+  }
+
+  // Append dynamic scan context
   if (scan_context) {
     systemPrompt += `\n\n---\n\n## Aktueller Scan-Kontext\nKunde: ${scan_context.kunde || "unbekannt"}\nPhase: ${scan_context.phase || "unbekannt"}\nStatus: ${scan_context.status || "unbekannt"}`;
   }
