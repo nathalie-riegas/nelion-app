@@ -721,11 +721,13 @@
     flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   .ada-session-delete {
-    opacity: 0; background: none; border: none; color: rgba(255,255,255,0.4);
-    cursor: pointer; font-size: 14px; padding: 2px 6px; transition: all .15s;
+    display: none; background: none; border: none; color: rgba(255,255,255,0.5);
+    cursor: pointer; font-size: 16px; padding: 4px 8px;
+    flex-shrink: 0; line-height: 1; min-width: 28px; text-align: center;
+    border-radius: 4px; transition: color .15s, background .15s;
   }
-  .ada-session-item:hover .ada-session-delete { opacity: 1; }
-  .ada-session-delete:hover { color: var(--red-h); }
+  .ada-session-item:hover .ada-session-delete { display: inline-block; }
+  .ada-session-delete:hover { color: #e74c3c; background: rgba(231,76,60,0.2); }
 
   .ada-sidebar-resize {
     width: 4px; cursor: col-resize; background: transparent;
@@ -3328,7 +3330,7 @@ function renderAdaSessionList() {
     const delBtn = document.createElement("button");
     delBtn.className = "ada-session-delete";
     delBtn.title = "Session löschen";
-    delBtn.textContent = "×";
+    delBtn.textContent = "✕";
     item.appendChild(titleSpan);
     item.appendChild(delBtn);
     // Delete: own handler, stop everything
