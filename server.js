@@ -106,9 +106,10 @@ const SUPABASE_URL       = process.env.SUPABASE_URL;
 const SUPABASE_ANON_KEY  = process.env.SUPABASE_ANON_KEY;
 const NELION_PASSWORD    = process.env.NELION_PASSWORD;
 const ANTHROPIC_API_KEY  = process.env.ANTHROPIC_API_KEY;
-const GITHUB_TOKEN       = process.env.GITHUB_TOKEN;
-const GITHUB_REPO        = process.env.GITHUB_REPO;
+const GITHUB_TOKEN        = process.env.GITHUB_TOKEN;
+const GITHUB_REPO         = process.env.GITHUB_REPO;
 const GITHUB_CONTEXT_PATH = process.env.GITHUB_CONTEXT_PATH;
+const GITHUB_FILE_PATH    = process.env.GITHUB_FILE_PATH;
 
 // ─── SUPABASE ───────────────────────────────────────────────────────────────
 const supabase = (SUPABASE_URL && SUPABASE_ANON_KEY)
@@ -123,6 +124,7 @@ if (!supabase) console.warn("Supabase not configured — storage disabled");
 if (!NELION_PASSWORD) console.warn("NELION_PASSWORD not set — app is publicly accessible");
 if (!anthropic) console.warn("ANTHROPIC_API_KEY not set — ADA disabled");
 if (!GITHUB_TOKEN || !GITHUB_REPO || !GITHUB_CONTEXT_PATH) console.warn("GitHub context not configured — Master Context disabled");
+if (!GITHUB_FILE_PATH) console.warn("GITHUB_FILE_PATH not set — shared memory disabled");
 
 // ─── GITHUB CONTEXT ───────────────────────────────────────────────────────
 async function githubGetContextFile() {
@@ -141,6 +143,48 @@ async function githubGetContextFile() {
   const data = await res.json();
   const content = Buffer.from(data.content, "base64").toString("utf-8");
   return { content };
+}
+
+// ─── GITHUB MEMORY (shared with NOS) ─────────────────────────────────────
+async function githubGetMemoryFile() {
+  if (!GITHUB_FILE_PATH || !GITHUB_TOKEN || !GITHUB_REPO) return { content: null, sha: null };
+  const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`;
+  const res = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${GITHUB_TOKEN}`,
+      Accept: "application/vnd.github+json",
+    },
+  });
+  if (!res.ok) {
+    if (res.status === 404) return { content: null, sha: null };
+    throw new Error(`GitHub GET memory failed: ${res.status}`);
+  }
+  const data = await res.json();
+  const content = Buffer.from(data.content, "base64").toString("utf-8");
+  return { content, sha: data.sha };
+}
+
+async function githubPutMemoryFile(content, sha, message = "ADA memory update") {
+  const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE_PATH}`;
+  const body = {
+    message,
+    content: Buffer.from(content, "utf-8").toString("base64"),
+  };
+  if (sha) body.sha = sha;
+  const res = await fetch(url, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${GITHUB_TOKEN}`,
+      Accept: "application/vnd.github+json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`GitHub PUT memory failed: ${res.status} — ${err}`);
+  }
+  return res.json();
 }
 
 // ─── AUTH ──────────────────────────────────────────────────────────────────
@@ -683,18 +727,55 @@ app.delete("/api/ada/sessions/:id", async (req, res) => {
   res.json({ success: true });
 });
 
+// ─── ADA MEMORY ENDPOINTS ─────────────────────────────────────────────────
+
+// Load shared memory (NATHALIE_MEMORY.md)
+app.get("/api/ada/memory", async (req, res) => {
+  try {
+    const { content, sha } = await githubGetMemoryFile();
+    res.json({
+      memory: content || "# NATHALIE MEMORY\nErste Session noch nicht gestartet.",
+      sha,
+      loaded: !!content,
+    });
+  } catch (err) {
+    console.error("ADA memory load error:", err.message);
+    res.json({ memory: null, sha: null, loaded: false, error: err.message });
+  }
+});
+
+// Write memory update (append, not overwrite)
+app.post("/api/ada/memory/save", async (req, res) => {
+  const { updateBlock } = req.body;
+  if (!updateBlock) return res.status(400).json({ error: "updateBlock erforderlich" });
+
+  try {
+    const { content: existing, sha } = await githubGetMemoryFile();
+    const newContent = `${updateBlock}\n\n---\n\n${existing || ""}`;
+    await githubPutMemoryFile(
+      newContent,
+      sha,
+      `ADA memory update ${new Date().toISOString().slice(0, 10)}`
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error("ADA memory save error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ─── ADA CHAT ─────────────────────────────────────────────────────────────
 app.post("/api/ada/chat", async (req, res) => {
   if (!anthropic) return res.status(503).json({ error: "ANTHROPIC_API_KEY nicht konfiguriert" });
-  const { messages, scan_context } = req.body || {};
+  const { messages, scan_context, memory } = req.body || {};
   if (!Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: "messages array erforderlich" });
   }
 
-  // Build system prompt: ADA prompt + Master Context + Scan Context
+  // Build system prompt: ADA prompt + Master Context + Memory + Scan Context
   let systemPrompt = ADA_SYSTEM_PROMPT;
 
-  // Fetch shared NELION Master Context from GitHub
+  // 1. NELION Master Context (read-only)
   try {
     const { content: masterContext } = await githubGetContextFile();
     if (masterContext) {
@@ -704,9 +785,14 @@ app.post("/api/ada/chat", async (req, res) => {
     console.warn("Master Context fetch failed:", e.message);
   }
 
-  // Append dynamic scan context
+  // 2. Shared Memory (NATHALIE_MEMORY.md)
+  if (memory) {
+    systemPrompt += `\n\n─── NATHALIE MEMORY (geteilt mit NOS) ───\n${memory}\n─── ENDE MEMORY ───`;
+  }
+
+  // 3. Dynamic Scan Context
   if (scan_context) {
-    systemPrompt += `\n\n---\n\n## Aktueller Scan-Kontext\nKunde: ${scan_context.kunde || "unbekannt"}\nPhase: ${scan_context.phase || "unbekannt"}\nStatus: ${scan_context.status || "unbekannt"}`;
+    systemPrompt += `\n\n─── SCAN-KONTEXT ───\nKunde: ${scan_context.kunde || "unbekannt"}\nPhase: ${scan_context.phase || "unbekannt"}\nStatus: ${scan_context.status || "unbekannt"}\n─── ENDE SCAN-KONTEXT ───`;
   }
 
   try {
