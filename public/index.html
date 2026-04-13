@@ -3185,7 +3185,7 @@ async function sendAdaMessage() {
   if (currentAdaSession) saveAdaSession();
 }
 
-function appendAdaMsg(role, text, timestamp) {
+function appendAdaMsg(role, text, timestamp, explicitIdx) {
   const msgs = $adaMessages();
   if (!msgs) return;
   const wrapper = document.createElement("div");
@@ -3208,7 +3208,7 @@ function appendAdaMsg(role, text, timestamp) {
 
   // User messages: edit/delete on hover
   if (role === "user") {
-    const msgIdx = adaMessages.length - 1;
+    const msgIdx = (explicitIdx !== undefined) ? explicitIdx : adaMessages.length - 1;
     wrapper.dataset.msgIdx = msgIdx;
     wrapper.style.position = "relative";
     const actions = document.createElement("div");
@@ -3322,14 +3322,22 @@ function renderAdaSessionList() {
     const active = currentAdaSession && currentAdaSession.id === s.id ? " active" : "";
     const item = document.createElement("div");
     item.className = "ada-session-item" + active;
-    item.innerHTML = `<span class="ada-session-title">${escHtml(s.title || "Neue Session")}</span><button class="ada-session-delete" title="Session löschen">&times;</button>`;
-    const delBtn = item.querySelector(".ada-session-delete");
-    // Delete button: stop all propagation
+    const titleSpan = document.createElement("span");
+    titleSpan.className = "ada-session-title";
+    titleSpan.textContent = s.title || "Neue Session";
+    const delBtn = document.createElement("button");
+    delBtn.className = "ada-session-delete";
+    delBtn.title = "Session löschen";
+    delBtn.textContent = "×";
+    item.appendChild(titleSpan);
+    item.appendChild(delBtn);
+    // Delete: own handler, stop everything
     delBtn.addEventListener("click", (e) => { e.stopPropagation(); e.preventDefault(); deleteAdaSession(s.id); });
-    delBtn.addEventListener("mousedown", (e) => e.stopPropagation());
-    // Single click = load, double click = rename (debounced)
-    item.addEventListener("click", (e) => {
-      if (e.target === delBtn || e.target.closest(".ada-session-delete")) return;
+    delBtn.addEventListener("mousedown", (e) => { e.stopPropagation(); e.preventDefault(); });
+    delBtn.addEventListener("dblclick", (e) => { e.stopPropagation(); e.preventDefault(); });
+    // Title area: single click = load, double click = rename
+    titleSpan.addEventListener("click", (e) => {
+      e.stopPropagation();
       if (adaClickTimer) { clearTimeout(adaClickTimer); adaClickTimer = null; renameAdaSession(s.id, item); return; }
       adaClickTimer = setTimeout(() => { adaClickTimer = null; loadAdaSession(s.id); }, 250);
     });
@@ -3374,8 +3382,9 @@ async function loadAdaSession(id) {
   if (adaMessages.length === 0) {
     msgs.innerHTML = '<div class="ada-msg assistant">Hallo Nathalie. Was steht an?</div>';
   } else {
-    for (const m of adaMessages) {
-      appendAdaMsg(m.role, m.content, m.timestamp);
+    for (let i = 0; i < adaMessages.length; i++) {
+      const m = adaMessages[i];
+      appendAdaMsg(m.role, m.content, m.timestamp, i);
     }
   }
   msgs.scrollTop = msgs.scrollHeight;
