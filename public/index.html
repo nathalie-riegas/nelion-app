@@ -854,6 +854,9 @@
   }
   .task-drawer-add-btn:hover { background: var(--ada-accent-h); }
 
+  /* ── PFLICHTFELD MARKIERUNG ─────────────────────────────────────── */
+  .pflicht::after { content: " *"; color: var(--red); font-weight: 600; }
+
   /* ── FEATURE OVERLAYS (Signal-Radar, Regime-Referenz, Kaskaden) ──── */
   .feature-overlay {
     display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -1980,14 +1983,21 @@ async function openScan(scan) {
   renderScanPhase(scanPhase);
 }
 
+// ── PFLICHTFELDER-LOGIK ──
+// Phase 0: mc1 (Budget) + mc2 (>5 Personen) + mc3a/b/c (Überlebensmodus) — alle 5 Checkboxen
+// Phase 1: scanAnzahl (Anzahl Personen) + surveyDone (Survey verschickt)
+// Phase 2: iv1Rolle + iv2Rolle + iv3Rolle (alle 3 Interview-Rollen gewählt)
+// Phase 3: hyp1Layer (mind. Hypothese 1 mit Layer+Mechanismus)
+// Phase 4: spiegelDone (Hypothesen-Spiegel abgeschlossen)
+// Phase 5: frictionVektor + mind. 1 Massnahme (mn1Text oder mn2Text oder mn3Text)
 function isScanPhaseDone(num) {
   if (!currentScan) return false;
   const s = currentScan;
   switch (num) {
-    case 0: return s.mandatscheck_budget && s.mandatscheck_personen && s.mandatscheck_kein_krise;
-    case 1: return !!(s.anzahl_personen || s.survey_verschickt);
-    case 2: return scanInterviews.some(iv => iv && iv.rolle);
-    case 3: return scanHypothesen.some(h => h && h.layer);
+    case 0: return !!(s.mandatscheck_budget && s.mandatscheck_personen && s.mandatscheck_kein_krise);
+    case 1: return !!(s.anzahl_personen && s.survey_verschickt);
+    case 2: return scanInterviews.filter(iv => iv && iv.rolle).length >= 3;
+    case 3: return scanHypothesen.some(h => h && h.layer && h.layer.trim());
     case 4: return !!s.hypothesen_spiegel_done;
     case 5: return !!s.completed;
     default: return false;
@@ -2057,16 +2067,16 @@ function renderPhase0() {
     <div class="phase-instruction">Drei Gate-Fragen — alle müssen erfüllt sein, bevor der Scan startet.</div>
     <div class="scan-card">
       <div class="scan-card-title">Voraussetzungen</div>
-      <div class="check-row"><input type="checkbox" id="mc1" ${s.mandatscheck_budget ? "checked" : ""}><label for="mc1">Entscheider hat Budgetmandat?</label></div>
-      <div class="check-row"><input type="checkbox" id="mc2" ${s.mandatscheck_personen ? "checked" : ""}><label for="mc2">Organisation >5 Personen?</label></div>
+      <div class="check-row"><input type="checkbox" id="mc1" ${s.mandatscheck_budget ? "checked" : ""}><label for="mc1" class="pflicht">Entscheider hat Budgetmandat?</label></div>
+      <div class="check-row"><input type="checkbox" id="mc2" ${s.mandatscheck_personen ? "checked" : ""}><label for="mc2" class="pflicht">Organisation >5 Personen?</label></div>
     </div>
     <div class="scan-card" style="margin-top:12px">
       <div class="scan-card-title">Kein akuter Überlebensmodus — 3 Unterfragen</div>
-      <div class="check-row"><input type="checkbox" id="mc3a" onchange="updateMc3()"><label for="mc3a">Runway > 3 Monate?</label></div>
+      <div class="check-row"><input type="checkbox" id="mc3a" onchange="updateMc3()"><label for="mc3a" class="pflicht">Runway > 3 Monate?</label></div>
       <div style="font-size:11px;color:var(--ink-mute);margin-left:26px;margin-bottom:8px">Falls ✗: Liquiditätskrise — Scan nach Stabilisierung</div>
-      <div class="check-row"><input type="checkbox" id="mc3b" onchange="updateMc3()"><label for="mc3b">Keine laufenden/angekündigten Entlassungen?</label></div>
+      <div class="check-row"><input type="checkbox" id="mc3b" onchange="updateMc3()"><label for="mc3b" class="pflicht">Keine laufenden/angekündigten Entlassungen?</label></div>
       <div style="font-size:11px;color:var(--ink-mute);margin-left:26px;margin-bottom:8px">Falls ✗: Akute Restrukturierung — Scan nach Abschluss</div>
-      <div class="check-row"><input type="checkbox" id="mc3c" onchange="updateMc3()"><label for="mc3c">Stabiler Entscheider vorhanden?</label></div>
+      <div class="check-row"><input type="checkbox" id="mc3c" onchange="updateMc3()"><label for="mc3c" class="pflicht">Stabiler Entscheider vorhanden?</label></div>
       <div style="font-size:11px;color:var(--ink-mute);margin-left:26px;margin-bottom:8px">Falls ✗: Kein Mandat — Entscheider definieren</div>
       <input type="hidden" id="mc3" ${s.mandatscheck_kein_krise ? "checked" : ""}>
       <div id="mc3Status" style="margin-top:8px;font-size:12px;font-weight:500"></div>
@@ -2103,13 +2113,13 @@ function renderPhase1() {
     <div class="phase-instruction">Kundeninformationen erfassen, Survey verschicken, erste Einschätzung vornehmen.</div>
     <div class="scan-card">
       <div class="scan-card-title">Grunddaten</div>
-      <div class="form-group"><label class="form-label">Anzahl Personen Organisation</label><input class="form-input" type="number" id="scanAnzahl" value="${s.anzahl_personen || ""}"></div>
+      <div class="form-group"><label class="form-label pflicht">Anzahl Personen Organisation</label><input class="form-input" type="number" id="scanAnzahl" value="${s.anzahl_personen || ""}"></div>
       <div class="form-group" style="margin-top:10px"><label class="form-label">Erste Beobachtungen</label><textarea class="form-input" id="scanNotizen" rows="3" placeholder="Erste Eindrücke, Kontext…">${escHtml(s.notizen)}</textarea></div>
     </div>
     <div class="scan-card" style="margin-top:12px">
       <div class="scan-card-title">Survey</div>
       <div class="btn-row"><button class="btn btn-ghost btn-sm" onclick="window.open('https://tally.so','_blank')">Tally-Survey senden ↗</button></div>
-      <div class="check-row" style="margin-top:8px"><input type="checkbox" id="surveyDone" ${s.survey_verschickt ? "checked" : ""}><label for="surveyDone">Survey verschickt ✓</label></div>
+      <div class="check-row" style="margin-top:8px"><input type="checkbox" id="surveyDone" ${s.survey_verschickt ? "checked" : ""}><label for="surveyDone" class="pflicht">Survey verschickt</label></div>
       <div class="form-group" style="margin-top:8px"><label class="form-label">Survey-Beobachtungen</label><textarea class="form-input" id="surveyNotizen" rows="2" placeholder="Rücklaufquote, auffällige Antworten…">${escHtml(s.survey_notizen)}</textarea></div>
     </div>
     <div class="scan-card" style="margin-top:12px">
@@ -2155,7 +2165,7 @@ function renderInterviewSlot(num) {
     <div class="interview-card" id="interview${num}">
       <div class="interview-header"><span class="interview-num">${num}</span><span class="interview-title">Interview ${num}</span></div>
       <div class="interview-fields">
-        <div class="form-group"><label class="form-label">Rolle</label>
+        <div class="form-group"><label class="form-label pflicht">Rolle</label>
           <select class="form-input" id="iv${num}Rolle"><option value="">— wählen —</option><option value="entscheider" ${iv.rolle==="entscheider"?"selected":""}>Entscheider</option><option value="fuehrungskraft" ${iv.rolle==="fuehrungskraft"?"selected":""}>Führungskraft</option><option value="operativ" ${iv.rolle==="operativ"?"selected":""}>Operative Person</option></select>
         </div>
         <div class="form-group"><label class="form-label">Datum + Uhrzeit</label><input class="form-input" type="datetime-local" id="iv${num}Datum" value="${iv.datum ? iv.datum.slice(0,16) : ""}"></div>
@@ -2291,7 +2301,7 @@ function renderHypotheseSlot(num) {
     <div class="hyp-card">
       <div style="font-weight:500;margin-bottom:8px">Hypothese ${num}</div>
       <div class="hyp-fields">
-        <div class="form-group"><label class="form-label">Layer + Mechanismus</label><input class="form-input" id="hyp${num}Layer" value="${escHtml(h.layer)}" placeholder="z.B. L2 Immunity"></div>
+        <div class="form-group"><label class="form-label${num === 1 ? ' pflicht' : ''}">Layer + Mechanismus</label><input class="form-input" id="hyp${num}Layer" value="${escHtml(h.layer)}" placeholder="z.B. L2 Immunity"></div>
         <div class="form-group"><label class="form-label">Evidenz (direktes Zitat)</label><input class="form-input" id="hyp${num}Evidenz" value="${escHtml(h.evidenz_zitat)}" placeholder="Zitat aus Interview"></div>
       </div>
       <div class="form-group" style="margin-top:8px"><label class="form-label">Testfrage für Hypothesen-Spiegel</label><input class="form-input" id="hyp${num}Testfrage" value="${escHtml(h.testfrage)}" placeholder="Frage die die Hypothese testet"></div>
@@ -2315,7 +2325,7 @@ function renderPhase4() {
       <div class="scan-card-title">Kunden-Reaktionen + Korrekturen</div>
       <textarea class="form-input" id="spiegelNotizen" rows="6" placeholder="Reaktionen auf Hypothesen, Korrekturen, Ergaenzungen…">${escHtml(s.hypothesen_spiegel_notizen)}</textarea>
     </div>
-    <div class="check-row" style="margin-top:12px"><input type="checkbox" id="spiegelDone" ${s.hypothesen_spiegel_done?"checked":""}><label for="spiegelDone">Hypothesen-Spiegel abgeschlossen ✓</label></div>
+    <div class="check-row" style="margin-top:12px"><input type="checkbox" id="spiegelDone" ${s.hypothesen_spiegel_done?"checked":""}><label for="spiegelDone" class="pflicht">Hypothesen-Spiegel abgeschlossen</label></div>
     <div class="btn-row" style="margin-top:12px">
       <button class="btn btn-ghost" onclick="goToScanPhase(3)">Zurück</button>
       <button class="btn btn-primary" onclick="savePhase4AndNext()">Weiter</button>
@@ -2337,7 +2347,7 @@ function renderPhase5() {
       ${renderAmpelGrid("final")}
     </div>
     <div class="scan-card" style="margin-top:12px">
-      <div class="scan-card-title">Primärer Friction-Vektor</div>
+      <div class="scan-card-title pflicht">Primärer Friction-Vektor</div>
       <textarea class="form-input" id="frictionVektor" rows="2" placeholder="Layer + Kurzbeschreibung">${escHtml(s.friction_vektor)}</textarea>
     </div>
     <div class="scan-card" style="margin-top:12px">
@@ -3296,14 +3306,17 @@ function renderAdaSessionList() {
     const active = currentAdaSession && currentAdaSession.id === s.id ? " active" : "";
     const item = document.createElement("div");
     item.className = "ada-session-item" + active;
-    item.innerHTML = `<span class="ada-session-title">${escHtml(s.title || "Neue Session")}</span><button class="ada-session-delete">&times;</button>`;
+    item.innerHTML = `<span class="ada-session-title">${escHtml(s.title || "Neue Session")}</span><button class="ada-session-delete" title="Session löschen">&times;</button>`;
+    const delBtn = item.querySelector(".ada-session-delete");
+    // Delete button: stop all propagation
+    delBtn.addEventListener("click", (e) => { e.stopPropagation(); e.preventDefault(); deleteAdaSession(s.id); });
+    delBtn.addEventListener("mousedown", (e) => e.stopPropagation());
     // Single click = load, double click = rename (debounced)
     item.addEventListener("click", (e) => {
-      if (e.target.classList.contains("ada-session-delete")) return;
+      if (e.target === delBtn || e.target.closest(".ada-session-delete")) return;
       if (adaClickTimer) { clearTimeout(adaClickTimer); adaClickTimer = null; renameAdaSession(s.id, item); return; }
       adaClickTimer = setTimeout(() => { adaClickTimer = null; loadAdaSession(s.id); }, 250);
     });
-    item.querySelector(".ada-session-delete").addEventListener("click", (e) => { e.stopPropagation(); deleteAdaSession(s.id); });
     el.appendChild(item);
   }
 }
@@ -3364,21 +3377,24 @@ async function saveAdaSession() {
 }
 
 async function deleteAdaSession(id) {
-  if (!confirm("Session löschen?")) return;
+  if (!confirm("Session wirklich löschen?")) return;
   try {
-    await fetch(`/api/ada/sessions/${id}`, { method: "DELETE" });
+    const r = await fetch(`/api/ada/sessions/${id}`, { method: "DELETE" });
     adaSessions = adaSessions.filter(s => s.id !== id);
-    if (currentAdaSession && currentAdaSession.id === id) {
+    const wasActive = currentAdaSession && currentAdaSession.id === id;
+    if (wasActive) {
       currentAdaSession = null;
       adaMessages = [];
-      const msgs = $adaMessages();
-      if (msgs) msgs.innerHTML = '<div class="ada-msg assistant">Hallo Nathalie. Was steht an?</div>';
     }
     renderAdaSessionList();
-    if (adaSessions.length > 0 && !currentAdaSession) {
-      await loadAdaSession(adaSessions[0].id);
+    if (wasActive) {
+      if (adaSessions.length > 0) {
+        await loadAdaSession(adaSessions[0].id);
+      } else {
+        await createAdaSession();
+      }
     }
-  } catch {}
+  } catch (e) { console.warn("Delete session failed:", e); }
 }
 
 function renameAdaSession(id, el) {
