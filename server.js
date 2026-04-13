@@ -795,26 +795,42 @@ app.post("/api/ada/chat", async (req, res) => {
     systemPrompt += `\n\n─── SCAN-KONTEXT ───\nKunde: ${scan_context.kunde || "unbekannt"}\nPhase: ${scan_context.phase || "unbekannt"}\nStatus: ${scan_context.status || "unbekannt"}\n─── ENDE SCAN-KONTEXT ───`;
   }
 
-  try {
-    const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 2048,
-      system: systemPrompt,
-      messages: messages.map(m => ({
-        role: m.role,
-        content: m.content,
-      })),
-    });
+  const maxRetries = 3;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await anthropic.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 2048,
+        system: systemPrompt,
+        messages: messages.map(m => ({
+          role: m.role,
+          content: m.content,
+        })),
+      });
 
-    const text = response.content
-      .filter(c => c.type === "text")
-      .map(c => c.text)
-      .join("");
+      const text = response.content
+        .filter(c => c.type === "text")
+        .map(c => c.text)
+        .join("");
 
-    res.json({ role: "assistant", content: text });
-  } catch (e) {
-    console.error("ADA error:", e.message);
-    res.status(500).json({ error: "ADA-Fehler: " + e.message });
+      return res.json({ role: "assistant", content: text });
+    } catch (e) {
+      const isOverloaded = e.status === 529 || (e.message && e.message.includes("529"));
+      const isRateLimit = e.status === 429;
+      if ((isOverloaded || isRateLimit) && attempt < maxRetries) {
+        const wait = attempt * 2000;
+        console.warn(`ADA attempt ${attempt}/${maxRetries} failed (${e.status || "?"}), retrying in ${wait}ms...`);
+        await new Promise(r => setTimeout(r, wait));
+        continue;
+      }
+      console.error("ADA error:", e.message);
+      const userMsg = isOverloaded
+        ? "Claude ist gerade überlastet. Bitte in 30 Sekunden nochmal versuchen."
+        : isRateLimit
+        ? "Zu viele Anfragen. Bitte kurz warten."
+        : "ADA-Fehler: " + e.message;
+      return res.status(500).json({ error: userMsg });
+    }
   }
 });
 
