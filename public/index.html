@@ -1441,6 +1441,19 @@ function switchTab(tab) {
 
 function escHtml(s) { return (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 
+// Simple markdown → HTML for ADA messages (bold, italic, code, headers, lists)
+function renderMarkdown(text) {
+  let html = escHtml(text);
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  html = html.replace(/`(.+?)`/g, '<code style="background:rgba(0,0,0,0.06);padding:1px 4px;border-radius:3px;font-family:var(--mono);font-size:12px">$1</code>');
+  html = html.replace(/^### (.+)$/gm, '<div style="font-weight:600;font-size:14px;margin-top:12px;margin-bottom:4px">$1</div>');
+  html = html.replace(/^## (.+)$/gm, '<div style="font-weight:600;font-size:15px;margin-top:14px;margin-bottom:6px">$1</div>');
+  html = html.replace(/^- (.+)$/gm, '<div style="padding-left:12px">• $1</div>');
+  html = html.replace(/\n/g, '<br>');
+  return html;
+}
+
 // ══════════════════════════════════════════════════════════════════════════
 // MODUL 1 — ERSTGESPRÄCH (original code preserved)
 // ══════════════════════════════════════════════════════════════════════════
@@ -1458,9 +1471,13 @@ function signalTotal(layer) {
   let t = 0; for (let p = 1; p <= 5; p++) t += (signalCounts[p]?.[layer] || 0); return t;
 }
 
-function trackSignal(layer) {
+function trackSignal(layer, decrement) {
   if (!signalCounts[currentPhase]) signalCounts[currentPhase] = {L1:0,L2:0,L3:0};
-  signalCounts[currentPhase][layer]++;
+  if (decrement) {
+    if (signalCounts[currentPhase][layer] > 0) signalCounts[currentPhase][layer]--;
+  } else {
+    signalCounts[currentPhase][layer]++;
+  }
   updateSignalButtons();
 }
 
@@ -1480,9 +1497,9 @@ function renderSignalTracker() {
   const pc = signalCounts[currentPhase] || {L1:0,L2:0,L3:0};
   return `<div class="signal-tracker">
     <span class="signal-tracker-label">Signal</span>
-    <button class="signal-btn${pc.L1 ? ' l1-active' : ''}" id="sigL1" onclick="trackSignal('L1')">L1<span class="signal-count${pc.L1 ? '' : ' zero'}">${pc.L1}</span></button>
-    <button class="signal-btn${pc.L2 ? ' l2-active' : ''}" id="sigL2" onclick="trackSignal('L2')">L2<span class="signal-count${pc.L2 ? '' : ' zero'}">${pc.L2}</span></button>
-    <button class="signal-btn${pc.L3 ? ' l3-active' : ''}" id="sigL3" onclick="trackSignal('L3')">L3<span class="signal-count${pc.L3 ? '' : ' zero'}">${pc.L3}</span></button>
+    <button class="signal-btn${pc.L1 ? ' l1-active' : ''}" id="sigL1" onclick="trackSignal('L1')" oncontextmenu="event.preventDefault();trackSignal('L1',true)">L1<span class="signal-count${pc.L1 ? '' : ' zero'}">${pc.L1}</span></button>
+    <button class="signal-btn${pc.L2 ? ' l2-active' : ''}" id="sigL2" onclick="trackSignal('L2')" oncontextmenu="event.preventDefault();trackSignal('L2',true)">L2<span class="signal-count${pc.L2 ? '' : ' zero'}">${pc.L2}</span></button>
+    <button class="signal-btn${pc.L3 ? ' l3-active' : ''}" id="sigL3" onclick="trackSignal('L3')" oncontextmenu="event.preventDefault();trackSignal('L3',true)">L3<span class="signal-count${pc.L3 ? '' : ' zero'}">${pc.L3}</span></button>
   </div>`;
 }
 
@@ -1963,10 +1980,24 @@ async function openScan(scan) {
   renderScanPhase(scanPhase);
 }
 
+function isScanPhaseDone(num) {
+  if (!currentScan) return false;
+  const s = currentScan;
+  switch (num) {
+    case 0: return s.mandatscheck_budget && s.mandatscheck_personen && s.mandatscheck_kein_krise;
+    case 1: return !!(s.anzahl_personen || s.survey_verschickt);
+    case 2: return scanInterviews.some(iv => iv && iv.rolle);
+    case 3: return scanHypothesen.some(h => h && h.layer);
+    case 4: return !!s.hypothesen_spiegel_done;
+    case 5: return !!s.completed;
+    default: return false;
+  }
+}
+
 function renderScanPhaseSidebar(activeNum) {
   let html = '<div class="phase-sidebar-label">Phasen</div>';
   for (const p of SCAN_PHASES) {
-    const isDone = p.num < activeNum;
+    const isDone = isScanPhaseDone(p.num);
     const isActive = p.num === activeNum;
     html += `<button class="phase-nav-item${isActive ? " active" : ""}${isDone ? " done" : ""}" onclick="goToScanPhase(${p.num})">`;
     html += `<span class="phase-nav-dot">${isDone ? "✓" : p.num}</span>`;
@@ -1998,6 +2029,7 @@ function renderScanPhase(num) {
   `;
 
   bindScanPhaseEvents(num);
+  wireAutoSave();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -2240,9 +2272,17 @@ function toggleStar(e, id) {
   const val = parseInt(e.target.dataset.v);
   if (!val) return;
   const container = document.querySelector(`[data-stars="${id}"]`);
-  container.querySelectorAll("span").forEach(s => {
-    s.classList.toggle("filled", parseInt(s.dataset.v) <= val);
-  });
+  // Check if clicking same star that's the current max → deselect all
+  const currentMax = parseInt(container.dataset.currentVal || "0");
+  if (currentMax === val) {
+    container.dataset.currentVal = "0";
+    container.querySelectorAll("span").forEach(s => s.classList.remove("filled"));
+  } else {
+    container.dataset.currentVal = String(val);
+    container.querySelectorAll("span").forEach(s => {
+      s.classList.toggle("filled", parseInt(s.dataset.v) <= val);
+    });
+  }
 }
 
 function renderHypotheseSlot(num) {
@@ -2318,6 +2358,7 @@ function renderPhase5() {
     ${renderFuenfKernCheck()}
     <div class="btn-row" style="margin-top:12px">
       <button class="btn btn-ghost" onclick="goToScanPhase(4)">Zurück</button>
+      <button class="btn btn-ghost" onclick="zwischenspeichernBefund()">Zwischenspeichern</button>
       <button class="btn btn-primary" id="btnFinishScan" onclick="finishScan()">Befund abschliessen</button>
       <button class="btn btn-ghost" disabled title="Kommt in Phase 2">Export → PowerPoint</button>
     </div>
@@ -2360,12 +2401,16 @@ function renderAmpelGrid(phase) {
 function setAmpel(dot) {
   const key = dot.dataset.key;
   const farbe = dot.dataset.farbe;
-  scanAmpeln[key] = farbe;
-  // Update UI
-  dot.parentElement.querySelectorAll(".ampel-dot").forEach(d => {
-    d.className = "ampel-dot" + (d.dataset.farbe === farbe ? " " + farbe : "");
-  });
-  // Recalculate regime if on phase 5
+  // Toggle: if same value clicked again, reset to grau
+  if (scanAmpeln[key] === farbe) {
+    scanAmpeln[key] = "grau";
+    dot.parentElement.querySelectorAll(".ampel-dot").forEach(d => d.className = "ampel-dot");
+  } else {
+    scanAmpeln[key] = farbe;
+    dot.parentElement.querySelectorAll(".ampel-dot").forEach(d => {
+      d.className = "ampel-dot" + (d.dataset.farbe === farbe ? " " + farbe : "");
+    });
+  }
   if (scanPhase === 5) calculateRegime();
 }
 
@@ -2393,6 +2438,67 @@ function calculateRegime() {
 }
 
 // ── PHASE SAVE HELPERS ──
+// ── AUTO-SAVE UTILITY ──
+let _autoSaveTimer = null;
+let _autoSaveIndicator = null;
+
+function showSaveIndicator() {
+  if (_autoSaveIndicator) clearTimeout(_autoSaveIndicator);
+  let el = document.getElementById("autoSaveMsg");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "autoSaveMsg";
+    el.style.cssText = "position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:6px 14px;border-radius:6px;font-size:12px;font-family:var(--mono);z-index:600;opacity:0;transition:opacity .3s;";
+    document.body.appendChild(el);
+  }
+  el.textContent = "Gespeichert ✓";
+  el.style.opacity = "1";
+  _autoSaveIndicator = setTimeout(() => { el.style.opacity = "0"; }, 2000);
+}
+
+function autoSaveScanPhase() {
+  if (_autoSaveTimer) clearTimeout(_autoSaveTimer);
+  _autoSaveTimer = setTimeout(async () => {
+    if (!currentScan) return;
+    try {
+      if (scanPhase === 1) {
+        await patchScan({
+          anzahl_personen: parseInt(document.getElementById("scanAnzahl")?.value) || null,
+          notizen: document.getElementById("scanNotizen")?.value || "",
+          survey_verschickt: document.getElementById("surveyDone")?.checked || false,
+          survey_notizen: document.getElementById("surveyNotizen")?.value || "",
+          current_phase: Math.max(currentScan.current_phase || 0, 1),
+        });
+      } else if (scanPhase === 2) {
+        await saveAllInterviews();
+      } else if (scanPhase === 3) {
+        await saveAmpeln("interview");
+        await saveAllHypothesen();
+      } else if (scanPhase === 4) {
+        await patchScan({
+          hypothesen_spiegel_notizen: document.getElementById("spiegelNotizen")?.value || "",
+          hypothesen_spiegel_done: document.getElementById("spiegelDone")?.checked || false,
+        });
+      } else if (scanPhase === 5) {
+        await saveAmpeln("final");
+        currentScan.friction_vektor = document.getElementById("frictionVektor")?.value || "";
+        await patchScan({ friction_vektor: currentScan.friction_vektor });
+        await saveAllMassnahmen();
+      }
+      showSaveIndicator();
+    } catch (e) { console.warn("Auto-save:", e.message); }
+  }, 1500);
+}
+
+function wireAutoSave() {
+  document.querySelectorAll("#scanContent textarea, #scanContent input[type=text], #scanContent input[type=number], #scanContent input[type=datetime-local]").forEach(el => {
+    el.addEventListener("input", autoSaveScanPhase);
+  });
+  document.querySelectorAll("#scanContent input[type=checkbox], #scanContent select").forEach(el => {
+    el.addEventListener("change", autoSaveScanPhase);
+  });
+}
+
 function bindScanPhaseEvents(num) {
   if (num === 0) {
     const checks = ["mc1", "mc2", "mc3"];
@@ -2466,6 +2572,16 @@ async function savePhase4AndNext() {
   // Ensure massnahmen slots
   await ensureMassnahmenSlots();
   goToScanPhase(5);
+}
+
+async function zwischenspeichernBefund() {
+  try {
+    await saveAmpeln("final");
+    currentScan.friction_vektor = document.getElementById("frictionVektor")?.value || "";
+    await patchScan({ friction_vektor: currentScan.friction_vektor, current_phase: 5 });
+    await saveAllMassnahmen();
+    showSaveIndicator();
+  } catch (e) { alert("Speichern fehlgeschlagen: " + e.message); }
 }
 
 async function finishScan() {
@@ -3074,7 +3190,11 @@ function appendAdaMsg(role, text, timestamp) {
   const div = document.createElement("div");
   div.className = `ada-msg ${role}`;
   div.style.maxWidth = "100%";
-  div.textContent = text;
+  if (role === "assistant") {
+    div.innerHTML = renderMarkdown(text);
+  } else {
+    div.textContent = text;
+  }
 
   // User messages: edit/delete on hover
   if (role === "user") {
@@ -3269,6 +3389,7 @@ function renameAdaSession(id, el) {
   input.type = "text";
   input.value = oldTitle;
   input.style.cssText = "background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);color:#fff;font-size:13px;padding:2px 6px;border-radius:4px;width:100%;";
+  ["click", "mousedown", "dblclick"].forEach(ev => input.addEventListener(ev, (e) => e.stopPropagation()));
   titleSpan.replaceWith(input);
   input.focus();
   input.select();
