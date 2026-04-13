@@ -3209,15 +3209,16 @@ function appendAdaMsg(role, text, timestamp) {
   // User messages: edit/delete on hover
   if (role === "user") {
     const msgIdx = adaMessages.length - 1;
+    wrapper.dataset.msgIdx = msgIdx;
     wrapper.style.position = "relative";
     const actions = document.createElement("div");
-    actions.style.cssText = "display:none;position:absolute;top:18px;right:-40px;flex-direction:column;gap:2px;";
-    actions.innerHTML = `<button style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--ink-mute);padding:2px;" title="Bearbeiten" data-action="edit">&#9998;</button>
-      <button style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--ink-mute);padding:2px;" title="Löschen" data-action="del">&#128465;</button>`;
+    actions.style.cssText = "display:none;position:absolute;top:20px;right:4px;flex-direction:row;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:2px 4px;box-shadow:0 2px 6px rgba(0,0,0,0.1);z-index:2;";
+    actions.innerHTML = `<button style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--ink-mute);padding:2px 4px;transition:color .15s;" title="Bearbeiten" data-action="edit">✏️</button>
+      <button style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--ink-mute);padding:2px 4px;transition:color .15s;" title="Löschen" data-action="del">🗑</button>`;
     wrapper.addEventListener("mouseenter", () => actions.style.display = "flex");
     wrapper.addEventListener("mouseleave", () => actions.style.display = "none");
-    actions.querySelector("[data-action=edit]").onclick = () => editAdaMsg(div, wrapper);
-    actions.querySelector("[data-action=del]").onclick = () => deleteAdaMsg(div, wrapper);
+    actions.querySelector("[data-action=edit]").onclick = (e) => { e.stopPropagation(); editAdaMsg(div, wrapper, msgIdx); };
+    actions.querySelector("[data-action=del]").onclick = (e) => { e.stopPropagation(); deleteAdaMsg(wrapper, msgIdx); };
     wrapper.appendChild(actions);
   }
 
@@ -3240,42 +3241,57 @@ function appendAdaMsg(role, text, timestamp) {
   msgs.scrollTop = msgs.scrollHeight;
 }
 
-function editAdaMsg(msgDiv, wrapper) {
-  const oldText = msgDiv.textContent;
+function editAdaMsg(msgDiv, wrapper, msgIdx) {
+  const oldText = adaMessages[msgIdx]?.content || msgDiv.textContent;
   const textarea = document.createElement("textarea");
   textarea.className = "ada-chat-input";
   textarea.value = oldText;
-  textarea.style.cssText = "min-height:44px;max-height:200px;margin:0;";
+  textarea.style.cssText = "min-height:44px;max-height:200px;margin:0;width:100%;";
   const btnRow = document.createElement("div");
   btnRow.style.cssText = "display:flex;gap:6px;margin-top:4px;";
-  btnRow.innerHTML = '<button class="btn btn-primary btn-sm" data-action="save">Speichern</button><button class="btn btn-ghost btn-sm" data-action="cancel">Abbrechen</button>';
+  btnRow.innerHTML = '<button class="btn btn-primary btn-sm" data-action="save">✓</button><button class="btn btn-ghost btn-sm" data-action="cancel">✕</button>';
   msgDiv.replaceWith(textarea);
   wrapper.appendChild(btnRow);
   textarea.focus();
+  textarea.setSelectionRange(textarea.value.length, textarea.value.length);
 
-  btnRow.querySelector("[data-action=save]").onclick = () => {
+  let done = false;
+  const save = () => {
+    if (done) return; done = true;
     const newText = textarea.value.trim();
-    if (newText) {
-      const idx = adaMessages.findIndex(m => m.role === "user" && m.content === oldText);
-      if (idx >= 0) adaMessages[idx].content = newText;
+    if (newText && msgIdx >= 0 && msgIdx < adaMessages.length) {
+      adaMessages[msgIdx].content = newText;
       msgDiv.textContent = newText;
     }
     textarea.replaceWith(msgDiv);
     btnRow.remove();
     if (currentAdaSession) saveAdaSession();
   };
-  btnRow.querySelector("[data-action=cancel]").onclick = () => {
+  const cancel = () => {
+    if (done) return; done = true;
     textarea.replaceWith(msgDiv);
     btnRow.remove();
   };
+
+  btnRow.querySelector("[data-action=save]").onclick = save;
+  btnRow.querySelector("[data-action=cancel]").onclick = cancel;
+  textarea.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); save(); }
+    if (e.key === "Escape") { e.preventDefault(); cancel(); }
+  });
 }
 
-function deleteAdaMsg(msgDiv, wrapper) {
-  if (!confirm("Nachricht löschen?")) return;
-  const text = msgDiv.textContent;
-  const idx = adaMessages.findIndex(m => m.role === "user" && m.content === text);
-  if (idx >= 0) adaMessages.splice(idx, 1);
+function deleteAdaMsg(wrapper, msgIdx) {
+  if (msgIdx >= 0 && msgIdx < adaMessages.length) {
+    adaMessages.splice(msgIdx, 1);
+  }
   wrapper.remove();
+  // Re-index remaining wrappers
+  const msgs = $adaMessages();
+  if (msgs) {
+    let idx = 0;
+    msgs.querySelectorAll("[data-msg-idx]").forEach(w => { w.dataset.msgIdx = idx++; });
+  }
   if (currentAdaSession) saveAdaSession();
 }
 
