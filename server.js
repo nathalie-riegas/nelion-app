@@ -5,6 +5,10 @@ const crypto = require("crypto");
 const { execSync } = require("child_process");
 const { createClient } = require("@supabase/supabase-js");
 const Anthropic = require("@anthropic-ai/sdk");
+const multer = require("multer");
+const PDFParse = require("pdf-parse");
+const mammoth = require("mammoth");
+const AdmZip = require("adm-zip");
 
 const app = express();
 app.use(express.json({ limit: "1mb" }));
@@ -263,6 +267,80 @@ app.get("/api/auth/status", (req, res) => {
 
 // Static files after auth
 app.use(express.static(path.join(__dirname, "public")));
+
+// ─── FILE UPLOAD ──────────────────────────────────────────────────────────
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+const ALLOWED_EXTS = new Set([".pdf", ".docx", ".pptx"]);
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MAX_UPLOAD_BYTES, files: 1 },
+  fileFilter: (req, file, cb) => {
+    const ext = path.extname(file.originalname || "").toLowerCase();
+    if (!ALLOWED_EXTS.has(ext)) {
+      return cb(new Error("Format nicht unterstuetzt. Erlaubt: PDF, DOCX, PPTX"));
+    }
+    cb(null, true);
+  },
+});
+
+async function extractPdfText(buffer) {
+  const result = await PDFParse(buffer);
+  return (result && result.text) || "";
+}
+
+async function extractDocxText(buffer) {
+  const result = await mammoth.extractRawText({ buffer });
+  return (result && result.value) || "";
+}
+
+function extractPptxText(buffer) {
+  const zip = new AdmZip(buffer);
+  const slides = [];
+  for (const entry of zip.getEntries()) {
+    const m = entry.entryName.match(/^ppt\/slides\/slide(\d+)\.xml$/);
+    if (!m) continue;
+    const xml = entry.getData().toString("utf-8");
+    const runs = [];
+    for (const t of xml.matchAll(/<a:t[^>]*>([\s\S]*?)<\/a:t>/g)) {
+      runs.push(t[1].replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"'));
+    }
+    slides.push({ index: parseInt(m[1], 10), text: runs.join(" ").trim() });
+  }
+  slides.sort((a, b) => a.index - b.index);
+  return slides.map(s => `[Slide ${s.index}]\n${s.text}`).join("\n\n");
+}
+
+app.post("/api/upload", (req, res) => {
+  upload.single("file")(req, res, async (uploadErr) => {
+    if (uploadErr) {
+      const msg = uploadErr.code === "LIMIT_FILE_SIZE"
+        ? "Datei zu gross (max. 10 MB)"
+        : uploadErr.message || "Upload fehlgeschlagen";
+      return res.status(400).json({ error: msg });
+    }
+    if (!req.file) return res.status(400).json({ error: "Keine Datei empfangen" });
+
+    const { buffer, originalname, size } = req.file;
+    const ext = path.extname(originalname || "").toLowerCase();
+
+    try {
+      let text = "";
+      if (ext === ".pdf") text = await extractPdfText(buffer);
+      else if (ext === ".docx") text = await extractDocxText(buffer);
+      else if (ext === ".pptx") text = extractPptxText(buffer);
+      else return res.status(400).json({ error: "Format nicht unterstuetzt" });
+
+      text = (text || "").replace(/\r\n/g, "\n").replace(/[ \t]+\n/g, "\n").trim();
+      if (!text) return res.status(422).json({ error: "Kein Text extrahierbar" });
+
+      res.json({ filename: originalname, size, text });
+    } catch (err) {
+      console.error("Upload parse error:", err.message);
+      res.status(500).json({ error: "Parse-Fehler: " + err.message });
+    }
+  });
+});
 
 // ─── VERSION ENDPOINT ──────────────────────────────────────────────────────
 app.get("/api/version", (req, res) => {

@@ -783,6 +783,14 @@
   }
   .ada-chat-send:hover { background: var(--ada-accent-h); }
   .ada-chat-send:disabled { opacity: .4; cursor: not-allowed; }
+  .ada-attach-btn {
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: var(--r); padding: 8px 12px; font-size: 18px;
+    cursor: pointer; transition: background .15s; align-self: flex-end;
+    line-height: 1; min-height: 44px; display: flex; align-items: center;
+  }
+  .ada-attach-btn:hover { background: var(--ada-bg); border-color: var(--ada-accent); }
+  .ada-attach-btn:disabled { opacity: .4; cursor: not-allowed; }
 
   /* ── TASK DRAWER ───────────────────────────────────────────────────── */
   .task-drawer {
@@ -1180,6 +1188,8 @@
         <div class="ada-msg assistant">Hallo Nathalie. Was steht an?</div>
       </div>
       <div class="ada-chat-input-row">
+        <input type="file" id="adaFileInput" accept=".pdf,.docx,.pptx" style="display:none;">
+        <button class="ada-attach-btn" id="adaAttachBtn" title="Datei hochladen (PDF, DOCX, PPTX)">&#128206;</button>
         <textarea class="ada-chat-input" id="adaInput" placeholder="Nachricht an ADA…" rows="1"></textarea>
         <button class="ada-chat-send" id="adaSend">Senden</button>
       </div>
@@ -3105,6 +3115,22 @@ function initAdaListeners() {
       input.style.height = Math.min(input.scrollHeight, 120) + "px";
     });
   }
+  // File upload
+  const attachBtn = document.getElementById("adaAttachBtn");
+  const fileInput = document.getElementById("adaFileInput");
+  if (attachBtn && fileInput) {
+    attachBtn.addEventListener("click", () => {
+      if (adaSending) return;
+      fileInput.value = "";
+      fileInput.click();
+    });
+    fileInput.addEventListener("change", async () => {
+      const file = fileInput.files && fileInput.files[0];
+      if (!file) return;
+      await handleAdaFileUpload(file);
+      fileInput.value = "";
+    });
+  }
   // Sidebar resize
   const sidebar = document.querySelector(".ada-sidebar");
   const handle = document.getElementById("adaSidebarResize");
@@ -3184,6 +3210,97 @@ async function sendAdaMessage() {
   if (inp) inp.focus();
 
   // Auto-save session
+  if (currentAdaSession) saveAdaSession();
+}
+
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+
+async function handleAdaFileUpload(file) {
+  if (adaSending) return;
+
+  const allowedExts = [".pdf", ".docx", ".pptx"];
+  const nameLower = file.name.toLowerCase();
+  const okExt = allowedExts.some(e => nameLower.endsWith(e));
+  if (!okExt) {
+    appendAdaMsg("assistant", `Format nicht unterstuetzt: ${file.name}. Erlaubt: PDF, DOCX, PPTX`);
+    return;
+  }
+  if (file.size > MAX_UPLOAD_BYTES) {
+    appendAdaMsg("assistant", `Datei zu gross (max. 10 MB): ${file.name}`);
+    return;
+  }
+
+  const msgs = $adaMessages();
+  const send = $adaSend();
+  const attachBtn = document.getElementById("adaAttachBtn");
+
+  // Show upload indicator
+  const uploadEl = document.createElement("div");
+  uploadEl.className = "ada-msg assistant";
+  uploadEl.textContent = `Lade hoch: ${file.name} …`;
+  if (msgs) { msgs.appendChild(uploadEl); msgs.scrollTop = msgs.scrollHeight; }
+
+  adaSending = true;
+  if (send) send.disabled = true;
+  if (attachBtn) attachBtn.disabled = true;
+
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    const r = await fetch("/api/upload", { method: "POST", body: formData });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || d.error) throw new Error(d.error || `HTTP ${r.status}`);
+
+    // Remove upload indicator
+    if (uploadEl.parentNode) uploadEl.remove();
+
+    // Inject extracted text as user message
+    const injected = `[Dokument: ${file.name}]\n\n${d.text}`;
+    const now = new Date().toISOString();
+    adaMessages.push({ role: "user", content: injected, timestamp: now });
+    appendAdaMsg("user", injected, now);
+
+    // Auto-save session
+    if (currentAdaSession) saveAdaSession();
+
+    // Send to ADA for analysis
+    const thinkEl = document.createElement("div");
+    thinkEl.className = "ada-msg thinking";
+    thinkEl.textContent = "denkt…";
+    if (msgs) { msgs.appendChild(thinkEl); msgs.scrollTop = msgs.scrollHeight; }
+
+    const scanCtx = currentScan ? {
+      kunde: currentScan.kunde_name,
+      phase: `Phase ${scanPhase} — ${SCAN_PHASES[scanPhase]?.title || "?"}`,
+      status: currentScan.status,
+    } : null;
+
+    const chatR = await fetch("/api/ada/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: adaMessages, scan_context: scanCtx }),
+    });
+    const chatData = await chatR.json();
+    thinkEl.remove();
+
+    if (chatData.error) {
+      appendAdaMsg("assistant", "Fehler: " + chatData.error);
+    } else {
+      const aNow = new Date().toISOString();
+      adaMessages.push({ role: "assistant", content: chatData.content, timestamp: aNow });
+      appendAdaMsg("assistant", chatData.content, aNow);
+    }
+  } catch (e) {
+    if (uploadEl.parentNode) uploadEl.remove();
+    appendAdaMsg("assistant", "Upload-Fehler: " + e.message);
+  }
+
+  adaSending = false;
+  if (send) send.disabled = false;
+  if (attachBtn) attachBtn.disabled = false;
+  const inp = $adaInput();
+  if (inp) inp.focus();
+
   if (currentAdaSession) saveAdaSession();
 }
 
