@@ -467,6 +467,44 @@
     background: var(--surface2); color: var(--ink-mid); border: 1px solid var(--border2);
   }
 
+  /* ── PAI MICRO-SURVEY ──────────────────────────────────────────────── */
+  .pai-ms-row {
+    display: flex; align-items: center; gap: 12px; padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .pai-ms-row:last-child { border-bottom: none; }
+  .pai-ms-layer {
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    color: var(--ink-mid); min-width: 24px;
+    background: var(--surface2); padding: 2px 6px; border-radius: 3px;
+    text-align: center;
+  }
+  .pai-ms-q { flex: 1; font-size: 13px; color: var(--ink); line-height: 1.4; }
+  .pai-ms-toggle { display: flex; gap: 4px; flex-shrink: 0; }
+  .pai-toggle-btn {
+    font-family: var(--mono); font-size: 11px; padding: 4px 12px;
+    border: 1px solid var(--border2); border-radius: var(--rs);
+    background: var(--surface); color: var(--ink-dim); cursor: pointer;
+    transition: all .15s;
+  }
+  .pai-toggle-btn:hover { background: var(--surface2); }
+  .pai-toggle-btn.active[data-v="ja"] { background: var(--green); color: #fff; border-color: var(--green); }
+  .pai-toggle-btn.active[data-v="nein"] { background: var(--red); color: #fff; border-color: var(--red); }
+
+  /* ── PAI KPI ────────────────────────────────────────────────────────── */
+  .pai-kpi-section { max-height: 0; overflow: hidden; transition: max-height .3s; }
+  .pai-kpi-section.open { max-height: 400px; padding-top: 12px; }
+  .pai-kpi-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 10px; background: var(--surface2); border-radius: var(--rs);
+  }
+  .pai-kpi-label { font-size: 12px; color: var(--ink-mid); }
+  .pai-kpi-input {
+    width: 60px; text-align: center; font-family: var(--mono); font-size: 13px;
+    border: 1px solid var(--border2); border-radius: var(--rs); padding: 4px;
+    background: var(--surface);
+  }
+
   /* ── ADA CHAT ───────────────────────────────────────────────────────── */
   .ada-container {
     display: flex; flex-direction: column; height: calc(100dvh - 140px);
@@ -1038,6 +1076,7 @@
 <nav class="tab-nav" id="appTabNav">
   <button class="tab-btn" data-tab="modul1" onclick="switchTab('modul1')">Erstgespräch</button>
   <button class="tab-btn" data-tab="modul2" onclick="switchTab('modul2')">Friction Scan</button>
+  <button class="tab-btn" data-tab="modul3" onclick="switchTab('modul3')">PAI</button>
   <button class="tab-btn" data-tab="ada" onclick="switchTab('ada')">ADA</button>
 </nav>
 
@@ -1079,6 +1118,7 @@
     <div class="landing-buttons">
       <button class="landing-btn" onclick="switchTab('modul1')">Erstgespräch starten</button>
       <button class="landing-btn" onclick="switchTab('modul2')">Friction Scan</button>
+      <button class="landing-btn" onclick="switchTab('modul3')">PAI</button>
       <button class="landing-btn ada" onclick="switchTab('ada')">ADA öffnen</button>
     </div>
 
@@ -1151,6 +1191,16 @@
     <div class="datetime-top-right datetime-display" id="modul2DateTime"></div>
   </div>
   <div id="scanContent"></div>
+</div>
+
+<!-- ╔═══════════════════════════════════════════════════════════════════════╗ -->
+<!-- ║  MODUL 3 — PAI (Personal Assessment & Intervention)                ║ -->
+<!-- ╚═══════════════════════════════════════════════════════════════════════╝ -->
+<div class="module" id="moduleModul3">
+  <div style="position:relative;">
+    <div class="datetime-top-right datetime-display" id="modul3DateTime"></div>
+  </div>
+  <div id="paiContent"></div>
 </div>
 
 </div><!-- /.container -->
@@ -1446,11 +1496,15 @@ function switchTab(tab) {
     document.getElementById("moduleModul1").classList.add("active");
   } else if (tab === "modul2") {
     document.getElementById("moduleModul2").classList.add("active");
+  } else if (tab === "modul3") {
+    document.getElementById("moduleModul3").classList.add("active");
+    initPAITab();
   }
 
   // Anker visible in cockpit screens
   const showAnker = (tab === "modul1" && document.getElementById("screenCockpit").classList.contains("active"))
-    || (tab === "modul2" && currentScan);
+    || (tab === "modul2" && currentScan)
+    || (tab === "modul3" && currentPaiSession);
   document.getElementById("btnAnker").style.display = showAnker ? "flex" : "none";
 }
 
@@ -3685,6 +3739,683 @@ async function saveAdaTaskSuggestion(titel) {
     });
     if (taskDrawerOpen) await loadTasks();
   } catch {}
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// PAI — PERSONAL ASSESSMENT & INTERVENTION
+// ══════════════════════════════════════════════════════════════════════════
+let currentPaiSession = null;
+let paiPhase = 0;
+let paiErhebung = {};     // key: "phase_feld" → wert
+let paiAmpeln = {};       // key: "L{1-3}_{achse}" → "gruen"/"gelb"/"rot"
+let paiKpis = {};         // key: kpi_key → wert
+let _paiAutoSaveTimer = null;
+
+const PAI_PHASES = [
+  { num: 0, title: "Person erfassen", short: "Person" },
+  { num: 1, title: "Strukturiertes Interview", short: "Interview" },
+  { num: 2, title: "Behavioral Micro-Survey", short: "Survey" },
+  { num: 3, title: "Sprach-Signale", short: "Signale" },
+  { num: 4, title: "Friction Profil", short: "Profil" },
+  { num: 5, title: "Hypothesen & Schritte", short: "Hypothesen" },
+];
+
+const PAI_KPI_KEYS = [
+  "sessions_durchgefuehrt",
+  "l1_warnungen",
+  "l2_warnungen",
+  "l3_warnungen",
+  "helfersyndrom_indikator",
+  "psych_safety_niedrig",
+  "entscheidungsblockade",
+  "hypothesen_gestellt",
+];
+
+function initPAITab() {
+  if (!currentPaiSession) renderPaiList();
+}
+
+function renderPaiList() {
+  currentPaiSession = null;
+  const $el = document.getElementById("paiContent");
+  $el.innerHTML = `
+    <div class="start-title">PAI — Personal Assessment</div>
+    <div class="start-desc">Neue Session anlegen oder bestehende waehlen.</div>
+    <div class="form-group">
+      <label class="form-label" for="paiPersonName">Name *</label>
+      <input class="form-input" type="text" id="paiPersonName" placeholder="Vorname Nachname" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="paiPersonRolle">Rolle</label>
+      <input class="form-input" type="text" id="paiPersonRolle" placeholder="z.B. Teamlead, CEO, Projektleiter…" autocomplete="off">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btnStartPai">Session starten</button>
+    </div>
+    <div class="divider">Bestehende Sessions</div>
+    <div class="contact-list" id="paiList"><div style="font-size:12px;color:var(--ink-mute);text-align:center;padding:12px;">Lade…</div></div>
+  `;
+  document.getElementById("btnStartPai").addEventListener("click", startNewPaiSession);
+  loadPaiSessions();
+}
+
+async function loadPaiSessions() {
+  try {
+    const r = await fetch("/api/pai/sessions");
+    const sessions = await r.json();
+    const $list = document.getElementById("paiList");
+    if (!Array.isArray(sessions) || sessions.length === 0) {
+      $list.innerHTML = '<div style="font-size:12px;color:var(--ink-mute);text-align:center;padding:12px;">Noch keine Sessions.</div>';
+      return;
+    }
+    $list.innerHTML = "";
+    for (const s of sessions) {
+      const date = new Date(s.created_at).toLocaleDateString("de-CH", { day: "2-digit", month: "2-digit", year: "2-digit" });
+      const item = document.createElement("div");
+      item.className = "contact-item";
+      const nameEl = document.createElement("span");
+      nameEl.className = "contact-name";
+      nameEl.textContent = s.person_name + (s.person_rolle ? ` (${s.person_rolle})` : "");
+      const phaseLabel = s.status === "abgeschlossen" ? "Abgeschlossen" : `Phase ${s.current_phase || 0}`;
+      const badgeColor = s.status === "abgeschlossen" ? "var(--green)" : s.current_phase > 0 ? "#3498db" : "var(--ink-mute)";
+      const dateEl = document.createElement("span");
+      dateEl.className = "contact-date";
+      dateEl.innerHTML = `<span style="display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-family:var(--mono);background:${badgeColor};color:#fff;margin-right:6px">${phaseLabel}</span>${date}`;
+      const delBtn = document.createElement("button");
+      delBtn.className = "btn-del-contact";
+      delBtn.title = "Session loeschen";
+      delBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M1 3h10M4 3V1.5h4V3M2.5 3l.7 6.5a.8.8 0 00.8.7h4a.8.8 0 00.8-.7L9.5 3"/></svg>';
+      delBtn.addEventListener("click", (e) => { e.stopPropagation(); deletePaiSession(s, item); });
+      item.addEventListener("click", () => openPaiSession(s));
+      item.appendChild(nameEl);
+      item.appendChild(dateEl);
+      item.appendChild(delBtn);
+      $list.appendChild(item);
+    }
+  } catch { document.getElementById("paiList").innerHTML = '<div style="font-size:12px;color:var(--ink-mute);text-align:center;padding:12px;">Sessions konnten nicht geladen werden.</div>'; }
+}
+
+async function startNewPaiSession() {
+  const name = document.getElementById("paiPersonName").value.trim();
+  if (!name) { document.getElementById("paiPersonName").focus(); return; }
+  const rolle = document.getElementById("paiPersonRolle")?.value?.trim() || undefined;
+  try {
+    const r = await fetch("/api/pai/sessions", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ person_name: name, person_rolle: rolle }),
+    });
+    const session = await r.json();
+    if (session.error) throw new Error(session.error);
+    openPaiSession(session);
+  } catch (e) { alert("Fehler: " + e.message); }
+}
+
+async function deletePaiSession(session, itemEl) {
+  if (!confirm(`Session "${session.person_name}" und alle Daten loeschen?`)) return;
+  try {
+    const r = await fetch(`/api/pai/sessions/${session.id}`, { method: "DELETE" });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    itemEl.remove();
+    const $list = document.getElementById("paiList");
+    if ($list && $list.children.length === 0) $list.innerHTML = '<div style="font-size:12px;color:var(--ink-mute);text-align:center;padding:12px;">Noch keine Sessions.</div>';
+  } catch (e) { alert("Loeschen fehlgeschlagen: " + e.message); }
+}
+
+async function openPaiSession(session) {
+  currentPaiSession = session;
+  paiPhase = session.current_phase || 0;
+  paiErhebung = {};
+  paiAmpeln = {};
+  paiKpis = {};
+  // Load existing data
+  try {
+    const [erhR, ampR, kpiR] = await Promise.all([
+      fetch(`/api/pai/erhebung/${session.id}`),
+      fetch(`/api/pai/ampeln/${session.id}`),
+      fetch(`/api/pai/kpis/${session.id}`),
+    ]);
+    const erhData = await erhR.json();
+    const ampData = await ampR.json();
+    const kpiData = await kpiR.json();
+    if (Array.isArray(erhData)) erhData.forEach(e => { paiErhebung[`${e.phase}_${e.feld}`] = e.wert; });
+    if (Array.isArray(ampData)) ampData.forEach(a => { paiAmpeln[`${a.layer}_${a.achse}`] = a.status; });
+    if (Array.isArray(kpiData)) kpiData.forEach(k => { paiKpis[k.kpi_key] = k.wert; });
+  } catch (e) { console.warn("PAI data load:", e.message); }
+  renderPaiPhase(paiPhase);
+}
+
+function getPaiVal(phase, feld) {
+  return paiErhebung[`${phase}_${feld}`] || "";
+}
+
+function renderPaiPhaseSidebar(activeNum) {
+  let html = '<div class="phase-sidebar-label">Phasen</div>';
+  for (const p of PAI_PHASES) {
+    const isDone = isPaiPhaseDone(p.num);
+    const isActive = p.num === activeNum;
+    html += `<button class="phase-nav-item${isActive ? " active" : ""}${isDone ? " done" : ""}" onclick="goToPaiPhase(${p.num})">`;
+    html += `<span class="phase-nav-dot">${isDone ? "✓" : p.num}</span>`;
+    html += `<span class="phase-nav-title">${escHtml(p.short)}</span></button>`;
+  }
+  return html;
+}
+
+function isPaiPhaseDone(num) {
+  if (!currentPaiSession) return false;
+  switch (num) {
+    case 0: return !!currentPaiSession.person_name;
+    case 1: return !!(getPaiVal(1, "f1") && getPaiVal(1, "f2") && getPaiVal(1, "f3"));
+    case 2: return ["ms1","ms2","ms3","ms4","ms5"].every(k => getPaiVal(2, k) !== "");
+    case 3: return !!(getPaiVal(3, "pronomen") || getPaiVal(3, "absolutismen") || getPaiVal(3, "koerper"));
+    case 4: return Object.keys(paiAmpeln).some(k => paiAmpeln[k] && paiAmpeln[k] !== "grau");
+    case 5: return !!(getPaiVal(5, "hyp1_mechanismus"));
+    default: return false;
+  }
+}
+
+function renderPaiPhase(num) {
+  paiPhase = num;
+  const $el = document.getElementById("paiContent");
+  let content = "";
+  switch (num) {
+    case 0: content = renderPaiPhase0(); break;
+    case 1: content = renderPaiPhase1(); break;
+    case 2: content = renderPaiPhase2(); break;
+    case 3: content = renderPaiPhase3(); break;
+    case 4: content = renderPaiPhase4(); break;
+    case 5: content = renderPaiPhase5(); break;
+  }
+  $el.innerHTML = `
+    <div class="cockpit-contact">
+      <span class="cockpit-contact-name">${escHtml(currentPaiSession.person_name)}</span>
+      <span class="cockpit-contact-date">— PAI${currentPaiSession.person_rolle ? " · " + escHtml(currentPaiSession.person_rolle) : ""}</span>
+      <button class="btn btn-ghost btn-sm" style="margin-left:auto;font-size:11px" onclick="renderPaiList()">← Alle Sessions</button>
+    </div>
+    <div class="cockpit-layout">
+      <nav class="phase-sidebar">${renderPaiPhaseSidebar(num)}</nav>
+      <div class="cockpit-content">${content}</div>
+    </div>
+  `;
+  wirePaiAutoSave();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+async function goToPaiPhase(num) {
+  await savePaiState();
+  paiPhase = num;
+  renderPaiPhase(num);
+}
+
+async function savePaiState() {
+  if (!currentPaiSession) return;
+  try {
+    await fetch(`/api/pai/sessions/${currentPaiSession.id}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ current_phase: paiPhase }),
+    });
+  } catch (e) { console.warn("PAI state save:", e.message); }
+}
+
+// ── PAI PHASE 0: PERSON ERFASSEN ──
+function renderPaiPhase0() {
+  const s = currentPaiSession;
+  return `
+    <div class="phase-header"><span class="phase-number">Phase 0</span><span class="phase-title">Person erfassen</span></div>
+    <div class="phase-instruction">Grunddaten der Person erfassen. Session wurde bereits angelegt.</div>
+    <div class="scan-card">
+      <div class="scan-card-title">Personendaten</div>
+      <div class="form-group"><label class="form-label pflicht">Name</label><input class="form-input" type="text" id="paiName" value="${escHtml(s.person_name)}" readonly></div>
+      <div class="form-group" style="margin-top:10px"><label class="form-label">Rolle</label><input class="form-input" type="text" id="paiRolle" value="${escHtml(s.person_rolle)}" data-pai-feld="rolle"></div>
+      <div class="form-group" style="margin-top:10px"><label class="form-label">Datum</label><input class="form-input" type="date" id="paiDatum" value="${getPaiVal(0, 'datum') || new Date().toISOString().slice(0,10)}" data-pai-feld="datum" data-pai-phase="0"></div>
+      <div class="form-group" style="margin-top:10px"><label class="form-label">Kontext / Notizen</label><textarea class="form-input" id="paiKontext" rows="3" placeholder="Wie kam der Kontakt zustande, erster Eindruck…" data-pai-feld="kontext" data-pai-phase="0">${escHtml(getPaiVal(0, 'kontext'))}</textarea></div>
+    </div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-primary" onclick="savePaiPhase0AndNext()">Weiter zu Phase 1</button>
+    </div>
+  `;
+}
+
+async function savePaiPhase0AndNext() {
+  const rolle = document.getElementById("paiRolle")?.value?.trim() || "";
+  if (rolle && rolle !== currentPaiSession.person_rolle) {
+    currentPaiSession.person_rolle = rolle;
+    await fetch(`/api/pai/sessions/${currentPaiSession.id}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ person_rolle: rolle, current_phase: 1 }),
+    });
+  }
+  await savePaiErhebungField(0, "datum", document.getElementById("paiDatum")?.value || "");
+  await savePaiErhebungField(0, "kontext", document.getElementById("paiKontext")?.value || "");
+  goToPaiPhase(1);
+}
+
+// ── PAI PHASE 1: STRUKTURIERTES INTERVIEW ──
+function renderPaiPhase1() {
+  return `
+    <div class="phase-header"><span class="phase-number">Phase 1</span><span class="phase-title">Strukturiertes Interview</span><span class="phase-time">30–45 Min</span></div>
+    <div class="phase-instruction">3 Kernfragen + 2 optionale Vertiefungsfragen. Notizen direkt in die Felder.</div>
+    <div class="scan-card">
+      <div class="scan-card-title">Kernfrage 1</div>
+      <div class="kernfrage"><span class="kernfrage-num">F1</span><br>"Wofuer willst du in 10 Jahren beruflich bekannt sein?"</div>
+      <div style="font-size:11px;color:var(--ada-accent);margin:4px 0 6px;font-family:var(--mono)">[Signal-Tag: Wert-Dimension notieren]</div>
+      <textarea class="form-input" id="paiF1" rows="4" placeholder="Notizen…" data-pai-feld="f1" data-pai-phase="1">${escHtml(getPaiVal(1, 'f1'))}</textarea>
+    </div>
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title">Kernfrage 2</div>
+      <div class="kernfrage"><span class="kernfrage-num">F2</span><br>"Was hast du letzte Woche konkret getan das in diese Richtung geht?"</div>
+      <div style="font-size:11px;color:var(--ada-accent);margin:4px 0 6px;font-family:var(--mono)">[Signal-Tag: Value-Behavior Gap]</div>
+      <textarea class="form-input" id="paiF2" rows="4" placeholder="Notizen…" data-pai-feld="f2" data-pai-phase="1">${escHtml(getPaiVal(1, 'f2'))}</textarea>
+    </div>
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title">Kernfrage 3</div>
+      <div class="kernfrage"><span class="kernfrage-num">F3</span><br>"Was hat dich davon abgehalten mehr in diese Richtung zu tun?"</div>
+      <div style="font-size:11px;color:var(--ada-accent);margin:4px 0 6px;font-family:var(--mono)">[Signal-Tag: L2-Muster / Attribution Style]</div>
+      <textarea class="form-input" id="paiF3" rows="4" placeholder="Notizen…" data-pai-feld="f3" data-pai-phase="1">${escHtml(getPaiVal(1, 'f3'))}</textarea>
+    </div>
+    <div class="scan-card" style="margin-top:12px;border-left:3px solid var(--ink-mute)">
+      <div class="scan-card-title" style="color:var(--ink-mute)">Optional: Vertiefung</div>
+      <div class="kernfrage" style="border-left-color:var(--ink-mute)"><span class="kernfrage-num">F4</span><br>"Erzaehl mir von einem Moment wo sich etwas fundamental veraendert hat."</div>
+      <textarea class="form-input" id="paiF4" rows="3" placeholder="Notizen…" data-pai-feld="f4" data-pai-phase="1">${escHtml(getPaiVal(1, 'f4'))}</textarea>
+      <div class="kernfrage" style="margin-top:12px;border-left-color:var(--ink-mute)"><span class="kernfrage-num">F5</span><br>"Worauf bist du in den letzten 12 Monaten am meisten stolz — ohne dass es jemand gemerkt hat?"</div>
+      <textarea class="form-input" id="paiF5" rows="3" placeholder="Notizen…" data-pai-feld="f5" data-pai-phase="1" style="margin-top:8px">${escHtml(getPaiVal(1, 'f5'))}</textarea>
+    </div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-ghost" onclick="goToPaiPhase(0)">Zurueck</button>
+      <button class="btn btn-primary" onclick="savePaiPhaseAndNext(1, 2)">Weiter</button>
+    </div>
+  `;
+}
+
+// ── PAI PHASE 2: BEHAVIORAL MICRO-SURVEY ──
+function renderPaiPhase2() {
+  const ms = (key) => getPaiVal(2, key);
+  return `
+    <div class="phase-header"><span class="phase-number">Phase 2</span><span class="phase-title">Behavioral Micro-Survey</span><span class="phase-time">5 Min</span></div>
+    <div class="phase-instruction">5 Ja/Nein-Fragen. Jede Antwort liefert ein Layer-Signal.</div>
+    <div class="scan-card">
+      <div class="scan-card-title">Micro-Survey</div>
+      <div class="pai-ms-row">
+        <span class="pai-ms-layer">L1</span>
+        <span class="pai-ms-q">"Mindestens einmal 20 Min Pause ohne Bildschirm letzte Woche?"</span>
+        <div class="pai-ms-toggle">
+          <button class="pai-toggle-btn${ms('ms1')==='ja'?' active':''}" data-ms="ms1" data-v="ja" onclick="setPaiMs(this)">Ja</button>
+          <button class="pai-toggle-btn${ms('ms1')==='nein'?' active':''}" data-ms="ms1" data-v="nein" onclick="setPaiMs(this)">Nein</button>
+        </div>
+      </div>
+      <div class="pai-ms-row">
+        <span class="pai-ms-layer">L1</span>
+        <span class="pai-ms-q">"Erschoepfung oder Koerper-Signale bewusst ignoriert letzte Woche?"</span>
+        <div class="pai-ms-toggle">
+          <button class="pai-toggle-btn${ms('ms2')==='ja'?' active':''}" data-ms="ms2" data-v="ja" onclick="setPaiMs(this)">Ja</button>
+          <button class="pai-toggle-btn${ms('ms2')==='nein'?' active':''}" data-ms="ms2" data-v="nein" onclick="setPaiMs(this)">Nein</button>
+        </div>
+      </div>
+      <div class="pai-ms-row">
+        <span class="pai-ms-layer">L2</span>
+        <span class="pai-ms-q">"Aufgabe uebernommen die jemand anderes haette tun sollen?"</span>
+        <div class="pai-ms-toggle">
+          <button class="pai-toggle-btn${ms('ms3')==='ja'?' active':''}" data-ms="ms3" data-v="ja" onclick="setPaiMs(this)">Ja</button>
+          <button class="pai-toggle-btn${ms('ms3')==='nein'?' active':''}" data-ms="ms3" data-v="nein" onclick="setPaiMs(this)">Nein</button>
+        </div>
+      </div>
+      <div class="pai-ms-row">
+        <span class="pai-ms-layer">L2</span>
+        <span class="pai-ms-q">"Etwas nicht angesprochen aus Angst vor Reaktion?"</span>
+        <div class="pai-ms-toggle">
+          <button class="pai-toggle-btn${ms('ms4')==='ja'?' active':''}" data-ms="ms4" data-v="ja" onclick="setPaiMs(this)">Ja</button>
+          <button class="pai-toggle-btn${ms('ms4')==='nein'?' active':''}" data-ms="ms4" data-v="nein" onclick="setPaiMs(this)">Nein</button>
+        </div>
+      </div>
+      <div class="pai-ms-row">
+        <span class="pai-ms-layer">L3</span>
+        <span class="pai-ms-q">"Entscheidung >3 Tage vor sich hergeschoben?"</span>
+        <div class="pai-ms-toggle">
+          <button class="pai-toggle-btn${ms('ms5')==='ja'?' active':''}" data-ms="ms5" data-v="ja" onclick="setPaiMs(this)">Ja</button>
+          <button class="pai-toggle-btn${ms('ms5')==='nein'?' active':''}" data-ms="ms5" data-v="nein" onclick="setPaiMs(this)">Nein</button>
+        </div>
+      </div>
+    </div>
+    <div class="scan-card" style="margin-top:12px" id="paiMsResult">
+      <div class="scan-card-title">Automatische Auswertung</div>
+      <div id="paiMsAuswertung">${renderPaiMsAuswertung()}</div>
+    </div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-ghost" onclick="goToPaiPhase(1)">Zurueck</button>
+      <button class="btn btn-primary" onclick="savePaiPhaseAndNext(2, 3)">Weiter</button>
+    </div>
+  `;
+}
+
+function setPaiMs(btn) {
+  const key = btn.dataset.ms;
+  const val = btn.dataset.v;
+  // Toggle: click same again → deselect
+  if (getPaiVal(2, key) === val) {
+    paiErhebung[`2_${key}`] = "";
+  } else {
+    paiErhebung[`2_${key}`] = val;
+  }
+  // Update button states
+  btn.parentElement.querySelectorAll(".pai-toggle-btn").forEach(b => {
+    b.classList.toggle("active", paiErhebung[`2_${b.dataset.ms}`] === b.dataset.v);
+  });
+  savePaiErhebungField(2, key, paiErhebung[`2_${key}`] || "");
+  document.getElementById("paiMsAuswertung").innerHTML = renderPaiMsAuswertung();
+}
+
+function renderPaiMsAuswertung() {
+  const ms = (key) => getPaiVal(2, key);
+  let warnings = [];
+  // L1: ms1=nein (keine Pause) + ms2=ja (Signale ignoriert) → L1 Warnsignal
+  if (ms("ms1") === "nein" && ms("ms2") === "ja") {
+    warnings.push('<div style="color:var(--red);font-weight:500">⚠ L1 Warnsignal — Koerper-Signale werden ignoriert, keine Erholungsphasen</div>');
+  } else if (ms("ms1") === "nein" || ms("ms2") === "ja") {
+    warnings.push('<div style="color:var(--yellow);font-weight:500">⚠ L1 Hinweis — Erholung oder Koerperwahrnehmung eingeschraenkt</div>');
+  }
+  if (ms("ms3") === "ja") warnings.push('<div style="color:var(--red);font-weight:500">⚠ Helfersyndrom-Indikator — Aufgaben anderer uebernommen</div>');
+  if (ms("ms4") === "ja") warnings.push('<div style="color:var(--red);font-weight:500">⚠ Psychological Safety niedrig — Angst vor Reaktion</div>');
+  if (ms("ms5") === "ja") warnings.push('<div style="color:var(--yellow);font-weight:500">⚠ Entscheidungsblockade — Entscheidung aufgeschoben</div>');
+  if (warnings.length === 0) {
+    const anyAnswered = ["ms1","ms2","ms3","ms4","ms5"].some(k => ms(k));
+    if (anyAnswered) return '<div style="color:var(--green)">Keine Warnsignale erkannt.</div>';
+    return '<div style="color:var(--ink-mute)">Noch keine Antworten.</div>';
+  }
+  return warnings.join("");
+}
+
+// ── PAI PHASE 3: SPRACH-SIGNALE ──
+function renderPaiPhase3() {
+  return `
+    <div class="phase-header"><span class="phase-number">Phase 3</span><span class="phase-title">Sprach-Signale</span><span class="phase-time">Beobachtung</span></div>
+    <div class="phase-instruction">Linguistische Muster aus dem Interview beobachten und dokumentieren.</div>
+    <div class="scan-card">
+      <div class="scan-card-title">Pronomen-Muster (ich / wir / sie)</div>
+      <textarea class="form-input" id="paiPronomen" rows="3" placeholder="z.B. 'Verwendet fast ausschliesslich wir, kaum ich-Aussagen bei Erfolgen…'" data-pai-feld="pronomen" data-pai-phase="3">${escHtml(getPaiVal(3, 'pronomen'))}</textarea>
+    </div>
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title">Absolutismen beobachtet? (immer/nie/alle)</div>
+      <textarea class="form-input" id="paiAbsolutismen" rows="3" placeholder="z.B. 'Dreimal nie verwendet: nie Zeit, nie Budget, nie Unterstuetzung…'" data-pai-feld="absolutismen" data-pai-phase="3">${escHtml(getPaiVal(3, 'absolutismen'))}</textarea>
+    </div>
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title">Koerper-Referenzen erwaehnt?</div>
+      <textarea class="form-input" id="paiKoerper" rows="3" placeholder="z.B. 'Erwaehnt Rueckenschmerzen beiläufig, spricht sonst nie ueber Koerper…'" data-pai-feld="koerper" data-pai-phase="3">${escHtml(getPaiVal(3, 'koerper'))}</textarea>
+    </div>
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title">Weitere Signale</div>
+      <textarea class="form-input" id="paiWeitere" rows="3" placeholder="Freie Beobachtungen, Tonwechsel, Pausen…" data-pai-feld="weitere" data-pai-phase="3">${escHtml(getPaiVal(3, 'weitere'))}</textarea>
+    </div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-ghost" onclick="goToPaiPhase(2)">Zurueck</button>
+      <button class="btn btn-primary" onclick="savePaiPhaseAndNext(3, 4)">Weiter</button>
+    </div>
+  `;
+}
+
+// ── PAI PHASE 4: FRICTION PROFIL ──
+function renderPaiPhase4() {
+  return `
+    <div class="phase-header"><span class="phase-number">Phase 4</span><span class="phase-title">Friction Profil setzen</span></div>
+    <div class="phase-instruction">12 Ampeln setzen — identisch zum organisationalen Friction Scan. Drei Layer × 4 Achsen.</div>
+    <div class="scan-card">
+      <div class="scan-card-title">Friction Profil — Individuelle Einschaetzung</div>
+      ${renderPaiAmpelGrid()}
+    </div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-ghost" onclick="goToPaiPhase(3)">Zurueck</button>
+      <button class="btn btn-primary" onclick="savePaiPhase4AndNext()">Weiter</button>
+    </div>
+  `;
+}
+
+function renderPaiAmpelGrid() {
+  let html = '<div class="ampel-grid">';
+  for (const [layer, axes] of Object.entries(AMPEL_AXES)) {
+    html += `<div class="layer-label">${layer}</div>`;
+    for (const achse of axes) {
+      const key = `${layer}_${achse}`;
+      const current = paiAmpeln[key] || "grau";
+      html += `<div class="ampel-row"><span class="ampel-label">${escHtml(achse)}</span><div class="ampel-dots">`;
+      for (const farbe of ["gruen", "gelb", "rot"]) {
+        html += `<div class="ampel-dot ${current === farbe ? farbe : ""}" data-key="${key}" data-farbe="${farbe}" onclick="setPaiAmpel(this)"></div>`;
+      }
+      html += `<input class="form-input" style="width:140px;font-size:11px;padding:4px 6px;margin-left:8px" placeholder="Notiz…" data-ampel-notiz="${key}" value="${escHtml(getPaiVal(4, 'notiz_' + key))}">`;
+      html += `</div></div>`;
+    }
+  }
+  html += '</div>';
+  return html;
+}
+
+function setPaiAmpel(dot) {
+  const key = dot.dataset.key;
+  const farbe = dot.dataset.farbe;
+  if (paiAmpeln[key] === farbe) {
+    paiAmpeln[key] = "grau";
+    dot.parentElement.querySelectorAll(".ampel-dot").forEach(d => d.className = "ampel-dot");
+  } else {
+    paiAmpeln[key] = farbe;
+    dot.parentElement.querySelectorAll(".ampel-dot").forEach(d => {
+      d.className = "ampel-dot" + (d.dataset.farbe === farbe ? " " + farbe : "");
+    });
+  }
+  autoSavePaiPhase();
+}
+
+async function savePaiPhase4AndNext() {
+  await savePaiAmpeln();
+  await savePaiAmpelNotizen();
+  goToPaiPhase(5);
+}
+
+async function savePaiAmpeln() {
+  const ampeln = [];
+  for (const [layer, axes] of Object.entries(AMPEL_AXES)) {
+    for (const achse of axes) {
+      const key = `${layer}_${achse}`;
+      const val = paiAmpeln[key] || "grau";
+      if (val !== "grau") ampeln.push({ layer, achse, status: val });
+    }
+  }
+  if (ampeln.length === 0) return;
+  try {
+    await fetch(`/api/pai/ampeln/${currentPaiSession.id}`, {
+      method: "PUT", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ampeln }),
+    });
+  } catch (e) { console.warn("PAI ampeln save:", e.message); }
+}
+
+async function savePaiAmpelNotizen() {
+  const notizEls = document.querySelectorAll("[data-ampel-notiz]");
+  for (const el of notizEls) {
+    const key = el.dataset.ampelNotiz;
+    const val = el.value.trim();
+    if (val) await savePaiErhebungField(4, "notiz_" + key, val);
+  }
+}
+
+// ── PAI PHASE 5: HYPOTHESEN & NAECHSTE SCHRITTE ──
+function renderPaiPhase5() {
+  return `
+    <div class="phase-header"><span class="phase-number">Phase 5</span><span class="phase-title">Hypothesen & naechste Schritte</span></div>
+    <div class="phase-instruction">Drei Hypothesen formulieren, Evidenz verlinken, naechste Schritte definieren.</div>
+    ${renderPaiHypotheseSlot(1)}
+    ${renderPaiHypotheseSlot(2)}
+    ${renderPaiHypotheseSlot(3)}
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title">Empfohlene naechste Schritte</div>
+      <textarea class="form-input" id="paiNextSteps" rows="4" placeholder="Konkrete Empfehlungen…" data-pai-feld="next_steps" data-pai-phase="5">${escHtml(getPaiVal(5, 'next_steps'))}</textarea>
+    </div>
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title" style="cursor:pointer" onclick="document.getElementById('paiKpiSection').classList.toggle('open')">
+        KPI-Tracking ▾
+      </div>
+      <div id="paiKpiSection" class="pai-kpi-section">
+        ${renderPaiKpis()}
+      </div>
+    </div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-ghost" onclick="goToPaiPhase(4)">Zurueck</button>
+      <button class="btn btn-ghost" onclick="savePaiPhase5()">Zwischenspeichern</button>
+      <button class="btn btn-primary" onclick="finishPaiSession()">Session abschliessen</button>
+    </div>
+  `;
+}
+
+function renderPaiHypotheseSlot(num) {
+  return `
+    <div class="hyp-card" style="margin-top:12px">
+      <div style="font-weight:500;margin-bottom:8px">Hypothese ${num}</div>
+      <div class="hyp-fields">
+        <div class="form-group">
+          <label class="form-label${num === 1 ? ' pflicht' : ''}">Layer</label>
+          <select class="form-input" id="paiHyp${num}Layer" data-pai-feld="hyp${num}_layer" data-pai-phase="5">
+            <option value="">— waehlen —</option>
+            <option value="L1" ${getPaiVal(5, 'hyp'+num+'_layer')==='L1'?'selected':''}>L1</option>
+            <option value="L2" ${getPaiVal(5, 'hyp'+num+'_layer')==='L2'?'selected':''}>L2</option>
+            <option value="L3" ${getPaiVal(5, 'hyp'+num+'_layer')==='L3'?'selected':''}>L3</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Konfidenz</label>
+          <select class="form-input" id="paiHyp${num}Stern" data-pai-feld="hyp${num}_stern" data-pai-phase="5">
+            <option value="">—</option>
+            <option value="1" ${getPaiVal(5, 'hyp'+num+'_stern')==='1'?'selected':''}>★☆☆</option>
+            <option value="2" ${getPaiVal(5, 'hyp'+num+'_stern')==='2'?'selected':''}>★★☆</option>
+            <option value="3" ${getPaiVal(5, 'hyp'+num+'_stern')==='3'?'selected':''}>★★★</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:8px">
+        <label class="form-label${num === 1 ? ' pflicht' : ''}">Mechanismus</label>
+        <textarea class="form-input" id="paiHyp${num}Mech" rows="2" placeholder="Was passiert und warum…" data-pai-feld="hyp${num}_mechanismus" data-pai-phase="5">${escHtml(getPaiVal(5, 'hyp'+num+'_mechanismus'))}</textarea>
+      </div>
+      <div class="form-group" style="margin-top:8px">
+        <label class="form-label">Evidenz</label>
+        <textarea class="form-input" id="paiHyp${num}Ev" rows="2" placeholder="Direktes Zitat oder Beobachtung…" data-pai-feld="hyp${num}_evidenz" data-pai-phase="5">${escHtml(getPaiVal(5, 'hyp'+num+'_evidenz'))}</textarea>
+      </div>
+    </div>
+  `;
+}
+
+function renderPaiKpis() {
+  const labels = {
+    "sessions_durchgefuehrt": "Sessions durchgefuehrt",
+    "l1_warnungen": "L1 Warnungen",
+    "l2_warnungen": "L2 Warnungen",
+    "l3_warnungen": "L3 Warnungen",
+    "helfersyndrom_indikator": "Helfersyndrom-Indikator",
+    "psych_safety_niedrig": "Psych. Safety niedrig",
+    "entscheidungsblockade": "Entscheidungsblockade",
+    "hypothesen_gestellt": "Hypothesen gestellt",
+  };
+  let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
+  for (const key of PAI_KPI_KEYS) {
+    const val = paiKpis[key] || 0;
+    html += `<div class="pai-kpi-item">
+      <span class="pai-kpi-label">${labels[key] || key}</span>
+      <input type="number" class="pai-kpi-input" value="${val}" data-kpi="${key}" onchange="updatePaiKpi(this)">
+    </div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+function updatePaiKpi(el) {
+  const key = el.dataset.kpi;
+  paiKpis[key] = parseInt(el.value) || 0;
+  autoSavePaiPhase();
+}
+
+// ── PAI AUTO-SAVE ──
+function wirePaiAutoSave() {
+  document.querySelectorAll("#paiContent textarea, #paiContent input[type=text], #paiContent input[type=date]").forEach(el => {
+    el.addEventListener("input", autoSavePaiPhase);
+  });
+  document.querySelectorAll("#paiContent select").forEach(el => {
+    el.addEventListener("change", autoSavePaiPhase);
+  });
+}
+
+function autoSavePaiPhase() {
+  if (_paiAutoSaveTimer) clearTimeout(_paiAutoSaveTimer);
+  _paiAutoSaveTimer = setTimeout(async () => {
+    if (!currentPaiSession) return;
+    try {
+      // Save all fields with data-pai-feld attribute
+      const fields = document.querySelectorAll("[data-pai-feld][data-pai-phase]");
+      for (const el of fields) {
+        const feld = el.dataset.paiFeld;
+        const phase = parseInt(el.dataset.paiPhase);
+        const wert = el.tagName === "SELECT" ? el.value : (el.value || "");
+        await savePaiErhebungField(phase, feld, wert);
+      }
+      // Save ampeln if on phase 4
+      if (paiPhase === 4) {
+        await savePaiAmpeln();
+        await savePaiAmpelNotizen();
+      }
+      // Save KPIs if on phase 5
+      if (paiPhase === 5) await savePaiKpis();
+      showSaveIndicator();
+    } catch (e) { console.warn("PAI auto-save:", e.message); }
+  }, 1500);
+}
+
+async function savePaiErhebungField(phase, feld, wert) {
+  paiErhebung[`${phase}_${feld}`] = wert;
+  try {
+    await fetch("/api/pai/erhebung", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: currentPaiSession.id, phase, feld, wert }),
+    });
+  } catch (e) { console.warn("PAI erhebung save:", e.message); }
+}
+
+async function savePaiKpis() {
+  const kpis = PAI_KPI_KEYS.map(key => ({ kpi_key: key, wert: paiKpis[key] || 0 }));
+  try {
+    await fetch(`/api/pai/kpis/${currentPaiSession.id}`, {
+      method: "PUT", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ kpis }),
+    });
+  } catch (e) { console.warn("PAI KPI save:", e.message); }
+}
+
+async function savePaiPhaseAndNext(fromPhase, toPhase) {
+  // Collect and save all fields on current page
+  const fields = document.querySelectorAll("[data-pai-feld][data-pai-phase]");
+  for (const el of fields) {
+    const feld = el.dataset.paiFeld;
+    const phase = parseInt(el.dataset.paiPhase);
+    const wert = el.tagName === "SELECT" ? el.value : (el.value || "");
+    await savePaiErhebungField(phase, feld, wert);
+  }
+  goToPaiPhase(toPhase);
+}
+
+async function savePaiPhase5() {
+  const fields = document.querySelectorAll("[data-pai-feld][data-pai-phase]");
+  for (const el of fields) {
+    const feld = el.dataset.paiFeld;
+    const phase = parseInt(el.dataset.paiPhase);
+    const wert = el.tagName === "SELECT" ? el.value : (el.value || "");
+    await savePaiErhebungField(phase, feld, wert);
+  }
+  await savePaiKpis();
+  showSaveIndicator();
+}
+
+async function finishPaiSession() {
+  await savePaiPhase5();
+  await savePaiAmpeln();
+  currentPaiSession.status = "abgeschlossen";
+  await fetch(`/api/pai/sessions/${currentPaiSession.id}`, {
+    method: "PATCH", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status: "abgeschlossen", current_phase: 5 }),
+  });
+  alert("PAI Session abgeschlossen und gespeichert.");
+  renderPaiList();
 }
 
 // ══════════════════════════════════════════════════════════════════════════

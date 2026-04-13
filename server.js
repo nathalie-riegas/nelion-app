@@ -697,6 +697,136 @@ app.patch("/api/scans/:sid/massnahmen/:mid", async (req, res) => {
   res.json(data);
 });
 
+// ─── PAI ──────────────────────────────────────────────────────────────────
+// PAI Sessions
+app.get("/api/pai/sessions", async (req, res) => {
+  if (!supabase) return res.json([]);
+  const { data, error } = await supabase
+    .from("pai_sessions")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+app.post("/api/pai/sessions", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { person_name, person_rolle } = req.body;
+  if (!person_name) return res.status(400).json({ error: "person_name erforderlich" });
+  const { data, error } = await supabase
+    .from("pai_sessions")
+    .insert([{ person_name, person_rolle: person_rolle || null }])
+    .select()
+    .single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+app.patch("/api/pai/sessions/:id", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const allowed = ["person_name", "person_rolle", "status", "current_phase"];
+  const updates = {};
+  for (const key of allowed) {
+    if (req.body[key] !== undefined) updates[key] = req.body[key];
+  }
+  updates.updated_at = new Date().toISOString();
+  const { data, error } = await supabase
+    .from("pai_sessions").update(updates).eq("id", req.params.id).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+app.delete("/api/pai/sessions/:id", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { error } = await supabase.from("pai_sessions").delete().eq("id", req.params.id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ success: true });
+});
+
+// PAI Erhebungsdaten (Auto-Save)
+app.post("/api/pai/erhebung", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { session_id, phase, feld, wert } = req.body;
+  if (!session_id || phase === undefined || !feld) return res.status(400).json({ error: "session_id, phase, feld erforderlich" });
+  const { data, error } = await supabase
+    .from("pai_erhebung")
+    .upsert(
+      { session_id, phase, feld, wert: wert || "", updated_at: new Date().toISOString() },
+      { onConflict: "session_id,phase,feld" }
+    )
+    .select()
+    .single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+app.get("/api/pai/erhebung/:session_id", async (req, res) => {
+  if (!supabase) return res.json([]);
+  const { data, error } = await supabase
+    .from("pai_erhebung")
+    .select("*")
+    .eq("session_id", req.params.session_id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+// PAI Ampeln
+app.put("/api/pai/ampeln/:session_id", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { ampeln } = req.body;
+  if (!Array.isArray(ampeln)) return res.status(400).json({ error: "ampeln array erforderlich" });
+  const rows = ampeln.map(a => ({
+    session_id: req.params.session_id,
+    layer: a.layer,
+    achse: a.achse,
+    status: a.status || "gruen",
+    notiz: a.notiz || null,
+  }));
+  const { error } = await supabase
+    .from("pai_ampeln")
+    .upsert(rows, { onConflict: "session_id,layer,achse" });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ ok: true });
+});
+
+app.get("/api/pai/ampeln/:session_id", async (req, res) => {
+  if (!supabase) return res.json([]);
+  const { data, error } = await supabase
+    .from("pai_ampeln")
+    .select("*")
+    .eq("session_id", req.params.session_id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+// PAI KPIs
+app.put("/api/pai/kpis/:session_id", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { kpis } = req.body;
+  if (!Array.isArray(kpis)) return res.status(400).json({ error: "kpis array erforderlich" });
+  const rows = kpis.map(k => ({
+    session_id: req.params.session_id,
+    kpi_key: k.kpi_key,
+    wert: k.wert || 0,
+    updated_at: new Date().toISOString(),
+  }));
+  const { error } = await supabase
+    .from("pai_kpis")
+    .upsert(rows, { onConflict: "session_id,kpi_key" });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ ok: true });
+});
+
+app.get("/api/pai/kpis/:session_id", async (req, res) => {
+  if (!supabase) return res.json([]);
+  const { data, error } = await supabase
+    .from("pai_kpis")
+    .select("*")
+    .eq("session_id", req.params.session_id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
 // ─── TASKS ────────────────────────────────────────────────────────────────
 app.get("/api/tasks", async (req, res) => {
   if (!supabase) return res.json([]);
