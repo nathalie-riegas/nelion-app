@@ -522,16 +522,35 @@
   }
   .ada-msg {
     padding: 12px 16px; border-radius: var(--r); font-size: 14px;
-    line-height: 1.6; max-width: 85%; white-space: pre-wrap;
+    line-height: 1.6; max-width: 85%; position: relative;
   }
   .ada-msg.user {
     background: var(--surface2); color: var(--ink); align-self: flex-end;
-    border-bottom-right-radius: 4px;
+    border-bottom-right-radius: 4px; white-space: pre-wrap;
   }
   .ada-msg.assistant {
     background: var(--ada-bg); color: var(--ink); align-self: flex-start;
     border-bottom-left-radius: 4px; border: 1px solid rgba(75,0,130,0.15);
   }
+  .ada-msg.assistant p { margin: 0 0 6px 0; }
+  .ada-msg.assistant p:last-of-type { margin-bottom: 0; }
+  .ada-msg.assistant ul, .ada-msg.assistant ol { margin: 2px 0 6px 18px; padding: 0; }
+  .ada-msg.assistant li { margin-bottom: 1px; }
+  .ada-msg.assistant strong { font-weight: 600; }
+  .ada-msg.assistant em { font-style: italic; }
+  .ada-msg.assistant code { font-family: var(--mono); font-size: 12px; background: rgba(0,0,0,0.06); padding: 1px 4px; border-radius: 3px; }
+  .btn-copy-ada {
+    position: absolute; top: 4px; right: 4px;
+    background: rgba(75,0,130,0.08); border: 1px solid rgba(75,0,130,0.15);
+    border-radius: var(--rs); padding: 3px 6px;
+    cursor: pointer; opacity: 0; transition: opacity .15s;
+    font-family: var(--mono); font-size: 10px; color: var(--ada-accent);
+    line-height: 1; z-index: 2;
+  }
+  .ada-msg:hover .btn-copy-ada { opacity: 1; }
+  .btn-copy-ada:hover { background: rgba(75,0,130,0.15); }
+  .ada-msg.user .btn-copy-ada { background: rgba(0,0,0,0.05); border-color: var(--border); color: var(--ink-mute); }
+  .ada-msg.user .btn-copy-ada:hover { background: rgba(0,0,0,0.1); }
   .ada-msg.thinking {
     background: var(--ada-bg); color: var(--ada-accent); align-self: flex-start;
     font-style: italic; opacity: 0.7;
@@ -1515,11 +1534,16 @@ function renderMarkdown(text) {
   let html = escHtml(text);
   html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
   html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
-  html = html.replace(/`(.+?)`/g, '<code style="background:rgba(0,0,0,0.06);padding:1px 4px;border-radius:3px;font-family:var(--mono);font-size:12px">$1</code>');
-  html = html.replace(/^### (.+)$/gm, '<div style="font-weight:600;font-size:14px;margin-top:12px;margin-bottom:4px">$1</div>');
-  html = html.replace(/^## (.+)$/gm, '<div style="font-weight:600;font-size:15px;margin-top:14px;margin-bottom:6px">$1</div>');
-  html = html.replace(/^- (.+)$/gm, '<div style="padding-left:12px">• $1</div>');
-  html = html.replace(/\n/g, '<br>');
+  html = html.replace(/`(.+?)`/g, '<code>$1</code>');
+  html = html.replace(/^### (.+)$/gm, '<h4 style="font-size:14px;font-weight:600;margin:10px 0 3px">$1</h4>');
+  html = html.replace(/^## (.+)$/gm, '<h3 style="font-size:15px;font-weight:600;margin:12px 0 4px">$1</h3>');
+  // Convert bullet lines to <li> items grouped in <ul>
+  html = html.replace(/(^- .+$(\n- .+$)*)/gm, (match) => {
+    const items = match.split('\n').map(l => '<li>' + l.replace(/^- /, '') + '</li>').join('');
+    return '<ul>' + items + '</ul>';
+  });
+  // Double newlines → paragraph breaks, single newlines → <br>
+  html = html.split('\n\n').map(block => '<p>' + block.replace(/\n/g, '<br>') + '</p>').join('');
   return html;
 }
 
@@ -3383,6 +3407,19 @@ function appendAdaMsg(role, text, timestamp, explicitIdx) {
   } else {
     div.textContent = text;
   }
+
+  // Copy button (both user and assistant)
+  const cp = document.createElement("button");
+  cp.className = "btn-copy-ada";
+  cp.textContent = "Kopieren";
+  cp.addEventListener("click", (e) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(div.textContent).then(() => {
+      cp.textContent = "Kopiert";
+      setTimeout(() => { cp.textContent = "Kopieren"; }, 1500);
+    });
+  });
+  div.appendChild(cp);
 
   // User messages: edit/delete on hover
   if (role === "user") {
