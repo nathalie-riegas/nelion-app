@@ -685,8 +685,9 @@
   .landing-tasks-list.open { display: block; }
   .landing-task-item {
     display: flex; align-items: center; gap: 10px; padding: 6px 0;
-    font-size: 14px; color: var(--ink);
+    font-size: 14px; color: var(--ink); position: relative;
   }
+  .landing-task-title { flex: 1; min-width: 0; }
   .landing-task-prio {
     width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
   }
@@ -875,9 +876,28 @@
   }
   .task-drawer-item {
     display: flex; align-items: flex-start; gap: 10px; padding: 8px 0;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--border); position: relative;
   }
   .task-drawer-item:last-child { border-bottom: none; }
+  .task-actions {
+    display: none; gap: 2px; align-items: center; flex-shrink: 0;
+  }
+  .task-drawer-item:hover .task-actions,
+  .landing-task-item:hover .task-actions { display: flex; }
+  .task-action-btn {
+    background: none; border: none; cursor: pointer; padding: 3px 5px;
+    color: var(--ink-mute); font-size: 12px; line-height: 1;
+    border-radius: 3px; transition: all .12s;
+  }
+  .task-action-btn:hover { background: var(--surface2); color: var(--ink); }
+  .task-action-btn.del:hover { background: var(--red-bg); color: var(--red); }
+  .task-action-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .task-edit-input {
+    flex: 1; border: 1px solid var(--ada-accent); border-radius: var(--rs);
+    padding: 4px 8px; font-family: var(--sans); font-size: 13px;
+    outline: none; color: var(--ink); background: var(--surface);
+    width: 100%;
+  }
   .task-checkbox {
     margin-top: 2px; width: 16px; height: 16px; cursor: pointer;
     accent-color: var(--ada-accent);
@@ -1450,6 +1470,7 @@ async function renderLanding() {
   await renderLandingTasks();
 }
 
+let landingTaskList = [];
 async function renderLandingTasks() {
   try {
     const r = await fetch("/api/tasks?status=offen");
@@ -1457,17 +1478,41 @@ async function renderLandingTasks() {
     const countEl = document.getElementById("landingTasksCount");
     const listEl = document.getElementById("landingTasksList");
     if (!Array.isArray(tasks)) return;
+    landingTaskList = tasks;
     if (countEl) countEl.textContent = `${tasks.length} offene Tasks`;
-    if (listEl) {
-      if (tasks.length === 0) {
-        listEl.innerHTML = `<div style="font-size:13px;color:var(--ink-mute);">Keine offenen Tasks.</div>`;
-      } else {
-        listEl.innerHTML = tasks.map(t => `<div class="landing-task-item">
-          <div class="landing-task-prio p${t.prioritaet}"></div>
-          <span>${escHtml(t.titel)}</span>
-        </div>`).join("");
-      }
+    if (!listEl) return;
+    if (tasks.length === 0) {
+      listEl.innerHTML = `<div style="font-size:13px;color:var(--ink-mute);">Keine offenen Tasks.</div>`;
+      return;
     }
+    listEl.innerHTML = "";
+    tasks.forEach((t, idx) => {
+      const row = document.createElement("div");
+      row.className = "landing-task-item";
+      row.dataset.id = t.id;
+
+      const dot = document.createElement("div");
+      dot.className = `landing-task-prio p${t.prioritaet}`;
+
+      const title = document.createElement("span");
+      title.className = "landing-task-title";
+      title.textContent = t.titel;
+      title.addEventListener("dblclick", () => startEditTask(t, title, "landing"));
+
+      const actions = document.createElement("div");
+      actions.className = "task-actions";
+      const upBtn = mkActionBtn("↑", "Nach oben", () => moveTask(t.id, -1, "landing"));
+      upBtn.disabled = idx === 0;
+      const downBtn = mkActionBtn("↓", "Nach unten", () => moveTask(t.id, 1, "landing"));
+      downBtn.disabled = idx === tasks.length - 1;
+      const editBtn = mkActionBtn("✎", "Umbenennen", () => startEditTask(t, title, "landing"));
+      const delBtn = mkActionBtn("✕", "Löschen", () => deleteTask(t.id));
+      delBtn.classList.add("del");
+      actions.append(upBtn, downBtn, editBtn, delBtn);
+
+      row.append(dot, title, actions);
+      listEl.appendChild(row);
+    });
   } catch {}
 }
 
@@ -3717,22 +3762,145 @@ function renderTaskDrawer() {
     el.innerHTML = '<div style="font-size:13px;color:var(--ink-mute);padding:8px 0;">Keine offenen Tasks.</div>';
     return;
   }
-  el.innerHTML = taskList.map(t => {
+  el.innerHTML = "";
+  taskList.forEach((t, idx) => {
+    const row = document.createElement("div");
+    row.className = "task-drawer-item";
+    row.dataset.id = t.id;
+
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.className = "task-checkbox";
+    cb.addEventListener("change", () => toggleTaskStatus(t.id));
+
+    const content = document.createElement("div");
+    content.className = "task-drawer-content";
+
+    const title = document.createElement("div");
+    title.className = "task-drawer-item-title";
+    title.textContent = t.titel;
+    title.addEventListener("dblclick", () => startEditTask(t, title, "drawer"));
+
+    const badges = document.createElement("div");
+    badges.className = "task-drawer-badges";
     const prioCls = `prio${t.prioritaet}`;
-    const badges = [`<span class="task-badge ${prioCls}">P${t.prioritaet}</span>`];
-    if (t.gate_bezug) badges.push(`<span class="task-badge gate">Gate ${t.gate_bezug}</span>`);
-    if (t.ada_vorschlag) badges.push(`<span class="task-badge ada-badge">ADA</span>`);
-    if (t.ada_vorschlag && !t.nathalie_approved) {
-      badges.push(`<span class="task-badge approve" onclick="approveTask('${t.id}')">Absegnen?</span>`);
+    badges.innerHTML = `<span class="task-badge ${prioCls}">P${t.prioritaet}</span>`
+      + (t.gate_bezug ? `<span class="task-badge gate">Gate ${t.gate_bezug}</span>` : "")
+      + (t.ada_vorschlag ? `<span class="task-badge ada-badge">ADA</span>` : "")
+      + (t.ada_vorschlag && !t.nathalie_approved ? `<span class="task-badge approve" data-approve="${t.id}">Absegnen?</span>` : "");
+    badges.querySelectorAll("[data-approve]").forEach(b => b.addEventListener("click", () => approveTask(b.dataset.approve)));
+
+    content.appendChild(title);
+    content.appendChild(badges);
+
+    const actions = document.createElement("div");
+    actions.className = "task-actions";
+    const upBtn = mkActionBtn("↑", "Nach oben", () => moveTask(t.id, -1, "drawer"));
+    upBtn.disabled = idx === 0;
+    const downBtn = mkActionBtn("↓", "Nach unten", () => moveTask(t.id, 1, "drawer"));
+    downBtn.disabled = idx === taskList.length - 1;
+    const editBtn = mkActionBtn("✎", "Umbenennen", () => startEditTask(t, title, "drawer"));
+    const delBtn = mkActionBtn("✕", "Löschen", () => deleteTask(t.id));
+    delBtn.classList.add("del");
+    actions.append(upBtn, downBtn, editBtn, delBtn);
+
+    row.append(cb, content, actions);
+    el.appendChild(row);
+  });
+}
+
+function mkActionBtn(label, title, handler) {
+  const b = document.createElement("button");
+  b.className = "task-action-btn";
+  b.textContent = label;
+  b.title = title;
+  b.addEventListener("click", (e) => { e.stopPropagation(); handler(); });
+  return b;
+}
+
+function startEditTask(task, titleEl, source) {
+  const input = document.createElement("input");
+  input.type = "text";
+  input.className = "task-edit-input";
+  input.value = task.titel;
+  titleEl.replaceWith(input);
+  input.focus();
+  input.select();
+
+  let done = false;
+  const finish = async (save) => {
+    if (done) return;
+    done = true;
+    const newVal = input.value.trim();
+    if (save && newVal && newVal !== task.titel) {
+      try {
+        await fetch(`/api/tasks/${task.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ titel: newVal }),
+        });
+        task.titel = newVal;
+      } catch {}
     }
-    return `<div class="task-drawer-item">
-      <input type="checkbox" class="task-checkbox" onchange="toggleTaskStatus('${t.id}')">
-      <div class="task-drawer-content">
-        <div class="task-drawer-item-title">${escHtml(t.titel)}</div>
-        <div class="task-drawer-badges">${badges.join("")}</div>
-      </div>
-    </div>`;
-  }).join("");
+    titleEl.textContent = task.titel;
+    input.replaceWith(titleEl);
+    if (source === "drawer") renderTaskDrawer();
+    else renderLandingTasks();
+  };
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); finish(true); }
+    if (e.key === "Escape") { e.preventDefault(); finish(false); }
+  });
+  input.addEventListener("blur", () => finish(true));
+  input.addEventListener("click", (e) => e.stopPropagation());
+}
+
+async function deleteTask(id) {
+  if (!confirm("Task wirklich löschen?")) return;
+  try {
+    await fetch(`/api/tasks/${id}`, { method: "DELETE" });
+    // Refresh both views
+    if (taskDrawerOpen) await loadTasks();
+    await renderLandingTasks();
+  } catch {}
+}
+
+async function moveTask(id, delta, source) {
+  // Get the authoritative full list from the current view
+  const list = source === "drawer" ? taskList : (landingTaskList || []);
+  const idx = list.findIndex(t => t.id === id);
+  if (idx < 0) return;
+  const newIdx = idx + delta;
+  if (newIdx < 0 || newIdx >= list.length) return;
+
+  // Ensure integer sort_order for all items in the visible list
+  for (let i = 0; i < list.length; i++) {
+    if (list[i].sort_order == null) list[i].sort_order = (i + 1) * 10;
+  }
+  // Swap sort_order of the two adjacent items
+  const a = list[idx];
+  const b = list[newIdx];
+  const tmp = a.sort_order;
+  a.sort_order = b.sort_order;
+  b.sort_order = tmp;
+
+  try {
+    await Promise.all([
+      fetch(`/api/tasks/${a.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sort_order: a.sort_order }),
+      }),
+      fetch(`/api/tasks/${b.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sort_order: b.sort_order }),
+      }),
+    ]);
+  } catch {}
+  // Refresh both views to reflect new order
+  if (taskDrawerOpen) await loadTasks();
+  await renderLandingTasks();
 }
 
 async function addTaskFromDrawer() {

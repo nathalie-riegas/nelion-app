@@ -828,12 +828,28 @@ app.get("/api/pai/kpis/:session_id", async (req, res) => {
 });
 
 // ─── TASKS ────────────────────────────────────────────────────────────────
+// NOTE: Requires sort_order column. Run this once in Supabase SQL editor:
+//   ALTER TABLE tasks ADD COLUMN IF NOT EXISTS sort_order INT;
+// Without this column, reorder up/down will silently fail but delete/rename still work.
 app.get("/api/tasks", async (req, res) => {
   if (!supabase) return res.json([]);
-  let query = supabase.from("tasks").select("*").order("prioritaet", { ascending: true }).order("created_at", { ascending: false });
+  // Try sort_order first; if column missing, fall back
+  let query = supabase.from("tasks").select("*")
+    .order("sort_order", { ascending: true, nullsFirst: false })
+    .order("prioritaet", { ascending: true })
+    .order("created_at", { ascending: false });
   if (req.query.status) query = query.eq("status", req.query.status);
-  const { data, error } = await query;
-  if (error) return res.json([]);  // table may not exist yet
+  let { data, error } = await query;
+  if (error) {
+    // sort_order column may not exist — retry without it
+    let q2 = supabase.from("tasks").select("*")
+      .order("prioritaet", { ascending: true })
+      .order("created_at", { ascending: false });
+    if (req.query.status) q2 = q2.eq("status", req.query.status);
+    const r2 = await q2;
+    if (r2.error) return res.json([]);
+    data = r2.data;
+  }
   res.json(data);
 });
 
@@ -855,12 +871,19 @@ app.post("/api/tasks", async (req, res) => {
 
 app.patch("/api/tasks/:id", async (req, res) => {
   if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
-  const allowed = ["titel", "prioritaet", "deadline", "gate_bezug", "status", "ada_vorschlag", "nathalie_approved"];
+  const allowed = ["titel", "prioritaet", "deadline", "gate_bezug", "status", "ada_vorschlag", "nathalie_approved", "sort_order"];
   const updates = {};
   for (const key of allowed) {
     if (req.body[key] !== undefined) updates[key] = req.body[key];
   }
-  const { data, error } = await supabase.from("tasks").update(updates).eq("id", req.params.id).select().single();
+  let { data, error } = await supabase.from("tasks").update(updates).eq("id", req.params.id).select().single();
+  if (error && updates.sort_order !== undefined && /sort_order/.test(error.message || "")) {
+    // column missing — retry without sort_order so other fields still update
+    delete updates.sort_order;
+    const r2 = await supabase.from("tasks").update(updates).eq("id", req.params.id).select().single();
+    if (r2.error) return res.status(500).json({ error: r2.error.message });
+    return res.json(r2.data);
+  }
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
 });
