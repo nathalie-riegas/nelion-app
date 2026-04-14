@@ -2287,8 +2287,13 @@ function renderOmissionBias(num, iv) {
     </div>
     <div style="margin-bottom:10px">
       <div class="check-row"><input type="checkbox" id="ob${num}Ton" ${bias.ton_wechsel?"checked":""}><label><strong>F5 — Ton-Wechsel?</strong></label></div>
-      <div style="font-size:11px;color:var(--ink-mute);margin-left:26px">Sachlich → emotional. Welche Themen lösen es aus?</div>
+      <div style="font-size:11px;color:var(--ink-mute);margin-left:26px">Sachlich → emotional. Welche Themen loesen es aus?</div>
       <div class="form-group" style="margin-left:26px;margin-top:4px"><textarea class="form-input" id="ob${num}TonText" rows="1" placeholder="Timestamps + Thema..." style="font-size:12px"></textarea></div>
+    </div>
+    <div style="margin-bottom:10px">
+      <div class="check-row"><input type="checkbox" id="ob${num}Fehlt" ${bias.wer_fehlt?"checked":""}><label><strong>F6 — Wer fehlt? (Organigramm-Abgleich)</strong></label></div>
+      <div style="font-size:11px;color:var(--ink-mute);margin-left:26px">Person im Chart nicht erwaehnt = irrelevant ODER tabu. Person nicht im Chart, aber dreifach erwaehnt = informale Macht-Asymmetrie.</div>
+      <div class="form-group" style="margin-left:26px;margin-top:4px"><textarea class="form-input" id="ob${num}FehltText" rows="1" placeholder="OB-F6: [Name/Rolle] — erwartet/nicht erwartet..." style="font-size:12px"></textarea></div>
     </div>
   `;
 }
