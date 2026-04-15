@@ -995,6 +995,92 @@
   }
   @keyframes pai-spin { to { transform: rotate(360deg); } }
 
+  /* ── LERNMODUS (Protokoll 5) ─────────────────────────────────────── */
+  .tab-badge {
+    display: inline-flex; align-items: center; gap: 2px;
+    margin-left: 6px; padding: 1px 7px; border-radius: 10px;
+    background: var(--accent); color: #fff;
+    font-size: 10px; font-weight: 600; font-family: var(--mono);
+    line-height: 1.4; vertical-align: middle;
+    animation: lernmodusBadgePulse 0.4s ease-out;
+  }
+  @keyframes lernmodusBadgePulse {
+    0%   { transform: scale(0.6); opacity: 0; }
+    60%  { transform: scale(1.12); opacity: 1; }
+    100% { transform: scale(1); }
+  }
+  .ada-lernmodus-toggle {
+    background: transparent; border: 1px solid var(--border2);
+    color: var(--ink-mid); font-size: 12px; font-family: var(--mono);
+    padding: 6px 12px; border-radius: var(--rs); cursor: pointer;
+    transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .ada-lernmodus-toggle:hover { border-color: var(--accent); color: var(--ink); }
+  .ada-lernmodus-toggle.on {
+    background: var(--accent); border-color: var(--accent); color: #fff;
+  }
+  .ada-lernmodus-toggle.on:hover { background: var(--accent); opacity: 0.9; }
+
+  .lernmodus-container {
+    display: flex; flex-direction: column; gap: 10px;
+    padding: 14px 18px 0; max-height: 60vh; overflow-y: auto;
+  }
+  .lernmodus-container:empty { display: none; }
+  .lernmodus-card {
+    background: var(--surface2); border: 1px solid var(--accent);
+    border-left: 4px solid var(--accent);
+    border-radius: var(--r); padding: 14px 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    animation: lernmodusSlideIn 0.25s ease-out;
+  }
+  @keyframes lernmodusSlideIn {
+    from { transform: translateY(-8px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+  }
+  .lernmodus-card-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 10px; margin-bottom: 8px;
+  }
+  .lernmodus-card-title {
+    font-size: 13px; font-weight: 600; color: var(--ink);
+    display: flex; align-items: center; gap: 6px; flex: 1;
+  }
+  .lernmodus-card-icon { font-size: 16px; }
+  .lernmodus-card-action {
+    font-family: var(--mono); font-size: 10px; color: var(--ink-mute);
+    text-transform: uppercase; letter-spacing: 0.05em;
+    margin-top: 2px;
+  }
+  .lernmodus-card-close {
+    background: transparent; border: none; color: var(--ink-mute);
+    font-size: 18px; cursor: pointer; padding: 0; line-height: 1;
+    width: 24px; height: 24px; border-radius: 4px;
+  }
+  .lernmodus-card-close:hover { background: var(--surface); color: var(--ink); }
+  .lernmodus-card-body {
+    font-size: 13px; line-height: 1.55; color: var(--ink-mid);
+    white-space: pre-wrap;
+  }
+  .lernmodus-card-body h3, .lernmodus-card-body h4 {
+    color: var(--ink); margin: 8px 0 4px;
+  }
+  .lernmodus-card-body strong { color: var(--ink); }
+  .lernmodus-card-body code {
+    background: var(--surface); padding: 1px 5px; border-radius: 3px;
+    font-family: var(--mono); font-size: 12px;
+  }
+  .lernmodus-card.loading .lernmodus-card-body {
+    color: var(--ink-mute); font-style: italic;
+  }
+  .lernmodus-card-body .dots {
+    display: inline-block; animation: lernmodusDots 1.2s infinite;
+  }
+  @keyframes lernmodusDots {
+    0%, 20% { content: "."; }
+    40%     { content: ".."; }
+    60%, 100% { content: "..."; }
+  }
+
   /* ── AUSWERTUNG (interne Arbeitsansicht) ─────────────────────────── */
   .aus-section {
     background: var(--surface); border: 1px solid var(--border);
@@ -1313,7 +1399,7 @@
   <button class="tab-btn" data-tab="modul3" onclick="switchTab('modul3')">PAI Interview</button>
   <button class="tab-btn" data-tab="modul4" onclick="switchTab('modul4')">PAI Self-Assessment</button>
   <button class="tab-btn" data-tab="auswertung" onclick="switchTab('auswertung')">Auswertung</button>
-  <button class="tab-btn" data-tab="ada" onclick="switchTab('ada')">ADA</button>
+  <button class="tab-btn" data-tab="ada" onclick="switchTab('ada')">ADA<span class="tab-badge" id="adaTabBadge" style="display:none;">🎓 <span id="adaTabBadgeCount">0</span></span></button>
 </nav>
 
 <div class="main">
@@ -1487,11 +1573,15 @@
         <span>ADA</span> — <span id="adaContextText">Kein aktiver Scan</span>
       </div>
       <div class="ada-chat-topbar-right">
+        <button class="ada-lernmodus-toggle on" id="adaLernmodusToggle" onclick="toggleLernmodus()" title="Lernmodus umschalten">
+          <span>🎓</span><span id="adaLernmodusLabel">Lernmodus AN</span>
+        </button>
         <span class="ada-chat-datetime datetime-display" id="adaDateTime"></span>
         <button class="ada-task-toggle" onclick="toggleTaskDrawer()" title="Tasks">&#9776; Tasks</button>
       </div>
     </div>
     <div class="ada-chat-body">
+      <div class="lernmodus-container" id="lernmodusContainer"></div>
       <div class="ada-chat-messages" id="adaMessages">
         <div class="ada-msg assistant">Hallo Nathalie. Was steht an?</div>
       </div>
@@ -1758,6 +1848,9 @@ function switchTab(tab) {
     initAdaListeners();
     updateAdaContext();
     loadAdaSessions();
+    updateLernmodusToggleUI();
+    renderLernmodusCards();
+    markAllLernmodusCardsRead();
     return;
   }
 
@@ -2448,6 +2541,11 @@ async function goToScanPhase(num) {
   await saveScanState();
   scanPhase = num;
   renderScanPhase(num);
+
+  // ── Lernmodus-Trigger: Phase 4 öffnen ──
+  if (num === 4 && typeof maybeFireLernmodusPhase4 === "function") {
+    maybeFireLernmodusPhase4();
+  }
 }
 
 async function saveScanState() {
@@ -2828,6 +2926,19 @@ function setAmpel(dot) {
     });
   }
   if (scanPhase === 5) calculateRegime();
+
+  // ── Lernmodus-Trigger (nur bei aktivem Setzen, nicht beim Zurücksetzen) ──
+  if (typeof triggerLernmodus === "function" && scanAmpeln[key] !== "grau") {
+    const parsed = parseAmpelKey(key);
+    if (parsed) {
+      const farbeDe = parsed && (scanAmpeln[key] === "gruen" ? "grün" : scanAmpeln[key] === "gelb" ? "gelb" : "rot");
+      triggerLernmodus(
+        "Ampel gesetzt",
+        `Ampel: ${axisLabel(parsed.achse)}`,
+        `Achse ${axisLabel(parsed.achse)} (Layer ${layerLabel(parsed.layer)}, Phase ${parsed.phase}) auf ${farbeDe} gesetzt.`
+      );
+    }
+  }
 }
 
 function calculateRegime() {
@@ -2984,6 +3095,24 @@ async function savePhase3AndNext() {
   goToScanPhase(4);
 }
 
+// Lernmodus-Trigger: Hypothesen-Spiegel geöffnet (einmal pro Scan).
+// Wird aus renderPhase4() aufgerufen, damit es auf jeden Weg in Phase 4 reagiert.
+function maybeFireLernmodusPhase4() {
+  if (typeof triggerLernmodus !== "function" || !currentScan) return;
+  const fireKey = `phase4_${currentScan.id}`;
+  if (_lernmodusAlreadyFired.has(fireKey)) return;
+  _lernmodusAlreadyFired.add(fireKey);
+  const hypSummary = (scanHypothesen || [])
+    .filter(h => h && (h.layer || h.mechanismus))
+    .map((h, i) => `H${i + 1}: ${h.layer || "?"} — ${h.mechanismus || "(ohne Mechanismus)"}`)
+    .join(" | ") || "(noch keine Hypothesen formuliert)";
+  triggerLernmodus(
+    "Hypothesen-Spiegel geöffnet",
+    "Phase 4 — Hypothesen-Spiegel",
+    `Aktuelle Hypothesen: ${hypSummary}`
+  );
+}
+
 async function savePhase4AndNext() {
   currentScan.hypothesen_spiegel_notizen = document.getElementById("spiegelNotizen")?.value || "";
   currentScan.hypothesen_spiegel_done = document.getElementById("spiegelDone")?.checked || false;
@@ -3086,6 +3215,23 @@ async function saveAllInterviews() {
     };
     try { await fetch(`/api/scans/${currentScan.id}/interviews/${iv.id}/bias`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bias) }); }
     catch (e) { console.warn(`Bias ${i} save:`, e.message); }
+
+    // ── Lernmodus-Trigger (Diff-Debounce: nur wenn Notizen sich um >150 Zeichen geändert haben) ──
+    if (typeof triggerLernmodus === "function" && updates.notizen && updates.rolle) {
+      const last = _lernmodusLastInterviewNotes[i] || "";
+      if (updates.notizen.length > 80 && Math.abs(updates.notizen.length - last.length) > 150) {
+        _lernmodusLastInterviewNotes[i] = updates.notizen;
+        const rolleLabel = updates.rolle === "entscheider" ? "Entscheider"
+                         : updates.rolle === "fuehrungskraft" ? "Führungskraft"
+                         : updates.rolle === "operativ" ? "Operative Person"
+                         : updates.rolle;
+        triggerLernmodus(
+          "Interview-Notiz gespeichert",
+          `Interview ${i} · ${rolleLabel}`,
+          `Rolle: ${rolleLabel}. Notiz-Auszug: "${updates.notizen.slice(0, 500)}"`
+        );
+      }
+    }
   }
 }
 
@@ -5625,6 +5771,30 @@ async function loadAuswertungForScan(scan) {
 
   // Anker-Button
   document.getElementById("btnAnker").style.display = "flex";
+
+  // ── Lernmodus-Trigger: Befund-Entwurf geöffnet (einmal pro Scan) ──
+  if (typeof triggerLernmodus === "function") {
+    const fireKey = `befund_${scan.id}`;
+    if (!_lernmodusAlreadyFired.has(fireKey)) {
+      _lernmodusAlreadyFired.add(fireKey);
+      // Aktuelle Ampel-Lage kompakt zusammenfassen
+      const ampelSummary = [];
+      for (const [layer, axes] of Object.entries(AMPEL_AXES)) {
+        for (const achse of axes) {
+          const v = getBestAmpel(layer, achse);
+          if (v === "rot" || v === "gelb") {
+            ampelSummary.push(`${axisLabel(achse)}=${v}`);
+          }
+        }
+      }
+      const routing = computeRoutingEmpfehlung();
+      triggerLernmodus(
+        "Befund-Entwurf geöffnet",
+        "Auswertung — Befund-Entwurf",
+        `Rote/gelbe Ampeln: ${ampelSummary.join(", ") || "(keine)"}. Routing-Empfehlung: ${routing.regime} — ${routing.text}`
+      );
+    }
+  }
 }
 
 // ── BESTE AMPEL-PHASE ERMITTELN ───────────────────────────────────────────
@@ -5918,6 +6088,167 @@ function showAuswertungToast() {
 
 function printAuswertung() {
   window.print();
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// LERNMODUS — Protokoll 5 (ADA erklärt jede Aktion im Kontext)
+// ══════════════════════════════════════════════════════════════════════════
+//
+// Jede relevante Aktion in der App löst — wenn Lernmodus AN — einen ADA-Call
+// aus, der Theorie + Beobachtungsauftrag + Anti-Pattern im Protokoll-5-Format
+// zurückgibt. Die Antworten erscheinen als eigene Karten im ADA-Tab, visuell
+// getrennt vom normalen Chat-Verlauf, und sind wegklickbar.
+//
+// Trigger:
+//   a) Ampel gesetzt (Friction Scan)          → triggerLernmodus("Ampel gesetzt", …)
+//   b) Interview-Notiz gespeichert             → triggerLernmodus("Interview-Notiz gespeichert", …)
+//   c) Hypothesen-Spiegel geöffnet (Phase 4)   → triggerLernmodus("Hypothesen-Spiegel", …)
+//   d) Befund-Entwurf geöffnet (Auswertung 3)  → triggerLernmodus("Befund-Entwurf", …)
+
+const LERNMODUS_STORAGE_KEY = "nelionLernmodus";
+const _lernmodusCards = [];              // { id, action, context, html, loading, dismissed }
+const _lernmodusAlreadyFired = new Set(); // "phase4_${scanId}", "befund_${scanId}" — einmal pro Scan
+const _lernmodusLastInterviewNotes = {};  // { slot: lastFiredNotizen } — Diff-Debounce
+
+function isLernmodusEnabled() {
+  const v = localStorage.getItem(LERNMODUS_STORAGE_KEY);
+  return v === null ? true : v === "true";  // Default AN
+}
+
+function setLernmodusEnabled(on) {
+  localStorage.setItem(LERNMODUS_STORAGE_KEY, on ? "true" : "false");
+  updateLernmodusToggleUI();
+}
+
+function updateLernmodusToggleUI() {
+  const btn = document.getElementById("adaLernmodusToggle");
+  const lbl = document.getElementById("adaLernmodusLabel");
+  if (!btn || !lbl) return;
+  const on = isLernmodusEnabled();
+  btn.classList.toggle("on", on);
+  lbl.textContent = on ? "Lernmodus AN" : "Lernmodus AUS";
+}
+
+function toggleLernmodus() {
+  setLernmodusEnabled(!isLernmodusEnabled());
+}
+
+// ── BADGE-COUNTER am ADA-Tab-Button ───────────────────────────────────────
+// Zählt ungelesene (= nicht dismissed + nicht read) Karten.
+function updateLernmodusBadge() {
+  const badge = document.getElementById("adaTabBadge");
+  const countEl = document.getElementById("adaTabBadgeCount");
+  if (!badge || !countEl) return;
+  const count = _lernmodusCards.filter(c => !c.dismissed && !c.read).length;
+  if (count > 0) {
+    badge.style.display = "inline-flex";
+    countEl.textContent = String(count);
+  } else {
+    badge.style.display = "none";
+  }
+}
+
+// Wird aufgerufen wenn der Nutzer den ADA-Tab öffnet: alle aktiven Karten als
+// "gelesen" markieren → Badge verschwindet.
+function markAllLernmodusCardsRead() {
+  for (const c of _lernmodusCards) c.read = true;
+  updateLernmodusBadge();
+}
+
+// ── KARTEN-RENDER ─────────────────────────────────────────────────────────
+function renderLernmodusCards() {
+  const $c = document.getElementById("lernmodusContainer");
+  updateLernmodusBadge();
+  if (!$c) return;
+  const visible = _lernmodusCards.filter(c => !c.dismissed);
+  if (visible.length === 0) {
+    $c.innerHTML = "";
+    return;
+  }
+  $c.innerHTML = visible.map(c => {
+    const bodyHtml = c.loading
+      ? '<em>ADA denkt nach…</em>'
+      : renderMarkdown(c.content || "");
+    return `
+      <div class="lernmodus-card ${c.loading ? "loading" : ""}" data-card-id="${escHtml(c.id)}">
+        <div class="lernmodus-card-header">
+          <div class="lernmodus-card-title">
+            <span class="lernmodus-card-icon">🎓</span>
+            <div>
+              <div>${escHtml(c.title || "Lernmodus")}</div>
+              <div class="lernmodus-card-action">${escHtml(c.action || "")}</div>
+            </div>
+          </div>
+          <button class="lernmodus-card-close" onclick="dismissLernmodusCard('${escHtml(c.id)}')" title="Schliessen">×</button>
+        </div>
+        <div class="lernmodus-card-body">${bodyHtml}</div>
+      </div>
+    `;
+  }).join("");
+}
+
+function dismissLernmodusCard(id) {
+  const card = _lernmodusCards.find(c => c.id === id);
+  if (card) card.dismissed = true;
+  renderLernmodusCards();
+}
+
+// ── KERN-TRIGGER ──────────────────────────────────────────────────────────
+// action:  kurzer Label (z.B. "Ampel gesetzt")
+// title:   Karten-Überschrift für den Benutzer
+// context: kurze Textbeschreibung des Kontexts für ADA
+async function triggerLernmodus(action, title, context) {
+  if (!isLernmodusEnabled()) return;
+
+  // Karte im Loading-State erstellen
+  const id = "lm_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6);
+  const card = {
+    id, action, title, context,
+    content: "",
+    loading: true,
+    dismissed: false,
+    read: false,  // für Badge-Counter am ADA-Tab
+  };
+  _lernmodusCards.unshift(card);  // neueste zuerst
+  renderLernmodusCards();
+
+  // ADA-Call bauen — identisch zum normalen Chat-Endpoint
+  const userMsg = `[LERNMODUS] Aktion: ${action}. Kontext: ${context}. Erkläre in Protokoll-5-Format: Was wurde gemessen, Theorie dahinter (Autor + Rating), was jetzt sehen, häufiger Fehler hier. Kurz und präzise.`;
+
+  const scanCtx = currentScan ? {
+    kunde: currentScan.kunde_name,
+    phase: `Phase ${typeof scanPhase !== "undefined" ? scanPhase : "?"} — ${typeof SCAN_PHASES !== "undefined" ? (SCAN_PHASES[scanPhase]?.title || "?") : "?"}`,
+    status: currentScan.status,
+  } : null;
+
+  try {
+    const r = await fetch("/api/ada/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: [{ role: "user", content: userMsg }],
+        scan_context: scanCtx,
+      }),
+    });
+    const data = await r.json();
+    card.loading = false;
+    card.content = data.error ? `Fehler: ${data.error}` : (data.content || "(leere Antwort)");
+  } catch (e) {
+    card.loading = false;
+    card.content = "Verbindungsfehler: " + e.message;
+  }
+  renderLernmodusCards();
+}
+
+// ── HELPER: Ampel-Key parsen ──────────────────────────────────────────────
+// Format: "L1_Energie-Status_survey" → { layer, achse, phase }
+function parseAmpelKey(key) {
+  const parts = key.split("_");
+  if (parts.length < 3) return null;
+  const layer = parts[0];
+  const phase = parts[parts.length - 1];
+  const achse = parts.slice(1, -1).join("_");
+  return { layer, achse, phase };
 }
 
 // ══════════════════════════════════════════════════════════════════════════
