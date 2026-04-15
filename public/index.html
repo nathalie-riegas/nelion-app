@@ -110,6 +110,20 @@
   .module { display: none; }
   .module.active { display: block; }
 
+  /* Module-Content-Container — Flex-Column mit gap: 20px, wenn KEIN
+     cockpit-layout drin ist. Gleicht die Landing-Screens von Friction Scan /
+     PAI Interview / PAI Self-Assessment / Auswertung an das luftige Layout
+     des Erstgesprächs (.screen.active) an. Phasen-Views bleiben unberührt:
+     dort erbt .cockpit-content bereits gap: 20px. */
+  #scanContent:not(:has(.cockpit-layout)),
+  #paiContent:not(:has(.cockpit-layout)),
+  #paiAuditContent:not(:has(.cockpit-layout)),
+  #auswertungContent:not(:has(.cockpit-layout)) {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
   /* ── SCREENS ─────────────────────────────────────────────────────────── */
   .screen { display: none; }
   .screen.active { display: flex; flex-direction: column; gap: 20px; }
@@ -879,6 +893,24 @@
     border-bottom: 1px solid var(--border); position: relative;
   }
   .task-drawer-item:last-child { border-bottom: none; }
+  .task-drawer-item[draggable="true"],
+  .landing-task-item[draggable="true"] { cursor: grab; }
+  .task-drawer-item[draggable="true"]:active,
+  .landing-task-item[draggable="true"]:active { cursor: grabbing; }
+  .task-drawer-item.dragging,
+  .landing-task-item.dragging { opacity: 0.4; }
+  .task-drawer-item.drop-above::before,
+  .landing-task-item.drop-above::before {
+    content: ""; position: absolute; left: 0; right: 0; top: -1px;
+    height: 2px; background: var(--ada-accent); pointer-events: none;
+    border-radius: 2px;
+  }
+  .task-drawer-item.drop-below::after,
+  .landing-task-item.drop-below::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -1px;
+    height: 2px; background: var(--ada-accent); pointer-events: none;
+    border-radius: 2px;
+  }
   .task-actions {
     display: none; gap: 2px; align-items: center; flex-shrink: 0;
   }
@@ -1775,54 +1807,45 @@ async function renderLanding() {
     }
   } catch {}
 
-  // Tasks
-  await renderLandingTasks();
+  // Tasks (unified state — fetches once, renders both landing + drawer)
+  await showTasks();
 }
 
-let landingTaskList = [];
-async function renderLandingTasks() {
-  try {
-    const r = await fetch("/api/tasks?status=offen");
-    const tasks = await r.json();
-    const countEl = document.getElementById("landingTasksCount");
-    const listEl = document.getElementById("landingTasksList");
-    if (!Array.isArray(tasks)) return;
-    landingTaskList = tasks;
-    if (countEl) countEl.textContent = `${tasks.length} offene Tasks`;
-    if (!listEl) return;
-    if (tasks.length === 0) {
-      listEl.innerHTML = `<div style="font-size:13px;color:var(--ink-mute);">Keine offenen Tasks.</div>`;
-      return;
-    }
-    listEl.innerHTML = "";
-    tasks.forEach((t, idx) => {
-      const row = document.createElement("div");
-      row.className = "landing-task-item";
-      row.dataset.id = t.id;
+function renderLandingTasks() {
+  const countEl = document.getElementById("landingTasksCount");
+  const listEl = document.getElementById("landingTasksList");
+  if (countEl) countEl.textContent = `${allTasks.length} offene Tasks`;
+  if (!listEl) return;
+  if (allTasks.length === 0) {
+    listEl.innerHTML = `<div style="font-size:13px;color:var(--ink-mute);">Keine offenen Tasks.</div>`;
+    return;
+  }
+  listEl.innerHTML = "";
+  allTasks.forEach((t) => {
+    const row = document.createElement("div");
+    row.className = "landing-task-item";
+    row.dataset.id = t.id;
+    row.draggable = true;
+    attachTaskDragHandlers(row, t.id);
 
-      const dot = document.createElement("div");
-      dot.className = `landing-task-prio p${t.prioritaet}`;
+    const dot = document.createElement("div");
+    dot.className = `landing-task-prio p${t.prioritaet}`;
 
-      const title = document.createElement("span");
-      title.className = "landing-task-title";
-      title.textContent = t.titel;
-      title.addEventListener("dblclick", () => startEditTask(t, title, "landing"));
+    const title = document.createElement("span");
+    title.className = "landing-task-title";
+    title.textContent = t.titel;
+    title.addEventListener("dblclick", () => startEditTask(t, title));
 
-      const actions = document.createElement("div");
-      actions.className = "task-actions";
-      const upBtn = mkActionBtn("↑", "Nach oben", () => moveTask(t.id, -1, "landing"));
-      upBtn.disabled = idx === 0;
-      const downBtn = mkActionBtn("↓", "Nach unten", () => moveTask(t.id, 1, "landing"));
-      downBtn.disabled = idx === tasks.length - 1;
-      const editBtn = mkActionBtn("✎", "Umbenennen", () => startEditTask(t, title, "landing"));
-      const delBtn = mkActionBtn("✕", "Löschen", () => deleteTask(t.id));
-      delBtn.classList.add("del");
-      actions.append(upBtn, downBtn, editBtn, delBtn);
+    const actions = document.createElement("div");
+    actions.className = "task-actions";
+    const editBtn = mkActionBtn("✎", "Umbenennen", () => startEditTask(t, title));
+    const delBtn = mkActionBtn("✕", "Löschen", () => deleteTask(t.id));
+    delBtn.classList.add("del");
+    actions.append(editBtn, delBtn);
 
-      row.append(dot, title, actions);
-      listEl.appendChild(row);
-    });
-  } catch {}
+    row.append(dot, title, actions);
+    listEl.appendChild(row);
+  });
 }
 
 function toggleLandingTasks() {
@@ -4140,49 +4163,72 @@ function renameAdaSession(id, el) {
 }
 
 // ── TASK PANEL ────────────────────────────────────────────────────────────
+// Single source of truth: allTasks[]. Both views (landing + drawer) read
+// from it, and all mutations update it + refresh both views.
+let allTasks = [];
+let tasksLoaded = false;
 let taskDrawerOpen = false;
-let taskList = [];
+let draggingTaskId = null;
+
+// Drawer shows a filtered subset: P1, deadline<30d, or unapproved ADA.
+function getDrawerTasks() {
+  const now = new Date();
+  return allTasks.filter(t => {
+    if (t.prioritaet === 1) return true;
+    if (t.gate_bezug && t.deadline) {
+      const dl = new Date(t.deadline);
+      const days = (dl - now) / (1000 * 60 * 60 * 24);
+      if (days < 30) return true;
+    }
+    if (t.ada_vorschlag && !t.nathalie_approved) return true;
+    return false;
+  });
+}
+
+async function loadTasksIfNeeded() {
+  if (tasksLoaded) return;
+  try {
+    const r = await fetch("/api/tasks?status=offen");
+    const data = await r.json();
+    allTasks = Array.isArray(data) ? data : [];
+  } catch { allTasks = []; }
+  tasksLoaded = true;
+}
+
+// Single entry point used by both landing render and drawer open.
+async function showTasks() {
+  await loadTasksIfNeeded();
+  refreshAllTaskViews();
+}
+
+// Re-renders both views from the current allTasks state (no fetch).
+function refreshAllTaskViews() {
+  renderTaskDrawer();
+  renderLandingTasks();
+}
 
 function toggleTaskDrawer() {
   taskDrawerOpen = !taskDrawerOpen;
   const el = document.getElementById("taskDrawer");
   if (el) el.classList.toggle("open", taskDrawerOpen);
-  if (taskDrawerOpen) loadTasks();
-}
-
-async function loadTasks() {
-  try {
-    const r = await fetch("/api/tasks?status=offen");
-    let all = await r.json();
-    if (!Array.isArray(all)) all = [];
-    // Filter: Prio 1, OR gate_bezug with deadline < 30 days, OR ADA-Vorschlag nicht abgesegnet
-    const now = new Date();
-    taskList = all.filter(t => {
-      if (t.prioritaet === 1) return true;
-      if (t.gate_bezug && t.deadline) {
-        const dl = new Date(t.deadline);
-        const days = (dl - now) / (1000 * 60 * 60 * 24);
-        if (days < 30) return true;
-      }
-      if (t.ada_vorschlag && !t.nathalie_approved) return true;
-      return false;
-    });
-    renderTaskDrawer();
-  } catch { taskList = []; }
+  if (taskDrawerOpen) showTasks();
 }
 
 function renderTaskDrawer() {
   const el = document.getElementById("taskDrawerList");
   if (!el) return;
-  if (taskList.length === 0) {
+  const items = getDrawerTasks();
+  if (items.length === 0) {
     el.innerHTML = '<div style="font-size:13px;color:var(--ink-mute);padding:8px 0;">Keine offenen Tasks.</div>';
     return;
   }
   el.innerHTML = "";
-  taskList.forEach((t, idx) => {
+  items.forEach((t) => {
     const row = document.createElement("div");
     row.className = "task-drawer-item";
     row.dataset.id = t.id;
+    row.draggable = true;
+    attachTaskDragHandlers(row, t.id);
 
     const cb = document.createElement("input");
     cb.type = "checkbox";
@@ -4195,7 +4241,7 @@ function renderTaskDrawer() {
     const title = document.createElement("div");
     title.className = "task-drawer-item-title";
     title.textContent = t.titel;
-    title.addEventListener("dblclick", () => startEditTask(t, title, "drawer"));
+    title.addEventListener("dblclick", () => startEditTask(t, title));
 
     const badges = document.createElement("div");
     badges.className = "task-drawer-badges";
@@ -4211,14 +4257,10 @@ function renderTaskDrawer() {
 
     const actions = document.createElement("div");
     actions.className = "task-actions";
-    const upBtn = mkActionBtn("↑", "Nach oben", () => moveTask(t.id, -1, "drawer"));
-    upBtn.disabled = idx === 0;
-    const downBtn = mkActionBtn("↓", "Nach unten", () => moveTask(t.id, 1, "drawer"));
-    downBtn.disabled = idx === taskList.length - 1;
-    const editBtn = mkActionBtn("✎", "Umbenennen", () => startEditTask(t, title, "drawer"));
+    const editBtn = mkActionBtn("✎", "Umbenennen", () => startEditTask(t, title));
     const delBtn = mkActionBtn("✕", "Löschen", () => deleteTask(t.id));
     delBtn.classList.add("del");
-    actions.append(upBtn, downBtn, editBtn, delBtn);
+    actions.append(editBtn, delBtn);
 
     row.append(cb, content, actions);
     el.appendChild(row);
@@ -4234,7 +4276,7 @@ function mkActionBtn(label, title, handler) {
   return b;
 }
 
-function startEditTask(task, titleEl, source) {
+function startEditTask(task, titleEl) {
   const input = document.createElement("input");
   input.type = "text";
   input.className = "task-edit-input";
@@ -4255,13 +4297,15 @@ function startEditTask(task, titleEl, source) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ titel: newVal }),
         });
+        // Update central state
+        const entry = allTasks.find(x => x.id === task.id);
+        if (entry) entry.titel = newVal;
         task.titel = newVal;
       } catch {}
     }
     titleEl.textContent = task.titel;
     input.replaceWith(titleEl);
-    if (source === "drawer") renderTaskDrawer();
-    else renderLandingTasks();
+    refreshAllTaskViews();
   };
   input.addEventListener("keydown", (e) => {
     if (e.key === "Enter") { e.preventDefault(); finish(true); }
@@ -4269,54 +4313,17 @@ function startEditTask(task, titleEl, source) {
   });
   input.addEventListener("blur", () => finish(true));
   input.addEventListener("click", (e) => e.stopPropagation());
+  // Prevent drag while editing
+  input.addEventListener("mousedown", (e) => e.stopPropagation());
 }
 
 async function deleteTask(id) {
   if (!confirm("Task wirklich löschen?")) return;
   try {
     await fetch(`/api/tasks/${id}`, { method: "DELETE" });
-    // Refresh both views
-    if (taskDrawerOpen) await loadTasks();
-    await renderLandingTasks();
+    allTasks = allTasks.filter(t => t.id !== id);
+    refreshAllTaskViews();
   } catch {}
-}
-
-async function moveTask(id, delta, source) {
-  // Get the authoritative full list from the current view
-  const list = source === "drawer" ? taskList : (landingTaskList || []);
-  const idx = list.findIndex(t => t.id === id);
-  if (idx < 0) return;
-  const newIdx = idx + delta;
-  if (newIdx < 0 || newIdx >= list.length) return;
-
-  // Ensure integer sort_order for all items in the visible list
-  for (let i = 0; i < list.length; i++) {
-    if (list[i].sort_order == null) list[i].sort_order = (i + 1) * 10;
-  }
-  // Swap sort_order of the two adjacent items
-  const a = list[idx];
-  const b = list[newIdx];
-  const tmp = a.sort_order;
-  a.sort_order = b.sort_order;
-  b.sort_order = tmp;
-
-  try {
-    await Promise.all([
-      fetch(`/api/tasks/${a.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sort_order: a.sort_order }),
-      }),
-      fetch(`/api/tasks/${b.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sort_order: b.sort_order }),
-      }),
-    ]);
-  } catch {}
-  // Refresh both views to reflect new order
-  if (taskDrawerOpen) await loadTasks();
-  await renderLandingTasks();
 }
 
 async function addTaskFromDrawer() {
@@ -4324,13 +4331,15 @@ async function addTaskFromDrawer() {
   const titel = input.value.trim();
   if (!titel) return;
   try {
-    await fetch("/api/tasks", {
+    const r = await fetch("/api/tasks", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ titel, nathalie_approved: true }),
     });
+    const newTask = await r.json();
+    if (newTask && newTask.id) allTasks.push(newTask);
     input.value = "";
-    await loadTasks();
+    refreshAllTaskViews();
   } catch {}
 }
 
@@ -4341,7 +4350,9 @@ async function toggleTaskStatus(id) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "erledigt" }),
     });
-    await loadTasks();
+    // Remove from open-tasks state (we only query status=offen)
+    allTasks = allTasks.filter(t => t.id !== id);
+    refreshAllTaskViews();
   } catch {}
 }
 
@@ -4352,19 +4363,101 @@ async function approveTask(id) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ nathalie_approved: true }),
     });
-    await loadTasks();
+    const entry = allTasks.find(t => t.id === id);
+    if (entry) entry.nathalie_approved = true;
+    refreshAllTaskViews();
   } catch {}
 }
 
 async function saveAdaTaskSuggestion(titel) {
   try {
-    await fetch("/api/tasks", {
+    const r = await fetch("/api/tasks", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ titel, ada_vorschlag: true, nathalie_approved: false }),
     });
-    if (taskDrawerOpen) await loadTasks();
+    const newTask = await r.json();
+    if (newTask && newTask.id) {
+      allTasks.push(newTask);
+      refreshAllTaskViews();
+    }
   } catch {}
+}
+
+// ── DRAG & DROP ───────────────────────────────────────────────────────────
+function attachTaskDragHandlers(row, taskId) {
+  row.addEventListener("dragstart", (e) => {
+    draggingTaskId = taskId;
+    row.classList.add("dragging");
+    // Required for Firefox
+    try { e.dataTransfer.setData("text/plain", taskId); } catch {}
+    e.dataTransfer.effectAllowed = "move";
+  });
+  row.addEventListener("dragend", () => {
+    row.classList.remove("dragging");
+    draggingTaskId = null;
+    document.querySelectorAll(".drop-above, .drop-below").forEach(el => {
+      el.classList.remove("drop-above", "drop-below");
+    });
+  });
+  row.addEventListener("dragover", (e) => {
+    if (!draggingTaskId || draggingTaskId === taskId) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    const rect = row.getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    row.classList.remove("drop-above", "drop-below");
+    if (e.clientY < midY) row.classList.add("drop-above");
+    else row.classList.add("drop-below");
+  });
+  row.addEventListener("dragleave", (e) => {
+    // Only clear if leaving the row itself (not a child)
+    if (e.target === row) {
+      row.classList.remove("drop-above", "drop-below");
+    }
+  });
+  row.addEventListener("drop", (e) => {
+    e.preventDefault();
+    if (!draggingTaskId || draggingTaskId === taskId) return;
+    const before = row.classList.contains("drop-above");
+    row.classList.remove("drop-above", "drop-below");
+    handleTaskDrop(draggingTaskId, taskId, before);
+  });
+}
+
+function handleTaskDrop(sourceId, targetId, insertBefore) {
+  const srcIdx = allTasks.findIndex(t => t.id === sourceId);
+  if (srcIdx < 0) return;
+  const [moved] = allTasks.splice(srcIdx, 1);
+  // Find target's new index (after removing source)
+  let targetIdx = allTasks.findIndex(t => t.id === targetId);
+  if (targetIdx < 0) { allTasks.splice(srcIdx, 0, moved); return; }
+  const newIdx = insertBefore ? targetIdx : targetIdx + 1;
+  allTasks.splice(newIdx, 0, moved);
+
+  // Re-assign clean integer positions and persist
+  const updates = [];
+  allTasks.forEach((t, i) => {
+    const newPos = (i + 1) * 10;
+    if (t.position !== newPos) {
+      t.position = newPos;
+      updates.push({ id: t.id, position: newPos });
+    }
+  });
+  refreshAllTaskViews();
+  persistPositions(updates);
+}
+
+function persistPositions(updates) {
+  // Fire PATCH requests in parallel; don't block UI. Failures are ignored
+  // (client state is source of truth until next reload).
+  Promise.all(updates.map(u =>
+    fetch(`/api/tasks/${u.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ position: u.position }),
+    }).catch(() => {})
+  ));
 }
 
 // ══════════════════════════════════════════════════════════════════════════

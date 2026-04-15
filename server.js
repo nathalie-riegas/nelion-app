@@ -1019,20 +1019,22 @@ app.patch("/api/auswertungen/:id", async (req, res) => {
 });
 
 // ─── TASKS ────────────────────────────────────────────────────────────────
-// NOTE: Requires sort_order column. Run this once in Supabase SQL editor:
-//   ALTER TABLE tasks ADD COLUMN IF NOT EXISTS sort_order INT;
-// Without this column, reorder up/down will silently fail but delete/rename still work.
+// NOTE: Requires `position` column for drag-and-drop ordering.
+// See supabase/migrations/009_tasks_position.sql. One-time migration:
+//   ALTER TABLE tasks ADD COLUMN IF NOT EXISTS position INTEGER;
+// Without the column the server falls back to prioritaet + created_at order,
+// and reorder silently no-ops while delete/rename/add still work.
 app.get("/api/tasks", async (req, res) => {
   if (!supabase) return res.json([]);
-  // Try sort_order first; if column missing, fall back
+  // Primary order: position (drag-and-drop). Fallback: prioritaet, created_at.
   let query = supabase.from("tasks").select("*")
-    .order("sort_order", { ascending: true, nullsFirst: false })
+    .order("position", { ascending: true, nullsFirst: false })
     .order("prioritaet", { ascending: true })
     .order("created_at", { ascending: false });
   if (req.query.status) query = query.eq("status", req.query.status);
   let { data, error } = await query;
   if (error) {
-    // sort_order column may not exist — retry without it
+    // position column may not exist yet — retry without it
     let q2 = supabase.from("tasks").select("*")
       .order("prioritaet", { ascending: true })
       .order("created_at", { ascending: false });
@@ -1046,31 +1048,59 @@ app.get("/api/tasks", async (req, res) => {
 
 app.post("/api/tasks", async (req, res) => {
   if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
-  const { titel, prioritaet, deadline, gate_bezug, ada_vorschlag, nathalie_approved } = req.body || {};
+  const { titel, prioritaet, deadline, gate_bezug, ada_vorschlag, nathalie_approved, position } = req.body || {};
   if (!titel) return res.status(400).json({ error: "titel erforderlich" });
-  const { data, error } = await supabase.from("tasks").insert({
+
+  // Auto-assign position = MAX(position) + 10 so new tasks land at the end.
+  // If the position column doesn't exist yet, the insert still succeeds
+  // because we only include it in the insert payload when we have a number.
+  let nextPosition = typeof position === "number" ? position : null;
+  if (nextPosition == null) {
+    try {
+      const r = await supabase
+        .from("tasks")
+        .select("position")
+        .order("position", { ascending: false, nullsFirst: false })
+        .limit(1);
+      if (!r.error && r.data && r.data.length > 0 && r.data[0].position != null) {
+        nextPosition = r.data[0].position + 10;
+      }
+    } catch {}
+  }
+
+  const payload = {
     titel,
     prioritaet: prioritaet || 2,
     deadline: deadline || null,
     gate_bezug: gate_bezug || null,
     ada_vorschlag: ada_vorschlag || false,
     nathalie_approved: nathalie_approved !== undefined ? nathalie_approved : true,
-  }).select().single();
+  };
+  if (nextPosition != null) payload.position = nextPosition;
+
+  let { data, error } = await supabase.from("tasks").insert(payload).select().single();
+  if (error && payload.position !== undefined && /position/.test(error.message || "")) {
+    // column missing — retry without position
+    delete payload.position;
+    const r2 = await supabase.from("tasks").insert(payload).select().single();
+    if (r2.error) return res.status(500).json({ error: r2.error.message });
+    return res.json(r2.data);
+  }
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
 });
 
 app.patch("/api/tasks/:id", async (req, res) => {
   if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
-  const allowed = ["titel", "prioritaet", "deadline", "gate_bezug", "status", "ada_vorschlag", "nathalie_approved", "sort_order"];
+  const allowed = ["titel", "prioritaet", "deadline", "gate_bezug", "status", "ada_vorschlag", "nathalie_approved", "position"];
   const updates = {};
   for (const key of allowed) {
     if (req.body[key] !== undefined) updates[key] = req.body[key];
   }
   let { data, error } = await supabase.from("tasks").update(updates).eq("id", req.params.id).select().single();
-  if (error && updates.sort_order !== undefined && /sort_order/.test(error.message || "")) {
-    // column missing — retry without sort_order so other fields still update
-    delete updates.sort_order;
+  if (error && updates.position !== undefined && /position/.test(error.message || "")) {
+    // column missing — retry without position so other fields still update
+    delete updates.position;
     const r2 = await supabase.from("tasks").update(updates).eq("id", req.params.id).select().single();
     if (r2.error) return res.status(500).json({ error: r2.error.message });
     return res.json(r2.data);
