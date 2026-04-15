@@ -105,6 +105,38 @@ try {
   console.warn("ADA prompt not found:", e.message);
 }
 
+// ─── PAI AUDIT ANALYZER PROMPT ────────────────────────────────────────────
+// Spezieller System-Prompt für die Pre-Scan-Analyse eines PAI Audit
+// (Client Self-Assessment). Erzeugt strukturiertes JSON für den Consultant.
+const PAI_AUDIT_ANALYZER_PROMPT = `Du bist ADA, der diagnostische Analyse-Assistent für NELION.
+Du bekommst ein PAI Audit (Client Self-Assessment, 6 Phasen: Kontext, Energiebild,
+Systembild, Friction-Bild, Selbstbild, Abschluss) und produzierst eine strukturierte
+Vor-Analyse für den Consultant vor dem eigentlichen Friction Scan.
+
+Analysiere die Antworten und gib EIN JSON-Objekt zurück (keinen Zusatztext, kein Markdown)
+mit genau diesen Feldern:
+
+{
+  "l2_signal": "1-2 Sätze: welche psychologischen Muster sind in den Antworten sichtbar? Fokus: Helfersyndrom, Vermeidung, Resignation, Angst, Immunity-Muster, Attribution Style, Psychological Safety, Selbstwirksamkeit.",
+  "hypothesen": [
+    "Hypothese 1 — konkret und testbar im Scan",
+    "Hypothese 2 — konkret und testbar im Scan",
+    "Hypothese 3 — konkret und testbar im Scan"
+  ],
+  "interview_empfehlungen": [
+    "Empfehlung 1 — welche Interview-Frage oder welches Thema besonders vertiefen",
+    "Empfehlung 2 — …",
+    "Empfehlung 3 — …"
+  ]
+}
+
+Regeln:
+- Nur JSON zurückgeben, kein Markdown, keine Präambel, kein Nachwort
+- Wenn Daten zu dünn für eine Kategorie sind: leerer String bzw. leeres Array
+- Fokus auf L2-Ebene (psychologische Dynamik), nicht L1 oder L3
+- Deutsch, präzise, nicht blumig
+- Keine Diagnose — nur Hypothesen die im Scan geprüft werden können`;
+
 // ─── ENV ───────────────────────────────────────────────────────────────────
 const SUPABASE_URL       = process.env.SUPABASE_URL;
 const SUPABASE_ANON_KEY  = process.env.SUPABASE_ANON_KEY;
@@ -699,11 +731,15 @@ app.patch("/api/scans/:sid/massnahmen/:mid", async (req, res) => {
 
 // ─── PAI ──────────────────────────────────────────────────────────────────
 // PAI Sessions
+// ?tool=interview|audit filters by tool_type. Default = 'interview' for
+// backward compat with existing PAI Interview tab.
 app.get("/api/pai/sessions", async (req, res) => {
   if (!supabase) return res.json([]);
+  const tool = (req.query.tool || "interview").toLowerCase();
   const { data, error } = await supabase
     .from("pai_sessions")
     .select("*")
+    .eq("tool_type", tool)
     .order("created_at", { ascending: false });
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
@@ -711,11 +747,15 @@ app.get("/api/pai/sessions", async (req, res) => {
 
 app.post("/api/pai/sessions", async (req, res) => {
   if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
-  const { person_name, person_rolle } = req.body;
+  const { person_name, person_rolle, tool_type } = req.body;
   if (!person_name) return res.status(400).json({ error: "person_name erforderlich" });
   const { data, error } = await supabase
     .from("pai_sessions")
-    .insert([{ person_name, person_rolle: person_rolle || null }])
+    .insert([{
+      person_name,
+      person_rolle: person_rolle || null,
+      tool_type: tool_type === "audit" ? "audit" : "interview",
+    }])
     .select()
     .single();
   if (error) return res.status(500).json({ error: error.message });
@@ -825,6 +865,98 @@ app.get("/api/pai/kpis/:session_id", async (req, res) => {
     .eq("session_id", req.params.session_id);
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
+});
+
+// PAI Audit — ADA Vor-Analyse
+// Lädt alle pai_erhebung-Felder der Session, baut Prompt, ruft Claude auf,
+// parst JSON, persistiert in pai_sessions.ada_analysis.
+app.post("/api/pai/audit/analyze", async (req, res) => {
+  if (!anthropic) return res.status(503).json({ error: "ANTHROPIC_API_KEY nicht konfiguriert" });
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { session_id } = req.body || {};
+  if (!session_id) return res.status(400).json({ error: "session_id erforderlich" });
+
+  // 1. Session laden
+  const { data: session, error: sessErr } = await supabase
+    .from("pai_sessions").select("*").eq("id", session_id).single();
+  if (sessErr || !session) return res.status(404).json({ error: "Session nicht gefunden" });
+
+  // 2. Alle Audit-Felder laden
+  const { data: fields, error: fldErr } = await supabase
+    .from("pai_erhebung").select("*").eq("session_id", session_id).order("phase");
+  if (fldErr) return res.status(500).json({ error: fldErr.message });
+
+  if (!fields || fields.length === 0) {
+    return res.status(400).json({ error: "Keine Antworten zum Analysieren vorhanden" });
+  }
+
+  // 3. Input-Text bauen
+  const answerBlob = fields
+    .map(f => `[Phase ${f.phase} · ${f.feld}]\n${f.wert || "(leer)"}`)
+    .join("\n\n");
+
+  const userMsg = `Person: ${session.person_name}${session.person_rolle ? ", " + session.person_rolle : ""}
+
+PAI Audit Antworten:
+
+${answerBlob}
+
+Analysiere das Audit und gib JSON im spezifizierten Format zurück.`;
+
+  // 4. Anthropic call mit Retry (gleiches Pattern wie /api/ada/chat)
+  const maxRetries = 3;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await anthropic.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 2048,
+        system: PAI_AUDIT_ANALYZER_PROMPT,
+        messages: [{ role: "user", content: userMsg }],
+      });
+
+      const text = response.content
+        .filter(c => c.type === "text")
+        .map(c => c.text)
+        .join("");
+
+      // 5. JSON-Parse mit Fallback
+      let parsed = null;
+      try {
+        const match = text.match(/\{[\s\S]*\}/);
+        if (match) parsed = JSON.parse(match[0]);
+      } catch (e) {
+        parsed = null;
+      }
+
+      const analysis = parsed && typeof parsed === "object"
+        ? parsed
+        : { raw_text: text, parse_error: true };
+
+      // 6. Persistieren
+      await supabase
+        .from("pai_sessions")
+        .update({ ada_analysis: analysis, updated_at: new Date().toISOString() })
+        .eq("id", session_id);
+
+      return res.json(analysis);
+    } catch (e) {
+      const isOverloaded = e.status === 529 || (e.message && e.message.includes("529"));
+      const isRateLimit = e.status === 429;
+      if ((isOverloaded || isRateLimit) && attempt < maxRetries) {
+        const wait = attempt * 2000;
+        console.warn(`PAI Audit analyze attempt ${attempt}/${maxRetries} failed (${e.status || "?"}), retrying in ${wait}ms...`);
+        await new Promise(r => setTimeout(r, wait));
+        continue;
+      }
+      console.error("PAI Audit analyze error:", e.message);
+      const userMsgErr = isOverloaded
+        ? "Claude ist gerade überlastet. Bitte in 30 Sekunden nochmal versuchen."
+        : isRateLimit
+        ? "Zu viele Anfragen. Bitte kurz warten."
+        : "Analyse-Fehler: " + e.message;
+      return res.status(500).json({ error: userMsgErr });
+    }
+  }
 });
 
 // ─── TASKS ────────────────────────────────────────────────────────────────
