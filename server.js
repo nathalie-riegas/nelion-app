@@ -959,6 +959,65 @@ Analysiere das Audit und gib JSON im spezifizierten Format zurück.`;
   }
 });
 
+// ─── AUSWERTUNGEN ─────────────────────────────────────────────────────────
+// Interne Arbeitsansicht pro Scan. Tabelle "auswertungen" mit JSONB-Feldern
+// (friction_points, befund_entwurf) + routing_empfehlung TEXT.
+// Schema siehe supabase/migrations/008_auswertungen.sql.
+
+// GET /api/auswertungen/:scan_id → lädt die Auswertung für einen Scan
+// (oder null/404 wenn noch keine existiert)
+app.get("/api/auswertungen/:scan_id", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { data, error } = await supabase
+    .from("auswertungen")
+    .select("*")
+    .eq("scan_id", req.params.scan_id)
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || null);
+});
+
+// POST /api/auswertungen → legt eine neue Auswertung an
+app.post("/api/auswertungen", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { scan_id, friction_points, befund_entwurf, routing_empfehlung } = req.body || {};
+  if (!scan_id) return res.status(400).json({ error: "scan_id erforderlich" });
+  const insert = {
+    scan_id,
+    friction_points: friction_points || {},
+    befund_entwurf: befund_entwurf || {},
+    routing_empfehlung: routing_empfehlung || "",
+  };
+  const { data, error } = await supabase
+    .from("auswertungen")
+    .insert(insert)
+    .select()
+    .single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+// PATCH /api/auswertungen/:id → updated bestehende Auswertung
+app.patch("/api/auswertungen/:id", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const allowed = ["friction_points", "befund_entwurf", "routing_empfehlung"];
+  const updates = {};
+  for (const k of allowed) {
+    if (k in (req.body || {})) updates[k] = req.body[k];
+  }
+  updates.updated_at = new Date().toISOString();
+  const { data, error } = await supabase
+    .from("auswertungen")
+    .update(updates)
+    .eq("id", req.params.id)
+    .select()
+    .single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
 // ─── TASKS ────────────────────────────────────────────────────────────────
 // NOTE: Requires sort_order column. Run this once in Supabase SQL editor:
 //   ALTER TABLE tasks ADD COLUMN IF NOT EXISTS sort_order INT;

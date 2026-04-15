@@ -995,13 +995,130 @@
   }
   @keyframes pai-spin { to { transform: rotate(360deg); } }
 
+  /* ── AUSWERTUNG (interne Arbeitsansicht) ─────────────────────────── */
+  .aus-section {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 20px 22px; margin-bottom: 16px;
+  }
+  .aus-section-title {
+    font-size: 13px; font-weight: 600; color: var(--ink);
+    letter-spacing: 0.02em; margin-bottom: 4px;
+  }
+  .aus-section-sub {
+    font-size: 11px; color: var(--ink-mute); margin-bottom: 14px;
+  }
+  .aus-scan-picker {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+  }
+  .aus-scan-picker select { flex: 1; }
+  .aus-heatmap-legend {
+    display: flex; gap: 16px; align-items: center;
+    font-size: 11px; color: var(--ink-mid); margin-bottom: 12px;
+    font-family: var(--mono);
+  }
+  .aus-heatmap-legend .dot {
+    display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+    margin-right: 4px; vertical-align: middle; border: 1px solid var(--border2);
+  }
+  .aus-heatmap-layer {
+    margin-bottom: 14px;
+  }
+  .aus-heatmap-layer-title {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-dim); margin: 8px 0 6px;
+  }
+  .aus-heatmap-grid {
+    display: grid; grid-template-columns: 1fr auto; gap: 4px 10px;
+  }
+  .aus-heatmap-row {
+    display: contents;
+  }
+  .aus-heatmap-row > .aus-heatmap-label {
+    font-size: 12px; color: var(--ink-mid);
+    padding: 6px 10px; background: var(--surface2); border-radius: var(--rs);
+    display: flex; align-items: center;
+  }
+  .aus-heatmap-row > .aus-heatmap-ampel {
+    display: flex; align-items: center; gap: 4px;
+    padding: 6px 10px; background: var(--surface2); border-radius: var(--rs);
+  }
+  .aus-heatmap-dot {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 2px solid var(--border2);
+    cursor: pointer; transition: transform .12s;
+  }
+  .aus-heatmap-dot:hover { transform: scale(1.15); }
+  .aus-heatmap-dot.gruen { background: var(--green); border-color: var(--green); }
+  .aus-heatmap-dot.gelb  { background: var(--yellow); border-color: var(--yellow); }
+  .aus-heatmap-dot.rot   { background: var(--red); border-color: var(--red); }
+
+  .aus-friction-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--rs); padding: 14px 16px; margin-bottom: 10px;
+  }
+  .aus-friction-rank {
+    display: inline-block; font-family: var(--mono); font-size: 10px;
+    font-weight: 600; background: var(--red); color: #fff;
+    padding: 2px 8px; border-radius: 10px; margin-right: 8px;
+    letter-spacing: 0.05em;
+  }
+  .aus-friction-rank.gelb { background: var(--yellow); color: #000; }
+  .aus-friction-title {
+    font-size: 13px; font-weight: 600; color: var(--ink);
+    display: inline-block;
+  }
+  .aus-friction-layer {
+    font-size: 11px; color: var(--ink-mute);
+    font-family: var(--mono); margin-top: 2px;
+  }
+  .aus-friction-routing {
+    font-size: 12px; color: var(--ink-mid);
+    margin: 8px 0 10px; padding: 8px 10px;
+    background: var(--surface); border-left: 3px solid var(--accent);
+    border-radius: 2px;
+  }
+  .aus-routing-badge {
+    display: block;
+    font-size: 13px; font-weight: 500;
+    padding: 12px 14px; margin-bottom: 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: var(--rs);
+  }
+  .aus-routing-badge strong {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.05em; display: block; margin-bottom: 2px;
+    color: var(--ink-dim); text-transform: uppercase;
+  }
+  .aus-befund-field { margin-bottom: 14px; }
+  .aus-befund-field label {
+    display: block; font-size: 11px; color: var(--ink-mute);
+    font-family: var(--mono); letter-spacing: 0.05em;
+    text-transform: uppercase; margin-bottom: 4px;
+  }
+  .aus-save-toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: var(--ink); color: var(--surface);
+    padding: 8px 14px; border-radius: var(--rs);
+    font-size: 12px; font-family: var(--mono);
+    opacity: 0; transition: opacity .3s;
+    pointer-events: none; z-index: 1000;
+  }
+  .aus-save-toast.show { opacity: 1; }
+  .aus-empty {
+    padding: 40px 20px; text-align: center;
+    color: var(--ink-mute); font-size: 13px;
+  }
+
   /* ── PRINT (PDF-Export über window.print()) ─────────────────────── */
   @media print {
     body { background: #fff !important; color: #000 !important; }
     header, .tab-nav, .phase-sidebar, .btn-row, .btn, .btn-anker,
     #adaFullscreen, .modal-overlay, .anker-overlay, .datetime-top-right,
     .cockpit-contact button, .btn-del-contact, .feature-overlay,
-    .landing-page, .task-drawer, .task-drawer-overlay { display: none !important; }
+    .landing-page, .task-drawer, .task-drawer-overlay,
+    .aus-scan-picker, .aus-save-toast { display: none !important; }
     .main, .container { max-width: 100%; padding: 0; margin: 0; }
     .module { display: block !important; page-break-inside: auto; }
     .module:not(.active) { display: none !important; }
@@ -1012,6 +1129,11 @@
     .phase-header:first-of-type { break-before: auto; border-top: none; padding-top: 0; }
     body, .form-input, textarea, input { font-size: 10pt !important; line-height: 1.4 !important; }
     .pai-audit-analysis-card { background: #fff !important; border: 2px solid #000 !important; }
+    /* Auswertung: nur aktiver Inhalt drucken, Karten nicht über Seitenränder brechen */
+    .aus-section { break-inside: avoid; border: 1px solid #ccc; }
+    .aus-friction-card { break-inside: avoid; border: 1px solid #999; }
+    .aus-heatmap-dot { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .aus-routing-badge { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   }
 
   /* ── PFLICHTFELD MARKIERUNG ─────────────────────────────────────── */
@@ -1190,6 +1312,7 @@
   <button class="tab-btn" data-tab="modul2" onclick="switchTab('modul2')">Friction Scan</button>
   <button class="tab-btn" data-tab="modul3" onclick="switchTab('modul3')">PAI Interview</button>
   <button class="tab-btn" data-tab="modul4" onclick="switchTab('modul4')">PAI Self-Assessment</button>
+  <button class="tab-btn" data-tab="auswertung" onclick="switchTab('auswertung')">Auswertung</button>
   <button class="tab-btn" data-tab="ada" onclick="switchTab('ada')">ADA</button>
 </nav>
 
@@ -1233,6 +1356,7 @@
       <button class="landing-btn" onclick="switchTab('modul2')">Friction Scan</button>
       <button class="landing-btn" onclick="switchTab('modul3')">PAI Interview</button>
       <button class="landing-btn" onclick="switchTab('modul4')">PAI Self-Assessment</button>
+      <button class="landing-btn" onclick="switchTab('auswertung')">Auswertung</button>
       <button class="landing-btn ada" onclick="switchTab('ada')">ADA öffnen</button>
     </div>
 
@@ -1325,6 +1449,16 @@
     <div class="datetime-top-right datetime-display" id="modul4DateTime"></div>
   </div>
   <div id="paiAuditContent"></div>
+</div>
+
+<!-- ╔═══════════════════════════════════════════════════════════════════════╗ -->
+<!-- ║  AUSWERTUNG — Interne Arbeitsansicht nach abgeschlossenem Scan      ║ -->
+<!-- ╚═══════════════════════════════════════════════════════════════════════╝ -->
+<div class="module" id="moduleAuswertung">
+  <div style="position:relative;">
+    <div class="datetime-top-right datetime-display" id="auswertungDateTime"></div>
+  </div>
+  <div id="auswertungContent"></div>
 </div>
 
 </div><!-- /.container -->
@@ -1651,13 +1785,17 @@ function switchTab(tab) {
   } else if (tab === "modul4") {
     document.getElementById("moduleModul4").classList.add("active");
     initPAIAuditTab();
+  } else if (tab === "auswertung") {
+    document.getElementById("moduleAuswertung").classList.add("active");
+    initAuswertungTab();
   }
 
   // Anker visible in cockpit screens
   const showAnker = (tab === "modul1" && document.getElementById("screenCockpit").classList.contains("active"))
     || (tab === "modul2" && currentScan)
     || (tab === "modul3" && currentPaiSession)
-    || (tab === "modul4" && currentPaiAuditSession);
+    || (tab === "modul4" && currentPaiAuditSession)
+    || (tab === "auswertung" && currentAuswertungScan);
   document.getElementById("btnAnker").style.display = showAnker ? "flex" : "none";
 }
 
@@ -2060,11 +2198,50 @@ const SCAN_PHASES = [
   { num: 5, title: "Befund", short: "Befund" },
 ];
 
+// ── FRICTION PROFILE 14 ACHSEN ──────────────────────────────────────────
+// Interne Keys bleiben für Rückwärtskompatibilität unverändert.
+// L1 ist intern der Key für die L1a-Achsen (biologische Kapazität).
+// L1b sind die beiden neuen Achsen (strukturell verursachte Erschöpfung).
 const AMPEL_AXES = {
-  L1: ["Energie-Status", "Allostatic Load", "Verarbeitungsarchitektur", "Interoceptive Awareness"],
-  L2: ["Psychological Safety", "Immunity-Muster", "Threat-State", "Attribution Style"],
-  L3: ["Entscheidungsarchitektur", "Incentive-Struktur", "Informationsfluss", "Strukturelle Ambiguität"],
+  L1:  ["Energie-Status", "Allostatic Load", "Verarbeitungsarchitektur", "Interoceptive Awareness"],
+  L1b: ["Anforderungs-Ressourcen-Ungleichgewicht", "Erholungsstruktur"],
+  L2:  ["Psychological Safety", "Immunity-Muster", "Threat-State", "Attribution Style"],
+  L3:  ["Entscheidungsarchitektur", "Incentive-Struktur", "Informationsfluss", "Strukturelle Ambiguität"],
 };
+
+// Display-Labels im Format: "Klienten-Name (Wissenschaftlicher Name)"
+// Interne Achsen-Keys (AMPEL_AXES-Werte, scan_ampeln.achse, data-Attribute) bleiben unverändert.
+const AXIS_DISPLAY_LABELS = {
+  // L1a — Individuelle Biologische Kapazität
+  "Allostatic Load":          "Neurobiologische Last (Allostatic Load)",
+  "Energie-Status":           "Energiereserven (Energie-Status)",
+  "Verarbeitungsarchitektur": "Kognitive Diversität (Verarbeitungsarchitektur)",
+  "Interoceptive Awareness":  "Körperwahrnehmung (Interoceptive Awareness)",
+  // L1b — Strukturell verursachte Erschöpfung
+  "Anforderungs-Ressourcen-Ungleichgewicht": "Strukturelle Überlastung (Anforderungs-Ressourcen-Ungleichgewicht)",
+  "Erholungsstruktur":        "Regenerationsdefizit (Erholungsstruktur)",
+  // L2 — Psychologische Dynamik
+  "Psychological Safety":     "Selbstzensur (Psychological Safety)",
+  "Immunity-Muster":          "Veränderungsresistenz (Immunity-Muster)",
+  "Attribution Style":        "Verantwortungsvermeidung (Attribution Style)",
+  "Threat-State":             "Irritabilität (Threat-State)",
+  // L3 — Strukturelle Reibung
+  "Entscheidungsarchitektur": "Fehlentscheidungskosten (Entscheidungsarchitektur)",
+  "Incentive-Struktur":       "Dysfunktionale Anreize (Incentive-Struktur)",
+  "Strukturelle Ambiguität":  "Verantwortungsvakuum (Strukturelle Ambiguität)",
+  "Informationsfluss":        "Informationsblockaden (Informationsfluss)",
+};
+
+// Layer-Display-Labels für die Gruppen-Überschriften in den Grids.
+const LAYER_DISPLAY_LABELS = {
+  L1:  "L1a — Individuelle Biologische Kapazität",
+  L1b: "L1b — Strukturell verursachte Erschöpfung",
+  L2:  "L2 — Psychologische Dynamik",
+  L3:  "L3 — Strukturelle Reibung",
+};
+
+function axisLabel(achse) { return AXIS_DISPLAY_LABELS[achse] || achse; }
+function layerLabel(layer) { return LAYER_DISPLAY_LABELS[layer] || layer; }
 
 function renderScanList() {
   currentScan = null;
@@ -2622,11 +2799,11 @@ function renderMassnahmeSlot(num) {
 function renderAmpelGrid(phase) {
   let html = '<div class="ampel-grid">';
   for (const [layer, axes] of Object.entries(AMPEL_AXES)) {
-    html += `<div class="layer-label">${layer}</div>`;
+    html += `<div class="layer-label">${escHtml(layerLabel(layer))}</div>`;
     for (const achse of axes) {
       const key = `${layer}_${achse}_${phase}`;
       const current = scanAmpeln[key] || "grau";
-      html += `<div class="ampel-row"><span class="ampel-label">${escHtml(achse)}</span><div class="ampel-dots">`;
+      html += `<div class="ampel-row"><span class="ampel-label">${escHtml(axisLabel(achse))}</span><div class="ampel-dots">`;
       for (const farbe of ["gruen", "gelb", "rot"]) {
         html += `<div class="ampel-dot ${current === farbe ? farbe : ""}" data-key="${key}" data-farbe="${farbe}" onclick="setAmpel(this)"></div>`;
       }
@@ -2658,7 +2835,11 @@ function calculateRegime() {
   if (!el) return;
 
   const getVal = (layer, achse) => scanAmpeln[`${layer}_${achse}_final`] || "grau";
-  const l1Vals = AMPEL_AXES.L1.map(a => getVal("L1", a));
+  // L1-Check berücksichtigt L1a (intern "L1") + L1b als biologische Gesamtschicht
+  const l1Vals = [
+    ...AMPEL_AXES.L1.map(a => getVal("L1", a)),
+    ...(AMPEL_AXES.L1b || []).map(a => getVal("L1b", a)),
+  ];
   const l2Vals = AMPEL_AXES.L2.map(a => getVal("L2", a));
   const l3Vals = AMPEL_AXES.L3.map(a => getVal("L3", a));
 
@@ -5311,6 +5492,432 @@ function savePaiAuditRadio(el) {
   const feld = el.dataset.paiAuditFeld;
   const phase = parseInt(el.dataset.paiAuditPhase);
   savePaiAuditField(phase, feld, el.value);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// AUSWERTUNG — Interne Arbeitsansicht nach abgeschlossenem Scan
+// ══════════════════════════════════════════════════════════════════════════
+//
+// Dreiteiliger Aufbau:
+//  1. Friction Profile Heatmap — 14 Ampeln visualisiert, aus scan_ampeln
+//     automatisch befüllt, Klick togglet grün→gelb→rot→leer
+//  2. 3 Haupt-Friction-Points — automatisch aus roten Ampeln abgeleitet
+//     (L1 vor L2 vor L3), Routing-Regel, Freitext-Beobachtung
+//  3. Befund-Entwurf nach Minto — Schlussfolgerung / Begründung / Massnahmen,
+//     Auto-Save (1.5s debounce) + Zwischenspeichern + PDF-Export
+//
+// Persistenz: Tabelle "auswertungen" (JSONB friction_points + befund_entwurf).
+
+let currentAuswertungScan = null;       // gewählter Scan
+let currentAuswertung = null;           // auswertungen-Row
+let auswertungFrictionOverrides = {};   // { "<layer>_<achse>": "gruen"|"gelb"|"rot"|"grau" } — manuelle Überschreibungen
+let auswertungFrictionNotes = {};       // { "<layer>_<achse>": "freitext" } — pro Friction-Point
+let auswertungBefund = { schlussfolgerung: "", begruendung: "", massnahmen: "" };
+let _auswertungSaveTimer = null;
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+async function initAuswertungTab() {
+  const $el = document.getElementById("auswertungContent");
+  $el.innerHTML = `<div class="aus-empty">Lade Scans…</div>`;
+  let scans = [];
+  try {
+    const r = await fetch("/api/scans");
+    scans = await r.json();
+    if (!Array.isArray(scans)) scans = [];
+  } catch (e) {
+    $el.innerHTML = `<div class="aus-empty">Scans konnten nicht geladen werden: ${escHtml(e.message)}</div>`;
+    return;
+  }
+  if (scans.length === 0) {
+    $el.innerHTML = `<div class="aus-empty">Noch keine Scans vorhanden. Lege zuerst einen Friction Scan an.</div>`;
+    return;
+  }
+  // Sortiere: zuerst abgeschlossene, dann neueste zuerst
+  scans.sort((a, b) => {
+    if (a.completed !== b.completed) return b.completed - a.completed;
+    return new Date(b.created_at) - new Date(a.created_at);
+  });
+
+  // Versuche, zuletzt gewählten Scan beizubehalten
+  let selectedId = currentAuswertungScan?.id;
+  if (!selectedId || !scans.find(s => s.id === selectedId)) {
+    selectedId = scans[0].id;
+  }
+
+  // Rendere Scan-Picker + Sektionen
+  $el.innerHTML = `
+    <div style="margin-bottom:18px;">
+      <div class="start-title" style="margin-bottom:4px;">Auswertung</div>
+      <div class="start-desc">Interne Arbeitsansicht. Heatmap, Friction-Points und Befund-Entwurf pro Scan.</div>
+    </div>
+    <div class="aus-scan-picker">
+      <label class="form-label" style="margin:0;white-space:nowrap;">Scan:</label>
+      <select class="form-input" id="auswertungScanPicker">
+        ${scans.map(s => {
+          const d = new Date(s.created_at).toLocaleDateString("de-CH", { day:"2-digit", month:"2-digit", year:"2-digit" });
+          const tag = s.completed ? "✓" : `P${s.current_phase || 0}`;
+          return `<option value="${escHtml(s.id)}" ${s.id === selectedId ? "selected" : ""}>${escHtml(s.kunde_name)} · ${escHtml(d)} · ${escHtml(tag)}</option>`;
+        }).join("")}
+      </select>
+    </div>
+    <div id="auswertungBody"></div>
+    <div class="aus-save-toast" id="auswertungSaveToast">Gespeichert ✓</div>
+  `;
+  document.getElementById("auswertungScanPicker").addEventListener("change", async (e) => {
+    const id = e.target.value;
+    const s = scans.find(x => x.id === id);
+    if (s) await loadAuswertungForScan(s);
+  });
+
+  // Lade ersten Scan
+  const first = scans.find(s => s.id === selectedId);
+  if (first) await loadAuswertungForScan(first);
+}
+
+// ── SCAN + AUSWERTUNG LADEN ───────────────────────────────────────────────
+async function loadAuswertungForScan(scan) {
+  currentAuswertungScan = scan;
+  const $body = document.getElementById("auswertungBody");
+  $body.innerHTML = `<div class="aus-empty">Lade Daten…</div>`;
+
+  // 1. Ampeln für diesen Scan laden (alle Phasen — wir nehmen "final" wenn vorhanden, sonst fallback)
+  try {
+    const r = await fetch(`/api/scans/${scan.id}/ampeln`);
+    const data = await r.json();
+    scanAmpeln = {};
+    if (Array.isArray(data)) {
+      for (const a of data) scanAmpeln[`${a.layer}_${a.achse}_${a.phase}`] = a.wert;
+    }
+  } catch (e) {
+    console.warn("Auswertung: ampeln load failed:", e.message);
+  }
+
+  // 2. Bestehende Auswertung laden (falls vorhanden)
+  try {
+    const r = await fetch(`/api/auswertungen/${scan.id}`);
+    if (r.ok) {
+      const auswertung = await r.json();
+      if (auswertung && auswertung.id) {
+        currentAuswertung = auswertung;
+        auswertungFrictionOverrides = (auswertung.friction_points && auswertung.friction_points.overrides) || {};
+        auswertungFrictionNotes     = (auswertung.friction_points && auswertung.friction_points.notes) || {};
+        auswertungBefund            = auswertung.befund_entwurf || { schlussfolgerung: "", begruendung: "", massnahmen: "" };
+      } else {
+        currentAuswertung = null;
+        auswertungFrictionOverrides = {};
+        auswertungFrictionNotes = {};
+        auswertungBefund = { schlussfolgerung: "", begruendung: "", massnahmen: "" };
+      }
+    } else {
+      currentAuswertung = null;
+      auswertungFrictionOverrides = {};
+      auswertungFrictionNotes = {};
+      auswertungBefund = { schlussfolgerung: "", begruendung: "", massnahmen: "" };
+    }
+  } catch (e) {
+    console.warn("Auswertung: load failed:", e.message);
+    currentAuswertung = null;
+  }
+
+  // Render
+  $body.innerHTML = renderAuswertungBody();
+  wireAuswertungAutoSave();
+
+  // Anker-Button
+  document.getElementById("btnAnker").style.display = "flex";
+}
+
+// ── BESTE AMPEL-PHASE ERMITTELN ───────────────────────────────────────────
+// Priorität: final > interview > survey. Fallback = grau.
+function getBestAmpel(layer, achse) {
+  const overrideKey = `${layer}_${achse}`;
+  if (auswertungFrictionOverrides[overrideKey]) return auswertungFrictionOverrides[overrideKey];
+  for (const phase of ["final", "interview", "survey"]) {
+    const v = scanAmpeln[`${layer}_${achse}_${phase}`];
+    if (v && v !== "grau") return v;
+  }
+  return "grau";
+}
+
+// ── RENDER BODY (3 Sektionen) ─────────────────────────────────────────────
+function renderAuswertungBody() {
+  return [
+    renderAuswertungHeatmap(),
+    renderAuswertungFrictionPoints(),
+    renderAuswertungBefund(),
+  ].join("");
+}
+
+// ── SEKTION 1: HEATMAP ────────────────────────────────────────────────────
+function renderAuswertungHeatmap() {
+  let html = `
+    <div class="aus-section" id="ausSection1">
+      <div class="aus-section-title">1 · Friction Profile Heatmap</div>
+      <div class="aus-section-sub">14 Achsen. Klick togglet grün → gelb → rot → leer. Werte kommen aus dem Friction Scan Tab.</div>
+      <div class="aus-heatmap-legend">
+        <span><span class="dot gruen" style="background:var(--green);"></span>grün = 7–10</span>
+        <span><span class="dot gelb" style="background:var(--yellow);"></span>gelb = 4–6</span>
+        <span><span class="dot rot" style="background:var(--red);"></span>rot = 1–3</span>
+      </div>
+  `;
+  for (const [layer, axes] of Object.entries(AMPEL_AXES)) {
+    html += `<div class="aus-heatmap-layer">`;
+    html += `<div class="aus-heatmap-layer-title">${escHtml(layerLabel(layer))}</div>`;
+    html += `<div class="aus-heatmap-grid">`;
+    for (const achse of axes) {
+      const wert = getBestAmpel(layer, achse);
+      const dotClass = wert === "gruen" ? "gruen" : wert === "gelb" ? "gelb" : wert === "rot" ? "rot" : "";
+      html += `<div class="aus-heatmap-row">
+        <div class="aus-heatmap-label">${escHtml(axisLabel(achse))}</div>
+        <div class="aus-heatmap-ampel">
+          <div class="aus-heatmap-dot ${dotClass}"
+               data-layer="${escHtml(layer)}" data-achse="${escHtml(achse)}"
+               onclick="toggleAuswertungAmpel(this)"
+               title="Klicken zum Umschalten"></div>
+        </div>
+      </div>`;
+    }
+    html += `</div></div>`;
+  }
+  html += `</div>`;
+  return html;
+}
+
+// Klick-Toggle: grün → gelb → rot → leer (grau) → grün …
+function toggleAuswertungAmpel(dot) {
+  const layer = dot.dataset.layer;
+  const achse = dot.dataset.achse;
+  const overrideKey = `${layer}_${achse}`;
+  const current = getBestAmpel(layer, achse);
+  const next = current === "gruen" ? "gelb"
+             : current === "gelb"  ? "rot"
+             : current === "rot"   ? "grau"
+             : "gruen";
+  auswertungFrictionOverrides[overrideKey] = next;
+  // Komplette Body-Rerender damit Sektion 2 (Friction Points) + Routing mitaktualisieren
+  document.getElementById("auswertungBody").innerHTML = renderAuswertungBody();
+  wireAuswertungAutoSave();
+  scheduleAuswertungSave();
+}
+
+// ── SEKTION 2: 3 HAUPT-FRICTION-POINTS ────────────────────────────────────
+// Sortierung rote zuerst, dann gelbe. Bei Gleichstand: L1 vor L2 vor L3.
+// (L1b zählt als L1 für die Sequenzierung.)
+function computeFrictionRanking() {
+  const LAYER_PRIORITY = { L1: 1, L1b: 1, L2: 2, L3: 3 };
+  const all = [];
+  for (const [layer, axes] of Object.entries(AMPEL_AXES)) {
+    for (const achse of axes) {
+      const wert = getBestAmpel(layer, achse);
+      if (wert === "rot" || wert === "gelb") {
+        all.push({ layer, achse, wert, prio: LAYER_PRIORITY[layer] || 9 });
+      }
+    }
+  }
+  // rote zuerst, dann L-Priorität, dann alphabetisch
+  all.sort((a, b) => {
+    if (a.wert !== b.wert) return a.wert === "rot" ? -1 : 1;
+    if (a.prio !== b.prio) return a.prio - b.prio;
+    return a.achse.localeCompare(b.achse);
+  });
+  return all.slice(0, 3);
+}
+
+// Routing-Regel pro Friction Point (kurz, 1 Satz)
+function routingForPoint(layer, wert) {
+  if (layer === "L1" || layer === "L1b") {
+    return wert === "rot"
+      ? "Regime 3 — biologisch zuerst. Keine L3-Intervention bis L1 stabil."
+      : "Regime 2 — biologische Kapazität monitoren, psychologisch begleiten.";
+  }
+  if (layer === "L2") {
+    return wert === "rot"
+      ? "Regime 2 — psychologisch vor strukturell. L2-Muster benennen."
+      : "Regime 2 — psychologische Dynamik im Interview schärfen.";
+  }
+  if (layer === "L3") {
+    return wert === "rot"
+      ? "Regime 1 — strukturelle Intervention. Entscheidungsarchitektur priorisieren."
+      : "Regime 1 — strukturelle Lücke markieren, Eskalation vorbereiten.";
+  }
+  return "— Regime offen —";
+}
+
+// Gesamt-Routing-Empfehlung (einer der 4 Regimes)
+function computeRoutingEmpfehlung() {
+  const hasRot = (layer) => AMPEL_AXES[layer]?.some(a => getBestAmpel(layer, a) === "rot");
+  const hasGelb = (layer) => AMPEL_AXES[layer]?.some(a => getBestAmpel(layer, a) === "gelb");
+  const l1Rot = hasRot("L1") || hasRot("L1b");
+  const l1Gelb = hasGelb("L1") || hasGelb("L1b");
+  const l2Rot = hasRot("L2");
+  const l3Rot = hasRot("L3");
+  const immunityRot = getBestAmpel("L2", "Immunity-Muster") === "rot";
+
+  if (l1Rot) {
+    return { regime: "Regime 3", text: "L1 ist rot — biologische Kapazität stabilisieren, keine L3-Intervention." };
+  }
+  if (l3Rot && immunityRot) {
+    return { regime: "Regime 2b", text: "L3 rot + Immunity-Muster rot — Immunity durchbrechen, dann L3 formalisieren." };
+  }
+  if (l1Gelb && l2Rot) {
+    return { regime: "Regime 2", text: "L1 gelb, L2 rot — psychologisch vor strukturell." };
+  }
+  if (l3Rot) {
+    return { regime: "Regime 1", text: "L3 dominant rot — strukturelle Intervention priorisieren." };
+  }
+  if (l2Rot) {
+    return { regime: "Regime 2", text: "L2 rot — psychologische Dynamik adressieren." };
+  }
+  return { regime: "—", text: "Noch nicht genug rote/gelbe Ampeln für eine Routing-Empfehlung." };
+}
+
+function renderAuswertungFrictionPoints() {
+  const points = computeFrictionRanking();
+  let html = `
+    <div class="aus-section" id="ausSection2">
+      <div class="aus-section-title">2 · Haupt-Friction-Points</div>
+      <div class="aus-section-sub">Die drei schärfsten Achsen. Rote zuerst, dann gelbe. Sequenzierung: L1 vor L2 vor L3.</div>
+  `;
+  if (points.length === 0) {
+    html += `<div class="aus-empty" style="padding:20px 0;">Noch keine roten oder gelben Ampeln gesetzt.</div>`;
+  } else {
+    points.forEach((p, i) => {
+      const routing = routingForPoint(p.layer, p.wert);
+      const noteKey = `${p.layer}_${p.achse}`;
+      const noteVal = auswertungFrictionNotes[noteKey] || "";
+      const rankClass = p.wert === "rot" ? "" : "gelb";
+      html += `
+        <div class="aus-friction-card">
+          <div>
+            <span class="aus-friction-rank ${rankClass}">#${i + 1} ${p.wert.toUpperCase()}</span>
+            <span class="aus-friction-title">${escHtml(axisLabel(p.achse))}</span>
+          </div>
+          <div class="aus-friction-layer">${escHtml(layerLabel(p.layer))}</div>
+          <div class="aus-friction-routing">${escHtml(routing)}</div>
+          <textarea class="form-input aus-friction-note"
+                    data-note-key="${escHtml(noteKey)}"
+                    rows="2"
+                    placeholder="Eigene Beobachtung zu diesem Friction-Point…">${escHtml(noteVal)}</textarea>
+        </div>
+      `;
+    });
+  }
+  html += `</div>`;
+  return html;
+}
+
+// ── SEKTION 3: BEFUND-ENTWURF (Minto) ─────────────────────────────────────
+function renderAuswertungBefund() {
+  const routing = computeRoutingEmpfehlung();
+  const b = auswertungBefund;
+  return `
+    <div class="aus-section" id="ausSection3">
+      <div class="aus-section-title">3 · Befund-Entwurf</div>
+      <div class="aus-section-sub">Minto-Pyramide: Schlussfolgerung oben, Begründung darunter, Massnahmen zuletzt.</div>
+      <div class="aus-routing-badge">
+        <strong>Routing-Empfehlung</strong>
+        ${escHtml(routing.regime)} — ${escHtml(routing.text)}
+      </div>
+      <div class="aus-befund-field">
+        <label>Schlussfolgerung (1 Satz)</label>
+        <textarea class="form-input" id="ausBefSchluss" rows="2"
+                  placeholder="Was ist das Problem auf einen Satz gebracht…">${escHtml(b.schlussfolgerung || "")}</textarea>
+      </div>
+      <div class="aus-befund-field">
+        <label>Begründung (2–3 Sätze)</label>
+        <textarea class="form-input" id="ausBefBegr" rows="4"
+                  placeholder="Warum liegt das Problem auf diesem Layer…">${escHtml(b.begruendung || "")}</textarea>
+      </div>
+      <div class="aus-befund-field">
+        <label>Massnahmen (3 Bullet Points)</label>
+        <textarea class="form-input" id="ausBefMass" rows="5"
+                  placeholder="- Erste Massnahme\n- Zweite Massnahme\n- Dritte Massnahme">${escHtml(b.massnahmen || "")}</textarea>
+      </div>
+      <div class="btn-row" style="margin-top:16px;">
+        <button class="btn btn-primary" onclick="saveAuswertungNow()">Zwischenspeichern</button>
+        <button class="btn btn-ghost" onclick="printAuswertung()">Als PDF speichern</button>
+      </div>
+    </div>
+  `;
+}
+
+// ── AUTO-SAVE WIRING ──────────────────────────────────────────────────────
+function wireAuswertungAutoSave() {
+  // Friction-Point Notizen
+  document.querySelectorAll("#auswertungBody .aus-friction-note").forEach(el => {
+    el.addEventListener("input", () => {
+      const key = el.dataset.noteKey;
+      auswertungFrictionNotes[key] = el.value;
+      scheduleAuswertungSave();
+    });
+  });
+  // Befund-Felder
+  const wire = (id, key) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener("input", () => {
+      auswertungBefund[key] = el.value;
+      scheduleAuswertungSave();
+    });
+  };
+  wire("ausBefSchluss", "schlussfolgerung");
+  wire("ausBefBegr",    "begruendung");
+  wire("ausBefMass",    "massnahmen");
+}
+
+function scheduleAuswertungSave() {
+  if (_auswertungSaveTimer) clearTimeout(_auswertungSaveTimer);
+  _auswertungSaveTimer = setTimeout(saveAuswertungNow, 1500);
+}
+
+async function saveAuswertungNow() {
+  if (!currentAuswertungScan) return;
+  const routing = computeRoutingEmpfehlung();
+  const payload = {
+    scan_id: currentAuswertungScan.id,
+    friction_points: {
+      overrides: auswertungFrictionOverrides,
+      notes: auswertungFrictionNotes,
+    },
+    befund_entwurf: auswertungBefund,
+    routing_empfehlung: `${routing.regime} — ${routing.text}`,
+  };
+  try {
+    let r;
+    if (currentAuswertung && currentAuswertung.id) {
+      r = await fetch(`/api/auswertungen/${currentAuswertung.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } else {
+      r = await fetch(`/api/auswertungen`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    }
+    if (r.ok) {
+      const data = await r.json().catch(() => null);
+      if (data && data.id) currentAuswertung = data;
+      showAuswertungToast();
+    } else {
+      console.warn("Auswertung save failed:", r.status);
+    }
+  } catch (e) {
+    console.warn("Auswertung save error:", e.message);
+  }
+}
+
+function showAuswertungToast() {
+  const el = document.getElementById("auswertungSaveToast");
+  if (!el) return;
+  el.classList.add("show");
+  setTimeout(() => el.classList.remove("show"), 1500);
+}
+
+function printAuswertung() {
+  window.print();
 }
 
 // ══════════════════════════════════════════════════════════════════════════
