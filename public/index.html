@@ -1051,6 +1051,130 @@
   }
   @keyframes pai-spin { to { transform: rotate(360deg); } }
 
+  /* ── ADA SCAN-SELECTOR (Dropdown im Topbar) ──────────────────────── */
+  .ada-scan-select {
+    background: var(--surface2); color: var(--ink);
+    border: 1px solid var(--border2); border-radius: var(--rs);
+    font-family: var(--mono); font-size: 11px;
+    padding: 4px 8px; cursor: pointer; outline: none;
+    max-width: 260px;
+  }
+  .ada-scan-select:hover { border-color: var(--accent); }
+  .ada-scan-select:focus { border-color: var(--accent); }
+
+  /* ── ADA FLOATING BUTTON (auf allen Tabs ausser ADA) ─────────────── */
+  .ada-float-btn {
+    position: fixed; bottom: 24px; right: 24px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: var(--accent); color: #fff; border: none;
+    font-size: 22px; cursor: pointer; z-index: 450;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+    display: none; align-items: center; justify-content: center;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .ada-float-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.22);
+  }
+  .ada-float-btn.active { display: flex; }
+
+  /* ── ADA FLOATING OVERLAY (Kompakt-Chat, schwebend) ──────────────── */
+  .ada-float-overlay {
+    position: fixed; bottom: 90px; right: 24px;
+    width: 400px; height: 500px; max-height: calc(100vh - 120px);
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--r); z-index: 460;
+    display: none; flex-direction: column;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    overflow: hidden;
+  }
+  .ada-float-overlay.open { display: flex; }
+  .ada-float-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .ada-float-head-title {
+    display: flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-mid);
+  }
+  .ada-float-head-ctx {
+    font-size: 10px; color: var(--ink-mute);
+    font-family: var(--mono); margin-top: 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 220px;
+  }
+  .ada-float-close {
+    background: transparent; border: none; color: var(--ink-mute);
+    font-size: 18px; cursor: pointer; padding: 0;
+    width: 26px; height: 26px; border-radius: 4px; line-height: 1;
+  }
+  .ada-float-close:hover { background: var(--surface); color: var(--ink); }
+  .ada-float-body {
+    flex: 1; overflow-y: auto; padding: 14px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .ada-float-msg {
+    font-size: 13px; line-height: 1.5;
+    padding: 10px 12px; border-radius: var(--rs); max-width: 90%;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  .ada-float-msg.user { background: var(--accent); color: #fff; align-self: flex-end; }
+  .ada-float-msg.assistant { background: var(--surface2); color: var(--ink); align-self: flex-start; }
+  .ada-float-msg.thinking { color: var(--ink-mute); font-style: italic; }
+  .ada-float-input-row {
+    display: flex; gap: 6px; padding: 10px;
+    border-top: 1px solid var(--border);
+  }
+  .ada-float-input {
+    flex: 1; background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: var(--rs); color: var(--ink); font-family: var(--sans);
+    font-size: 13px; padding: 8px 10px; outline: none; resize: none;
+    min-height: 36px; max-height: 100px;
+  }
+  .ada-float-input:focus { border-color: var(--accent); }
+  .ada-float-send {
+    background: var(--accent); color: #fff; border: none;
+    border-radius: var(--rs); padding: 0 14px; cursor: pointer;
+    font-size: 13px; font-weight: 500;
+  }
+  .ada-float-send:hover { background: var(--accent-h); }
+  .ada-float-send:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── ⓘ INFO-ICON (öffnet Float-Overlay mit vorgefüllter Frage) ──── */
+  .ada-help {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 16px; height: 16px;
+    background: transparent; border: none;
+    color: var(--ink-mute);
+    cursor: pointer; margin-left: 6px; padding: 0;
+    vertical-align: middle;
+    transition: color 0.12s, transform 0.12s;
+  }
+  .ada-help svg {
+    width: 14px; height: 14px; display: block;
+  }
+  .ada-help:hover {
+    color: var(--accent);
+    transform: scale(1.1);
+  }
+
+  /* ── ADA FEHLER-BANNER (nicht wegklickbar, rot) ──────────────────── */
+  .ada-banner-stack {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 440; display: flex; flex-direction: column;
+    pointer-events: none;
+  }
+  .ada-banner-stack:empty { display: none; }
+  .ada-banner {
+    background: var(--red); color: #fff;
+    padding: 8px 20px; font-size: 13px; font-weight: 500;
+    text-align: center; letter-spacing: 0.02em;
+    border-bottom: 1px solid rgba(0,0,0,0.15);
+    pointer-events: auto;
+  }
+
   /* ── LERNMODUS (Protokoll 5) ─────────────────────────────────────── */
   .tab-badge {
     display: inline-flex; align-items: center; gap: 2px;
@@ -1626,7 +1750,13 @@
   <div class="ada-chat-panel">
     <div class="ada-chat-topbar">
       <div class="ada-chat-topbar-left">
-        <span>ADA</span> — <span id="adaContextText">Kein aktiver Scan</span>
+        <span>ADA</span>
+        <span>·</span>
+        <label for="adaScanSelect" style="font-size:11px;color:var(--ink-mute);font-family:var(--mono);">Aktiver Scan:</label>
+        <select class="ada-scan-select" id="adaScanSelect" onchange="onAdaScanSelectChange(this.value)">
+          <option value="">— kein Scan —</option>
+        </select>
+        <span id="adaContextText" style="font-size:11px;color:var(--ink-mute);font-family:var(--mono);"></span>
       </div>
       <div class="ada-chat-topbar-right">
         <button class="ada-lernmodus-toggle on" id="adaLernmodusToggle" onclick="toggleLernmodus()" title="Lernmodus umschalten">
@@ -1663,6 +1793,26 @@
         <button class="task-drawer-add-btn" onclick="addTaskFromDrawer()">+</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ── ADA FEHLER-BANNER STACK (fixed top, nicht wegklickbar) ─────────────── -->
+<div class="ada-banner-stack" id="adaBannerStack"></div>
+
+<!-- ── ADA FLOATING BUTTON + OVERLAY (auf allen Tabs ausser ADA) ──────────── -->
+<button class="ada-float-btn" id="adaFloatBtn" title="ADA fragen — kontextgebunden" onclick="openAdaFloat()">💬</button>
+<div class="ada-float-overlay" id="adaFloatOverlay">
+  <div class="ada-float-head">
+    <div>
+      <div class="ada-float-head-title"><span>💬</span><span>ADA · Quickfrage</span></div>
+      <div class="ada-float-head-ctx" id="adaFloatCtx">—</div>
+    </div>
+    <button class="ada-float-close" onclick="closeAdaFloat()" title="Schliessen">×</button>
+  </div>
+  <div class="ada-float-body" id="adaFloatBody"></div>
+  <div class="ada-float-input-row">
+    <textarea class="ada-float-input" id="adaFloatInput" placeholder="Frage an ADA… (Kontext wird mitgeschickt)" rows="1"></textarea>
+    <button class="ada-float-send" id="adaFloatSend" onclick="sendAdaFloatMessage()">Senden</button>
   </div>
 </div>
 
@@ -1882,9 +2032,14 @@ function toggleLandingTasks() {
 // ── SWITCH TAB ────────────────────────────────────────────────────────────
 function switchTab(tab) {
   activeTab = tab;
+  if (typeof _adaCtx !== "undefined") _adaCtx.tab = tab;
   const header = document.getElementById("appHeader");
   const tabNav = document.getElementById("appTabNav");
   const adaFS = document.getElementById("adaFullscreen");
+
+  // Float-Button-Sichtbarkeit (sichtbar auf allen Tabs ausser ADA)
+  if (typeof updateAdaFloatBtnVisibility === "function") updateAdaFloatBtnVisibility();
+  if (typeof updateAdaFloatCtxDisplay === "function") updateAdaFloatCtxDisplay();
 
   // ADA fullscreen: hide header/tabs, show fullscreen
   if (tab === "ada") {
@@ -1895,6 +2050,7 @@ function switchTab(tab) {
     initAdaListeners();
     updateAdaContext();
     loadAdaSessions();
+    if (typeof loadAdaScanList === "function") loadAdaScanList();
     updateLernmodusToggleUI();
     renderLernmodusCards();
     markAllLernmodusCardsRead();
@@ -2522,6 +2678,21 @@ async function openScan(scan) {
   scanPhase = scan.current_phase || 0;
   $btnAnker.style.display = "flex";
   renderScanPhase(scanPhase);
+
+  // ADA-Kontext: wenn noch kein Scan im Dropdown gewählt, nimm diesen als Default
+  if (typeof _adaCtx !== "undefined") {
+    if (!_adaCtx.scanId) {
+      _adaCtx.scanId = scan.id;
+      _adaCtx.scanName = scan.kunde_name;
+      _adaCtx.scanStatus = scan.status;
+      localStorage.setItem(ADA_SCAN_STORAGE_KEY, scan.id);
+      if (typeof populateAdaScanSelect === "function") populateAdaScanSelect();
+    }
+    _adaCtx.scanPhase = `Phase ${scanPhase} — ${SCAN_PHASES[scanPhase]?.title || "?"}`;
+  }
+  if (typeof updateAdaContextText === "function") updateAdaContextText();
+  if (typeof updateAdaFloatCtxDisplay === "function") updateAdaFloatCtxDisplay();
+  if (typeof evaluateAdaErrorBanners === "function") evaluateAdaErrorBanners();
 }
 
 // ── PFLICHTFELDER-LOGIK ──
@@ -2589,6 +2760,13 @@ async function goToScanPhase(num) {
   scanPhase = num;
   renderScanPhase(num);
 
+  // ADA-Kontext: aktuelle Phase im Float-Overlay + im Header anzeigen
+  if (typeof setAdaPhaseLabel === "function") {
+    setAdaPhaseLabel(`Phase ${num} — ${SCAN_PHASES[num]?.title || "?"}`);
+  }
+  if (typeof updateAdaContextText === "function") updateAdaContextText();
+  if (typeof evaluateAdaErrorBanners === "function") evaluateAdaErrorBanners();
+
   // ── Lernmodus-Trigger: Phase 4 öffnen ──
   if (num === 4 && typeof maybeFireLernmodusPhase4 === "function") {
     maybeFireLernmodusPhase4();
@@ -2613,11 +2791,11 @@ function renderPhase0() {
     <div class="phase-instruction">Drei Gate-Fragen — alle müssen erfüllt sein, bevor der Scan startet.</div>
     <div class="scan-card">
       <div class="scan-card-title">Voraussetzungen</div>
-      <div class="check-row"><input type="checkbox" id="mc1" ${s.mandatscheck_budget ? "checked" : ""}><label for="mc1" class="pflicht">Entscheider hat Budgetmandat?</label></div>
-      <div class="check-row"><input type="checkbox" id="mc2" ${s.mandatscheck_personen ? "checked" : ""}><label for="mc2" class="pflicht">Organisation >5 Personen?</label></div>
+      <div class="check-row"><input type="checkbox" id="mc1" ${s.mandatscheck_budget ? "checked" : ""}><label for="mc1" class="pflicht">Entscheider hat Budgetmandat?</label>${helpIcon("Entscheider hat Budgetmandat")}</div>
+      <div class="check-row"><input type="checkbox" id="mc2" ${s.mandatscheck_personen ? "checked" : ""}><label for="mc2" class="pflicht">Organisation >5 Personen?</label>${helpIcon("Organisation >5 Personen")}</div>
     </div>
     <div class="scan-card" style="margin-top:12px">
-      <div class="scan-card-title">Kein akuter Überlebensmodus — 3 Unterfragen</div>
+      <div class="scan-card-title">Kein akuter Überlebensmodus — 3 Unterfragen${helpIcon("Akuter Überlebensmodus")}</div>
       <div class="check-row"><input type="checkbox" id="mc3a" onchange="updateMc3()"><label for="mc3a" class="pflicht">Runway > 3 Monate?</label></div>
       <div style="font-size:11px;color:var(--ink-mute);margin-left:26px;margin-bottom:8px">Falls ✗: Liquiditätskrise — Scan nach Stabilisierung</div>
       <div class="check-row"><input type="checkbox" id="mc3b" onchange="updateMc3()"><label for="mc3b" class="pflicht">Keine laufenden/angekündigten Entlassungen?</label></div>
@@ -2850,7 +3028,7 @@ function renderHypotheseSlot(num) {
   const h = scanHypothesen[num - 1] || {};
   return `
     <div class="hyp-card">
-      <div style="font-weight:500;margin-bottom:8px">Hypothese ${num}</div>
+      <div style="font-weight:500;margin-bottom:8px">Hypothese ${num}${num === 1 ? helpIcon("Hypothese (Layer + Mechanismus + Evidenz + Testfrage)") : ""}</div>
       <div class="hyp-fields">
         <div class="form-group"><label class="form-label${num === 1 ? ' pflicht' : ''}">Layer + Mechanismus</label><input class="form-input" id="hyp${num}Layer" value="${escHtml(h.layer)}" placeholder="z.B. L2 Immunity"></div>
         <div class="form-group"><label class="form-label">Evidenz (direktes Zitat)</label><input class="form-input" id="hyp${num}Evidenz" value="${escHtml(h.evidenz_zitat)}" placeholder="Zitat aus Interview"></div>
@@ -2898,11 +3076,11 @@ function renderPhase5() {
       ${renderAmpelGrid("final")}
     </div>
     <div class="scan-card" style="margin-top:12px">
-      <div class="scan-card-title pflicht">Primärer Friction-Vektor</div>
+      <div class="scan-card-title pflicht">Primärer Friction-Vektor${helpIcon("Primärer Friction-Vektor")}</div>
       <textarea class="form-input" id="frictionVektor" rows="2" placeholder="Layer + Kurzbeschreibung">${escHtml(s.friction_vektor)}</textarea>
     </div>
     <div class="scan-card" style="margin-top:12px">
-      <div class="scan-card-title">Regime-Routing</div>
+      <div class="scan-card-title">Regime-Routing${helpIcon("Regime-Routing")}</div>
       <div style="font-size:13px;color:var(--ink-mid);margin-bottom:8px">Automatischer Vorschlag basierend auf Ampeln:</div>
       <div id="regimeRouting"><span class="regime-badge">— wird berechnet —</span></div>
       <div style="font-size:11px;color:var(--ink-mute);margin-top:8px">
@@ -2948,7 +3126,8 @@ function renderAmpelGrid(phase) {
     for (const achse of axes) {
       const key = `${layer}_${achse}_${phase}`;
       const current = scanAmpeln[key] || "grau";
-      html += `<div class="ampel-row"><span class="ampel-label">${escHtml(axisLabel(achse))}</span><div class="ampel-dots">`;
+      const label = axisLabel(achse);
+      html += `<div class="ampel-row"><span class="ampel-label">${escHtml(label)}${helpIcon(label)}</span><div class="ampel-dots">`;
       for (const farbe of ["gruen", "gelb", "rot"]) {
         html += `<div class="ampel-dot ${current === farbe ? farbe : ""}" data-key="${key}" data-farbe="${farbe}" onclick="setAmpel(this)"></div>`;
       }
@@ -2984,8 +3163,14 @@ function setAmpel(dot) {
         `Ampel: ${axisLabel(parsed.achse)}`,
         `Achse ${axisLabel(parsed.achse)} (Layer ${layerLabel(parsed.layer)}, Phase ${parsed.phase}) auf ${farbeDe} gesetzt.`
       );
+      // Letzte Aktion für Float-Overlay & Quickfragen
+      if (typeof setAdaLastAction === "function") {
+        setAdaLastAction(`Ampel ${layerLabel(parsed.layer)} ${axisLabel(parsed.achse)} auf ${farbeDe} gesetzt`);
+      }
     }
   }
+  // Fehler-Banner neu auswerten (L1-rot Trigger)
+  if (typeof evaluateAdaErrorBanners === "function") evaluateAdaErrorBanners();
 }
 
 function calculateRegime() {
@@ -3109,6 +3294,7 @@ async function savePhase0AndNext() {
   currentScan.status = "setup";
   await patchScan({ mandatscheck_budget: currentScan.mandatscheck_budget, mandatscheck_personen: currentScan.mandatscheck_personen, mandatscheck_kein_krise: currentScan.mandatscheck_kein_krise, status: "setup", current_phase: 1 });
   goToScanPhase(1);
+  if (typeof evaluateAdaErrorBanners === "function") evaluateAdaErrorBanners();
 }
 
 async function savePhase1AndNext() {
@@ -3263,6 +3449,10 @@ async function saveAllInterviews() {
     try { await fetch(`/api/scans/${currentScan.id}/interviews/${iv.id}/bias`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bias) }); }
     catch (e) { console.warn(`Bias ${i} save:`, e.message); }
 
+    // ── ADA-Kontext: letzte Aktion ──
+    if (typeof setAdaLastAction === "function" && updates.rolle) {
+      setAdaLastAction(`Interview ${i} (${updates.rolle}) gespeichert`);
+    }
     // ── Lernmodus-Trigger (Diff-Debounce: nur wenn Notizen sich um >150 Zeichen geändert haben) ──
     if (typeof triggerLernmodus === "function" && updates.notizen && updates.rolle) {
       const last = _lernmodusLastInterviewNotes[i] || "";
@@ -3306,9 +3496,12 @@ async function saveAllHypothesen() {
       evidenz_zitat: document.getElementById(`hyp${i}Evidenz`)?.value || "",
       testfrage: document.getElementById(`hyp${i}Testfrage`)?.value || "",
     };
+    // In-Memory aktualisieren, damit evaluateAdaErrorBanners die richtigen Werte sieht
+    scanHypothesen[i - 1] = { ...h, ...updates };
     try { await fetch(`/api/scans/${currentScan.id}/hypothesen/${h.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updates) }); }
     catch (e) { console.warn(`Hypothese ${i} save:`, e.message); }
   }
+  if (typeof evaluateAdaErrorBanners === "function") evaluateAdaErrorBanners();
 }
 
 async function ensureMassnahmenSlots() {
@@ -3682,13 +3875,10 @@ function $adaInput() { return document.getElementById("adaInput"); }
 function $adaSend() { return document.getElementById("adaSend"); }
 
 function updateAdaContext() {
-  const $ctx = document.getElementById("adaContextText");
-  if (!$ctx) return;
-  if (currentScan) {
-    $ctx.textContent = `${currentScan.kunde_name} — Phase ${scanPhase} (${SCAN_PHASES[scanPhase]?.title || "?"})`;
-  } else {
-    $ctx.textContent = "Kein aktiver Scan";
-  }
+  // Altes Verhalten: zeigte currentScan im Header. Jetzt übernimmt diesen Job
+  // der adaScanSelect-Dropdown + #adaContextText (via updateAdaContextText).
+  // Diese Funktion bleibt als Shim für bestehende Aufrufe erhalten.
+  if (typeof updateAdaContextText === "function") updateAdaContextText();
 }
 
 function initAdaListeners() {
@@ -3770,11 +3960,18 @@ async function sendAdaMessage() {
   if (msgs) { msgs.appendChild(thinkEl); msgs.scrollTop = msgs.scrollHeight; }
 
   try {
-    const scanCtx = currentScan ? {
-      kunde: currentScan.kunde_name,
-      phase: `Phase ${scanPhase} — ${SCAN_PHASES[scanPhase]?.title || "?"}`,
-      status: currentScan.status,
-    } : null;
+    // Scan-Kontext kommt aus _adaCtx (gewählter Scan im Dropdown).
+    // Fallback: falls noch nichts im Dropdown, aber currentScan existiert,
+    // nimm currentScan als implizites Default.
+    let scanCtx = (typeof buildAdaScanContext === "function") ? buildAdaScanContext({ includeLastAction: false }) : null;
+    if (!scanCtx && currentScan) {
+      scanCtx = {
+        scan_id: currentScan.id,
+        kunde: currentScan.kunde_name,
+        phase: `Phase ${scanPhase} — ${SCAN_PHASES[scanPhase]?.title || "?"}`,
+        status: currentScan.status,
+      };
+    }
 
     const r = await fetch("/api/ada/chat", {
       method: "POST",
@@ -6106,17 +6303,17 @@ function renderAuswertungBefund() {
         ${escHtml(routing.regime)} — ${escHtml(routing.text)}
       </div>
       <div class="aus-befund-field">
-        <label>Schlussfolgerung (1 Satz)</label>
+        <label>Schlussfolgerung (1 Satz)${helpIcon("Schlussfolgerung (Minto-Pyramide)")}</label>
         <textarea class="form-input" id="ausBefSchluss" rows="2"
                   placeholder="Was ist das Problem auf einen Satz gebracht…">${escHtml(b.schlussfolgerung || "")}</textarea>
       </div>
       <div class="aus-befund-field">
-        <label>Begründung (2–3 Sätze)</label>
+        <label>Begründung (2–3 Sätze)${helpIcon("Begründung (Minto-Pyramide)")}</label>
         <textarea class="form-input" id="ausBefBegr" rows="4"
                   placeholder="Warum liegt das Problem auf diesem Layer…">${escHtml(b.begruendung || "")}</textarea>
       </div>
       <div class="aus-befund-field">
-        <label>Massnahmen (3 Bullet Points)</label>
+        <label>Massnahmen (3 Bullet Points)${helpIcon("Massnahmen (3 Sofort-Schritte)")}</label>
         <textarea class="form-input" id="ausBefMass" rows="5"
                   placeholder="- Erste Massnahme\n- Zweite Massnahme\n- Dritte Massnahme">${escHtml(b.massnahmen || "")}</textarea>
       </div>
@@ -6369,6 +6566,309 @@ function parseAmpelKey(key) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════
+// ADA-KONTEXT, FLOAT-OVERLAY, FEHLER-BANNER, ❓-HELP
+// ══════════════════════════════════════════════════════════════════════════
+//
+// Globaler Kontext den alle ADA-Calls mitschicken (Floating-Overlay + ❓).
+// Scan-Auswahl (scanId/scanName) wird in localStorage persistiert.
+// Tab / Phase / letzte Aktion werden dynamisch aus den Trigger-Stellen gesetzt.
+
+const ADA_SCAN_STORAGE_KEY = "nelionAdaActiveScanId";
+
+const _adaCtx = {
+  scanId:     null,
+  scanName:   null,
+  scanStatus: null,
+  scanPhase:  null,     // "Phase 2 — Interviews"
+  tab:        "landing",
+  lastAction: null,     // "Ampel L1a Neurobiologische Last auf rot gesetzt"
+};
+
+let _adaCtxScansCache = [];            // Array aller Scans aus /api/scans
+let _adaFloatMessages = [];            // Session-temporär (nie persistiert)
+let _adaFloatSending = false;
+const _adaBanners = new Map();         // id → text (aktive Banner)
+
+// ── TAB-LABEL HELPERS ─────────────────────────────────────────────────────
+const TAB_LABELS = {
+  landing: "Landing",
+  modul1:  "Erstgespräch",
+  modul2:  "Friction Scan",
+  modul3:  "PAI Interview",
+  modul4:  "PAI Self-Assessment",
+  auswertung: "Auswertung",
+  ada:     "ADA",
+};
+function tabLabel(tab) { return TAB_LABELS[tab] || tab; }
+
+// ── ADA-KONTEXT SETTER ────────────────────────────────────────────────────
+function setAdaLastAction(action) {
+  _adaCtx.lastAction = action;
+  updateAdaFloatCtxDisplay();
+}
+function setAdaPhaseLabel(phaseLabel) {
+  _adaCtx.scanPhase = phaseLabel;
+  updateAdaFloatCtxDisplay();
+}
+
+// ── SCAN-SELECTOR IM ADA-HEADER ───────────────────────────────────────────
+async function loadAdaScanList() {
+  try {
+    const r = await fetch("/api/scans");
+    const scans = await r.json();
+    _adaCtxScansCache = Array.isArray(scans) ? scans : [];
+  } catch (e) {
+    console.warn("ADA scan list load failed:", e.message);
+    _adaCtxScansCache = [];
+  }
+  populateAdaScanSelect();
+}
+
+function populateAdaScanSelect() {
+  const $sel = document.getElementById("adaScanSelect");
+  if (!$sel) return;
+  const savedId = localStorage.getItem(ADA_SCAN_STORAGE_KEY) || "";
+  // Wenn aktuell ein currentScan existiert, defaulte auf ihn falls nichts in localStorage
+  const fallbackId = savedId || (currentScan?.id || "");
+  const opts = ['<option value="">— kein Scan —</option>'];
+  for (const s of _adaCtxScansCache) {
+    const date = new Date(s.created_at).toLocaleDateString("de-CH", { day:"2-digit", month:"2-digit", year:"2-digit" });
+    const label = `${s.kunde_name} · ${date}${s.completed ? " ✓" : ""}`;
+    opts.push(`<option value="${escHtml(s.id)}" ${s.id === fallbackId ? "selected" : ""}>${escHtml(label)}</option>`);
+  }
+  $sel.innerHTML = opts.join("");
+  // Kontext initial setzen
+  if (fallbackId) {
+    const s = _adaCtxScansCache.find(x => x.id === fallbackId);
+    if (s) applyAdaScanContext(s);
+  }
+  updateAdaContextText();
+}
+
+function onAdaScanSelectChange(scanId) {
+  if (!scanId) {
+    localStorage.removeItem(ADA_SCAN_STORAGE_KEY);
+    _adaCtx.scanId = null;
+    _adaCtx.scanName = null;
+    _adaCtx.scanStatus = null;
+  } else {
+    localStorage.setItem(ADA_SCAN_STORAGE_KEY, scanId);
+    const s = _adaCtxScansCache.find(x => x.id === scanId);
+    if (s) applyAdaScanContext(s);
+  }
+  updateAdaContextText();
+  updateAdaFloatCtxDisplay();
+}
+
+function applyAdaScanContext(s) {
+  _adaCtx.scanId = s.id;
+  _adaCtx.scanName = s.kunde_name;
+  _adaCtx.scanStatus = s.status;
+  if (!_adaCtx.scanPhase && typeof s.current_phase !== "undefined") {
+    _adaCtx.scanPhase = `Phase ${s.current_phase} — ${SCAN_PHASES[s.current_phase]?.title || "?"}`;
+  }
+}
+
+function updateAdaContextText() {
+  const $ctx = document.getElementById("adaContextText");
+  if (!$ctx) return;
+  if (_adaCtx.scanName) {
+    $ctx.textContent = `· ${_adaCtx.scanPhase || ""}`;
+  } else {
+    $ctx.textContent = "— kein aktiver Scan —";
+  }
+}
+
+// Liefert den aktuellen scan_context für ADA-Calls (aus _adaCtx + Fallbacks).
+function buildAdaScanContext(opts) {
+  // opts: { fieldLabel, includeLastAction = true }
+  const ctx = {};
+  if (_adaCtx.scanId)     ctx.scan_id = _adaCtx.scanId;
+  if (_adaCtx.scanName)   ctx.kunde = _adaCtx.scanName;
+  if (_adaCtx.scanStatus) ctx.status = _adaCtx.scanStatus;
+  if (_adaCtx.scanPhase)  ctx.phase = _adaCtx.scanPhase;
+  if (_adaCtx.tab)        ctx.tab = tabLabel(_adaCtx.tab);
+  if ((!opts || opts.includeLastAction !== false) && _adaCtx.lastAction) {
+    ctx.last_action = _adaCtx.lastAction;
+  }
+  if (opts && opts.fieldLabel) ctx.field_label = opts.fieldLabel;
+  return Object.keys(ctx).length > 0 ? ctx : null;
+}
+
+// ── FLOATING BUTTON SICHTBARKEIT ──────────────────────────────────────────
+function updateAdaFloatBtnVisibility() {
+  const $btn = document.getElementById("adaFloatBtn");
+  const $ov  = document.getElementById("adaFloatOverlay");
+  if (!$btn) return;
+  const hide = activeTab === "ada";
+  $btn.classList.toggle("active", !hide);
+  if (hide && $ov) $ov.classList.remove("open");
+}
+
+// ── FLOATING OVERLAY — ÖFFNEN / SCHLIESSEN / SENDEN ───────────────────────
+function openAdaFloat(prefillText) {
+  const $ov = document.getElementById("adaFloatOverlay");
+  if (!$ov) return;
+  $ov.classList.add("open");
+  renderAdaFloatBody();
+  updateAdaFloatCtxDisplay();
+  const $inp = document.getElementById("adaFloatInput");
+  if ($inp) {
+    if (prefillText) $inp.value = prefillText;
+    setTimeout(() => $inp.focus(), 50);
+  }
+}
+
+function closeAdaFloat() {
+  const $ov = document.getElementById("adaFloatOverlay");
+  if ($ov) $ov.classList.remove("open");
+}
+
+function updateAdaFloatCtxDisplay() {
+  const $ctx = document.getElementById("adaFloatCtx");
+  if (!$ctx) return;
+  const parts = [];
+  if (_adaCtx.tab)        parts.push(tabLabel(_adaCtx.tab));
+  if (_adaCtx.scanPhase)  parts.push(_adaCtx.scanPhase);
+  if (_adaCtx.scanName)   parts.push(_adaCtx.scanName);
+  $ctx.textContent = parts.length ? parts.join(" · ") : "(kein Scan-Kontext)";
+}
+
+function renderAdaFloatBody() {
+  const $body = document.getElementById("adaFloatBody");
+  if (!$body) return;
+  if (_adaFloatMessages.length === 0) {
+    $body.innerHTML = `<div class="ada-float-msg assistant">Hi. Kontext ist automatisch mitgeschickt. Was willst du wissen?</div>`;
+    return;
+  }
+  $body.innerHTML = _adaFloatMessages.map(m => {
+    const cls = m.role === "user" ? "user" : (m.thinking ? "assistant thinking" : "assistant");
+    const content = m.thinking ? "denkt…" : (m.role === "user" ? escHtml(m.content) : renderMarkdown(m.content));
+    return `<div class="ada-float-msg ${cls}">${content}</div>`;
+  }).join("");
+  $body.scrollTop = $body.scrollHeight;
+}
+
+async function sendAdaFloatMessage() {
+  const $inp = document.getElementById("adaFloatInput");
+  const $send = document.getElementById("adaFloatSend");
+  const text = $inp ? $inp.value.trim() : "";
+  if (!text || _adaFloatSending) return;
+
+  _adaFloatSending = true;
+  if ($send) $send.disabled = true;
+
+  _adaFloatMessages.push({ role: "user", content: text });
+  if ($inp) { $inp.value = ""; $inp.style.height = "auto"; }
+  const thinking = { role: "assistant", thinking: true };
+  _adaFloatMessages.push(thinking);
+  renderAdaFloatBody();
+
+  try {
+    const r = await fetch("/api/ada/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: _adaFloatMessages.filter(m => !m.thinking).map(m => ({ role: m.role, content: m.content })),
+        scan_context: buildAdaScanContext(),
+      }),
+    });
+    const data = await r.json();
+    // Entferne thinking
+    _adaFloatMessages = _adaFloatMessages.filter(m => !m.thinking);
+    if (data.error) {
+      _adaFloatMessages.push({ role: "assistant", content: "Fehler: " + data.error });
+    } else {
+      _adaFloatMessages.push({ role: "assistant", content: data.content || "(leere Antwort)" });
+    }
+  } catch (e) {
+    _adaFloatMessages = _adaFloatMessages.filter(m => !m.thinking);
+    _adaFloatMessages.push({ role: "assistant", content: "Verbindungsfehler: " + e.message });
+  }
+
+  renderAdaFloatBody();
+  _adaFloatSending = false;
+  if ($send) $send.disabled = false;
+  if ($inp) $inp.focus();
+}
+
+// ── ⓘ INFO-ICON ───────────────────────────────────────────────────────────
+// Gibt den HTML-String für ein inline Info-Icon (kursives i im Kreis) zurück.
+// Klick öffnet das Float-Overlay mit einer vorgefüllten Frage zum Feld.
+const _HELP_ICON_SVG = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M8 7.2 v4.3" stroke-width="1.6"/><circle cx="8" cy="4.7" r="0.75" fill="currentColor" stroke="none"/></svg>`;
+function helpIcon(fieldLabel) {
+  const escaped = (fieldLabel || "").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  return `<button class="ada-help" type="button" onclick="openAdaHelp('${escaped}')" title="Was bedeutet das?" aria-label="Info zu ${escaped}">${_HELP_ICON_SVG}</button>`;
+}
+
+function openAdaHelp(fieldLabel) {
+  const q = `${fieldLabel} — was bedeutet das und worauf achte ich hier?`;
+  openAdaFloat(q);
+  // Auto-send für schnelleren Flow? Nein — User kann erst noch präzisieren.
+}
+
+// ── FEHLER-BANNER (rot, nicht wegklickbar) ────────────────────────────────
+function renderAdaBanners() {
+  const $stack = document.getElementById("adaBannerStack");
+  if (!$stack) return;
+  if (_adaBanners.size === 0) {
+    $stack.innerHTML = "";
+    return;
+  }
+  const html = Array.from(_adaBanners.entries())
+    .map(([id, text]) => `<div class="ada-banner" data-banner-id="${escHtml(id)}">${escHtml(text)}</div>`)
+    .join("");
+  $stack.innerHTML = html;
+}
+
+function setAdaBanner(id, text) {
+  _adaBanners.set(id, text);
+  renderAdaBanners();
+}
+function clearAdaBanner(id) {
+  if (_adaBanners.delete(id)) renderAdaBanners();
+}
+
+// Zentrale Auswertung aller 3 Banner-Bedingungen. Wird aus setAmpel,
+// goToScanPhase und loadScan-Pfaden aufgerufen.
+function evaluateAdaErrorBanners() {
+  // 1. L1 rot (in irgendeiner Phase in L1 oder L1b)
+  const l1Layers = ["L1", "L1b"];
+  let l1Rot = false;
+  for (const layer of l1Layers) {
+    for (const achse of (AMPEL_AXES[layer] || [])) {
+      for (const phase of ["survey", "interview", "final"]) {
+        if (scanAmpeln[`${layer}_${achse}_${phase}`] === "rot") { l1Rot = true; break; }
+      }
+      if (l1Rot) break;
+    }
+    if (l1Rot) break;
+  }
+  if (l1Rot) setAdaBanner("l1-rot", "⚠️ L1 rot — Regime 3. Kein L3-Schritt bis L1 stabil.");
+  else clearAdaBanner("l1-rot");
+
+  // 2. Befund ohne 3 Hypothesen (nur wenn aktuell in Phase 5)
+  if (currentScan && typeof scanPhase !== "undefined" && scanPhase === 5) {
+    const hypCount = (scanHypothesen || []).filter(h => h && ((h.mechanismus && h.mechanismus.trim()) || (h.layer && h.layer.trim()))).length;
+    if (hypCount < 3) setAdaBanner("hyp-missing", "⚠️ Hypothesen fehlen — Befund ohne Triangulation ist nicht valide.");
+    else clearAdaBanner("hyp-missing");
+  } else {
+    clearAdaBanner("hyp-missing");
+  }
+
+  // 3. Mandats-Check nicht bestanden aber Scan in Phase ≥ 1
+  if (currentScan && typeof scanPhase !== "undefined" && scanPhase >= 1) {
+    const mcOk = currentScan.mandatscheck_budget
+              && currentScan.mandatscheck_personen
+              && currentScan.mandatscheck_kein_krise;
+    if (!mcOk) setAdaBanner("mc-failed", "⚠️ Mandats-Check nicht bestanden — der Scan ist formal nicht abgedeckt.");
+    else clearAdaBanner("mc-failed");
+  } else {
+    clearAdaBanner("mc-failed");
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════════════════════════
 async function init() {
@@ -6378,12 +6878,27 @@ async function init() {
   loadContacts();
   renderScanList();
 
+  // ADA Scan-Liste für Selector laden (auch wenn ADA-Tab noch nicht offen)
+  loadAdaScanList();
+
   // Start on landing page
   switchTab("landing");
 
   // Update datetime every minute
   updateAllDateTimes();
   setInterval(updateAllDateTimes, 60000);
+
+  // Float-Input Auto-Resize
+  const $fi = document.getElementById("adaFloatInput");
+  if ($fi) {
+    $fi.addEventListener("input", () => {
+      $fi.style.height = "auto";
+      $fi.style.height = Math.min($fi.scrollHeight, 100) + "px";
+    });
+    $fi.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendAdaFloatMessage(); }
+    });
+  }
 }
 init();
 </script>

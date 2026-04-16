@@ -1242,9 +1242,20 @@ app.post("/api/ada/chat", async (req, res) => {
     systemPrompt += `\n\n─── NATHALIE MEMORY (geteilt mit NOS) ───\n${memory}\n─── ENDE MEMORY ───`;
   }
 
-  // 3. Dynamic Scan Context
+  // 3. Dynamic Scan Context — erweitert um Tab, letzte Aktion, Scan-ID für
+  // kontextgebundene Calls aus dem Floating-Overlay und vom ❓-Icon.
   if (scan_context) {
-    systemPrompt += `\n\n─── SCAN-KONTEXT ───\nKunde: ${scan_context.kunde || "unbekannt"}\nPhase: ${scan_context.phase || "unbekannt"}\nStatus: ${scan_context.status || "unbekannt"}\n─── ENDE SCAN-KONTEXT ───`;
+    const lines = [];
+    if (scan_context.kunde)       lines.push(`Kunde: ${scan_context.kunde}`);
+    if (scan_context.phase)       lines.push(`Phase: ${scan_context.phase}`);
+    if (scan_context.status)      lines.push(`Status: ${scan_context.status}`);
+    if (scan_context.scan_id)     lines.push(`Scan-ID: ${scan_context.scan_id}`);
+    if (scan_context.tab)         lines.push(`Aktiver Tab: ${scan_context.tab}`);
+    if (scan_context.last_action) lines.push(`Letzte Aktion: ${scan_context.last_action}`);
+    if (scan_context.field_label) lines.push(`Nachgefragtes Feld: ${scan_context.field_label}`);
+    if (lines.length > 0) {
+      systemPrompt += `\n\n─── SCAN-KONTEXT ───\n${lines.join("\n")}\n─── ENDE SCAN-KONTEXT ───`;
+    }
   }
 
   const maxRetries = 3;
