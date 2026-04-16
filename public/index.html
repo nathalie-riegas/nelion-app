@@ -7192,16 +7192,7 @@ function evaluateAdaErrorBanners() {
     clearAdaBanner("hyp-missing");
   }
 
-  // 3. Mandats-Check nicht bestanden aber Scan in Phase ≥ 1
-  if (currentScan && typeof scanPhase !== "undefined" && scanPhase >= 1) {
-    const mcOk = currentScan.mandatscheck_budget
-              && currentScan.mandatscheck_personen
-              && currentScan.mandatscheck_kein_krise;
-    if (!mcOk) setAdaBanner("mc-failed", "⚠️ Mandats-Check nicht bestanden — der Scan ist formal nicht abgedeckt.");
-    else clearAdaBanner("mc-failed");
-  } else {
-    clearAdaBanner("mc-failed");
-  }
+  // (Mandats-Check-Banner entfernt — Check wird bereits im Scan selbst angezeigt.)
 }
 
 // ══════════════════════════════════════════════════════════════════════════
