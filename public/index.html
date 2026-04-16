@@ -34,6 +34,11 @@
     --r:          10px;
     --rs:         6px;
     --max-w:      900px;
+    --textarea-max-w: 680px;
+    --header-h:   56px;
+    --header-h-mobile: 50px;
+    --z-header:   50;
+    --z-tabnav:   49;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -53,10 +58,13 @@
     align-items: center;
     justify-content: space-between;
     padding: 0 24px;
-    height: 56px;
+    height: var(--header-h);
     background: var(--surface);
     border-bottom: 1px solid var(--border);
     flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: var(--z-header);
   }
   .header-left { display: flex; align-items: center; gap: 10px; }
   .logo-mark {
@@ -79,6 +87,9 @@
     padding: 0 24px;
     gap: 0;
     flex-shrink: 0;
+    position: sticky;
+    top: var(--header-h);
+    z-index: var(--z-tabnav);
   }
   .tab-btn {
     font-family: var(--mono);
@@ -98,13 +109,14 @@
   .tab-btn.active[data-tab="ada"] { border-bottom-color: var(--ada-accent); }
 
   /* ── MAIN ────────────────────────────────────────────────────────────── */
+  /* Body scrolls, not .main — required for sticky header to work.
+     (ADA fullscreen overrides this explicitly with its own scroll container.) */
   .main {
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     padding: 24px 20px 40px;
-    overflow-y: auto;
   }
   .container { width: 100%; max-width: var(--max-w); }
   .module { display: none; }
@@ -144,7 +156,18 @@
   }
   .form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,0,0,0.05); }
   .form-input::placeholder { color: var(--ink-mute); }
-  textarea.form-input { resize: vertical; min-height: 60px; line-height: 1.5; }
+  /* Unified textarea width across all forms — consistent reading width
+     regardless of container. On mobile the max-width stretches to 100%. */
+  textarea.form-input {
+    resize: vertical;
+    min-height: 60px;
+    line-height: 1.5;
+    width: 100%;
+    max-width: var(--textarea-max-w);
+  }
+  @media (max-width: 768px) {
+    textarea.form-input { max-width: 100%; }
+  }
   select.form-input { cursor: pointer; }
 
   /* ── BUTTONS ─────────────────────────────────────────────────────────── */
@@ -626,7 +649,8 @@
     .tab-btn { padding: 8px 12px; font-size: 11px; }
   }
   @media (max-width: 600px) {
-    header { padding: 0 16px; height: 50px; }
+    header { padding: 0 16px; height: var(--header-h-mobile); }
+    .tab-nav { top: var(--header-h-mobile); }
     .logo-sub { display: none; }
     .main { padding: 16px 14px 32px; }
     .phase-title { font-size: 18px; }
