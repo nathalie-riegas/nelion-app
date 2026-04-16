@@ -1461,6 +1461,154 @@
     color: var(--ink-mute); font-size: 13px;
   }
 
+  /* ── INTERVENTIONEN ─────────────────────────────────────────────── */
+  .interv-header-row {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 12px; margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .interv-scan-picker {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 18px;
+  }
+  .interv-scan-picker .form-input { flex: 1; max-width: 480px; }
+  .interv-section {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 18px 20px; margin-bottom: 16px;
+  }
+  .interv-section-title {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ada-accent); margin-bottom: 4px;
+  }
+  .interv-section-sub {
+    font-size: 13px; color: var(--ink-dim); line-height: 1.5;
+    margin-bottom: 14px;
+  }
+  .interv-fp-card {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 12px 14px; border: 1px solid var(--border);
+    border-radius: var(--rs); margin-bottom: 8px;
+    background: var(--bg);
+  }
+  .interv-fp-rank {
+    flex-shrink: 0; font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.05em; padding: 3px 8px; border-radius: 3px;
+    background: var(--red); color: #fff; white-space: nowrap;
+  }
+  .interv-fp-rank.gelb { background: var(--yellow); color: #000; }
+  .interv-fp-body { flex: 1; min-width: 0; }
+  .interv-fp-title { font-size: 14px; font-weight: 500; color: var(--ink); }
+  .interv-fp-routing { font-size: 12px; color: var(--ink-dim); margin-top: 3px; }
+  .interv-override-toggle {
+    font-family: var(--mono); font-size: 10px; color: var(--ada-accent);
+    background: none; border: none; cursor: pointer; padding: 3px 6px;
+    text-decoration: underline; text-underline-offset: 2px;
+  }
+  .interv-override-row {
+    display: none; gap: 8px; margin-top: 8px; flex-wrap: wrap;
+    align-items: center;
+  }
+  .interv-override-row.open { display: flex; }
+  .interv-override-row select {
+    font-family: var(--sans); font-size: 12px; padding: 4px 8px;
+    border: 1px solid var(--border2); border-radius: var(--rs);
+    background: var(--surface); color: var(--ink); cursor: pointer;
+  }
+  .interv-rec-card {
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--ada-accent);
+    border-radius: var(--rs); padding: 14px 16px;
+    margin-bottom: 12px; background: var(--bg);
+  }
+  .interv-rec-header {
+    display: flex; align-items: baseline; gap: 10px;
+    margin-bottom: 8px; flex-wrap: wrap;
+  }
+  .interv-rec-rank {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.05em;
+    padding: 2px 6px; border-radius: 3px; background: var(--surface2);
+    color: var(--ink-dim); white-space: nowrap;
+  }
+  .interv-rec-typ {
+    font-size: 15px; font-weight: 600; color: var(--ink); flex: 1;
+  }
+  .interv-rec-fp-label {
+    font-family: var(--mono); font-size: 10px; color: var(--ink-dim);
+  }
+  .interv-rec-subcard {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--rs); padding: 10px 12px; margin-top: 8px;
+  }
+  .interv-rec-sub-label {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-dim);
+    margin-bottom: 4px;
+  }
+  .interv-rec-row {
+    display: grid; grid-template-columns: 90px 1fr; gap: 6px 12px;
+    font-size: 13px; line-height: 1.5; margin-bottom: 3px;
+  }
+  .interv-rec-row > span:first-child {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.05em;
+    color: var(--ink-dim); padding-top: 2px;
+  }
+  .interv-rec-row > span:last-child { color: var(--ink); }
+  .interv-badge-profil {
+    display: inline-block; font-family: var(--mono); font-size: 10px;
+    padding: 3px 8px; border-radius: 3px; background: var(--ada-bg);
+    color: var(--ada-accent); border: 1px solid rgba(75,0,130,0.2);
+    font-weight: 500; letter-spacing: 0.03em;
+  }
+  .interv-badge-regime {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--mono); font-size: 10px; padding: 3px 8px;
+    border-radius: 3px; font-weight: 500;
+  }
+  .interv-badge-regime.ok { background: #e8f7ef; color: #0f7a3b; border: 1px solid #c2e6d0; }
+  .interv-badge-regime.warn { background: var(--yellow-bg); color: var(--yellow); border: 1px solid #f0d58a; }
+  .interv-badge-regime.no { background: var(--red-bg); color: var(--red); border: 1px solid #f0b8b8; }
+  .interv-generate-row {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .interv-generate-status {
+    font-family: var(--mono); font-size: 11px; color: var(--ink-dim);
+  }
+  .interv-network-card {
+    border: 1px solid var(--border); border-radius: var(--rs);
+    padding: 12px 14px; margin-bottom: 10px; background: var(--bg);
+  }
+  .interv-network-label {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.05em;
+    color: var(--ink-dim); margin-bottom: 6px;
+  }
+  .interv-network-textarea {
+    width: 100%; background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--rs); font-family: var(--sans); font-size: 13px;
+    color: var(--ink); padding: 8px 12px; min-height: 60px;
+    resize: vertical; outline: none; line-height: 1.5;
+    transition: border-color .15s;
+  }
+  .interv-network-textarea:focus {
+    border-color: var(--ada-accent);
+    box-shadow: 0 0 0 3px rgba(75,0,130,0.08);
+  }
+  .interv-save-toast {
+    position: fixed; bottom: 24px; right: 24px;
+    padding: 8px 14px; background: var(--green);
+    color: #fff; font-family: var(--mono); font-size: 12px;
+    border-radius: var(--rs); opacity: 0; pointer-events: none;
+    transition: opacity .25s;
+  }
+  .interv-save-toast.show { opacity: 1; }
+  .interv-export-row {
+    display: flex; justify-content: flex-end; margin-top: 20px;
+  }
+  .interv-empty {
+    padding: 40px 20px; text-align: center;
+    color: var(--ink-mute); font-size: 13px;
+  }
+
   /* ── PRINT (PDF-Export über window.print()) ─────────────────────── */
   @media print {
     body { background: #fff !important; color: #000 !important; }
@@ -1468,7 +1616,9 @@
     #adaFullscreen, .modal-overlay, .anker-overlay, .datetime-top-right,
     .cockpit-contact button, .btn-del-contact, .feature-overlay,
     .landing-page, .task-drawer, .task-drawer-overlay,
-    .aus-scan-picker, .aus-save-toast { display: none !important; }
+    .aus-scan-picker, .aus-save-toast,
+    .interv-scan-picker, .interv-save-toast, .interv-export-row,
+    .interv-override-toggle, .interv-override-row { display: none !important; }
     .main, .container { max-width: 100%; padding: 0; margin: 0; }
     .module { display: block !important; page-break-inside: auto; }
     .module:not(.active) { display: none !important; }
@@ -1484,6 +1634,13 @@
     .aus-friction-card { break-inside: avoid; border: 1px solid #999; }
     .aus-heatmap-dot { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
     .aus-routing-badge { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    /* Interventionen: Sections nicht über Seiten brechen, Empfehlungskarten einzeln */
+    .interv-section { break-inside: avoid; border: 1px solid #ccc; }
+    .interv-fp-card, .interv-network-card { break-inside: avoid; border: 1px solid #999; }
+    .interv-rec-card { break-before: page; border-left: 3px solid #000; border-top: 1px solid #000; border-right: 1px solid #999; border-bottom: 1px solid #999; }
+    .interv-rec-card:first-of-type { break-before: auto; }
+    .interv-rec-subcard { break-inside: avoid; border: 1px solid #999; }
+    .interv-badge-profil, .interv-badge-regime { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   }
 
   /* ── PFLICHTFELD MARKIERUNG ─────────────────────────────────────── */
@@ -1663,6 +1820,7 @@
   <button class="tab-btn" data-tab="modul3" onclick="switchTab('modul3')">PAI Interview</button>
   <button class="tab-btn" data-tab="modul4" onclick="switchTab('modul4')">PAI Self-Assessment</button>
   <button class="tab-btn" data-tab="auswertung" onclick="switchTab('auswertung')">Auswertung</button>
+  <button class="tab-btn" data-tab="interventionen" onclick="switchTab('interventionen')">Interventionen</button>
   <button class="tab-btn" data-tab="ada" onclick="switchTab('ada')">ADA<span class="tab-badge" id="adaTabBadge" style="display:none;">🎓 <span id="adaTabBadgeCount">0</span></span></button>
 </nav>
 
@@ -1819,6 +1977,16 @@
     <div class="datetime-top-right datetime-display" id="auswertungDateTime"></div>
   </div>
   <div id="auswertungContent"></div>
+</div>
+
+<!-- ╔═══════════════════════════════════════════════════════════════════════╗ -->
+<!-- ║  INTERVENTIONEN — Empfehlungs-Router nach Befund                     ║ -->
+<!-- ╚═══════════════════════════════════════════════════════════════════════╝ -->
+<div class="module" id="moduleInterventionen">
+  <div style="position:relative;">
+    <div class="datetime-top-right datetime-display" id="interventionenDateTime"></div>
+  </div>
+  <div id="interventionenContent"></div>
 </div>
 
 </div><!-- /.container -->
@@ -2297,6 +2465,9 @@ function switchTab(tab) {
   } else if (tab === "auswertung") {
     document.getElementById("moduleAuswertung").classList.add("active");
     initAuswertungTab();
+  } else if (tab === "interventionen") {
+    document.getElementById("moduleInterventionen").classList.add("active");
+    initInterventionenTab();
   }
 
   // Anker visible in cockpit screens
@@ -2304,7 +2475,8 @@ function switchTab(tab) {
     || (tab === "modul2" && currentScan)
     || (tab === "modul3" && currentPaiSession)
     || (tab === "modul4" && currentPaiAuditSession)
-    || (tab === "auswertung" && currentAuswertungScan);
+    || (tab === "auswertung" && currentAuswertungScan)
+    || (tab === "interventionen" && currentIntervScan);
   document.getElementById("btnAnker").style.display = showAnker ? "flex" : "none";
 }
 
@@ -6897,6 +7069,452 @@ function parseAmpelKey(key) {
   const phase = parts[parts.length - 1];
   const achse = parts.slice(1, -1).join("_");
   return { layer, achse, phase };
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// INTERVENTIONEN — Empfehlungs-Router nach Befund
+// ══════════════════════════════════════════════════════════════════════════
+//
+// Aufbau:
+//  1. Friction-Points Import (auto aus Auswertung, manuell überschreibbar)
+//  2. Interventions-Empfehlungen (ADA-generiert, session-temporär)
+//  3. Netzwerk-Notiz pro Friction-Point (persistiert in auswertungen.interventions_notizen)
+//
+// Persistenz: auswertungen.interventions_notizen (JSONB).
+// Empfehlungen werden NICHT persistiert — lebt nur solange Tab aktiv ist.
+
+let currentIntervScan = null;
+let currentIntervAuswertung = null;
+let intervFrictionPoints = [];          // { layer, achse, wert } — top 3
+let intervRecommendations = [];         // ADA-Antworten, gematcht auf intervFrictionPoints
+let intervNetworkNotes = {};            // { "<layer>_<achse>": "text" } — in DB
+let intervGenerating = false;
+let _intervSaveTimer = null;
+// Manual override an den 3 FPs (ad-hoc, nicht persistiert — nutzt bestehende auswertungFrictionOverrides wenn möglich)
+let intervFpOverrides = {};             // { "0"|"1"|"2": { layer, achse, wert } }
+
+async function initInterventionenTab() {
+  const $el = document.getElementById("interventionenContent");
+  $el.innerHTML = `<div class="interv-empty">Lade Scans…</div>`;
+
+  let scans = [];
+  try {
+    const r = await fetch("/api/scans");
+    scans = await r.json();
+    if (!Array.isArray(scans)) scans = [];
+  } catch (e) {
+    $el.innerHTML = `<div class="interv-empty">Scans konnten nicht geladen werden: ${escHtml(e.message)}</div>`;
+    return;
+  }
+  if (scans.length === 0) {
+    $el.innerHTML = `<div class="interv-empty">Noch keine Scans vorhanden. Lege zuerst einen Friction Scan an und erstelle die Auswertung.</div>`;
+    return;
+  }
+  scans.sort((a, b) => {
+    if (a.completed !== b.completed) return b.completed - a.completed;
+    return new Date(b.created_at) - new Date(a.created_at);
+  });
+
+  let selectedId = currentIntervScan?.id;
+  if (!selectedId || !scans.find(s => s.id === selectedId)) {
+    // Priorisiere den zuletzt ausgewerteten Scan wenn vorhanden
+    selectedId = currentAuswertungScan?.id || scans[0].id;
+  }
+
+  $el.innerHTML = `
+    <div class="interv-header-row">
+      <div>
+        <div class="start-title" style="margin-bottom:4px;">Interventionen</div>
+        <div class="start-desc">Empfehlungs-Router nach Befund. Keine Durchführung — strukturierte Empfehlungen basierend auf den 3 Haupt-Friction-Points.</div>
+      </div>
+    </div>
+    <div class="interv-scan-picker">
+      <label class="form-label" style="margin:0;white-space:nowrap;">Scan:</label>
+      <select class="form-input" id="intervScanPicker">
+        ${scans.map(s => {
+          const d = new Date(s.created_at).toLocaleDateString("de-CH", { day:"2-digit", month:"2-digit", year:"2-digit" });
+          const tag = s.completed ? "✓" : `P${s.current_phase || 0}`;
+          return `<option value="${escHtml(s.id)}" ${s.id === selectedId ? "selected" : ""}>${escHtml(s.kunde_name)} · ${escHtml(d)} · ${escHtml(tag)}</option>`;
+        }).join("")}
+      </select>
+    </div>
+    <div id="intervBody"></div>
+    <div class="interv-save-toast" id="intervSaveToast">Gespeichert ✓</div>
+  `;
+
+  document.getElementById("intervScanPicker").addEventListener("change", async (e) => {
+    const id = e.target.value;
+    const s = scans.find(x => x.id === id);
+    if (s) await loadInterventionenForScan(s);
+  });
+
+  const first = scans.find(s => s.id === selectedId);
+  if (first) await loadInterventionenForScan(first);
+}
+
+async function loadInterventionenForScan(scan) {
+  currentIntervScan = scan;
+  // Reset session state
+  intervRecommendations = [];
+  intervFpOverrides = {};
+  intervNetworkNotes = {};
+  currentIntervAuswertung = null;
+
+  const $body = document.getElementById("intervBody");
+  $body.innerHTML = `<div class="interv-empty">Lade Daten…</div>`;
+
+  // 1. Ampeln für Ranking laden (gleiche Tabelle wie Auswertung)
+  try {
+    const r = await fetch(`/api/scans/${scan.id}/ampeln`);
+    const data = await r.json();
+    scanAmpeln = {};
+    if (Array.isArray(data)) {
+      for (const a of data) scanAmpeln[`${a.layer}_${a.achse}_${a.phase}`] = a.wert;
+    }
+  } catch (e) {
+    console.warn("Interventionen: ampeln load failed:", e.message);
+  }
+
+  // 2. Auswertung laden (für Overrides + Netzwerk-Notizen)
+  try {
+    const r = await fetch(`/api/auswertungen/${scan.id}`);
+    if (r.ok) {
+      const aus = await r.json();
+      if (aus && aus.id) {
+        currentIntervAuswertung = aus;
+        // Teile Overrides mit dem Auswertung-Tab (eine Quelle der Wahrheit)
+        auswertungFrictionOverrides = (aus.friction_points && aus.friction_points.overrides) || {};
+        intervNetworkNotes = aus.interventions_notizen || {};
+      }
+    }
+  } catch (e) {
+    console.warn("Interventionen: auswertung load failed:", e.message);
+  }
+
+  if (!currentIntervAuswertung) {
+    $body.innerHTML = `<div class="interv-empty">
+      Keine Auswertung für diesen Scan vorhanden.<br>
+      Erstelle zuerst eine Auswertung im Tab <strong>Auswertung</strong> — dann können hier die 3 Haupt-Friction-Points geladen und Empfehlungen generiert werden.
+    </div>`;
+    return;
+  }
+
+  // 3. Friction-Points berechnen (wiederverwendet aus Auswertung-Tab)
+  intervFrictionPoints = computeFrictionRanking();
+
+  renderInterventionenBody();
+}
+
+function getEffectiveFrictionPoint(idx) {
+  // Override aus manuellem Dropdown gewinnt vor dem auto-ranked FP
+  if (intervFpOverrides[idx]) return intervFpOverrides[idx];
+  return intervFrictionPoints[idx] || null;
+}
+
+function renderInterventionenBody() {
+  const $body = document.getElementById("intervBody");
+  if (!$body) return;
+
+  const routing = computeRoutingEmpfehlung();
+
+  // SEKTION 1 — Friction-Points Import
+  let section1 = `
+    <div class="interv-section" id="intervSection1">
+      <div class="interv-section-title">1 · Haupt-Friction-Points</div>
+      <div class="interv-section-sub">
+        Automatisch aus der Auswertung geladen — die 3 schärfsten Achsen (rote zuerst, dann gelbe).
+        <strong>Aktuelles Regime:</strong> ${escHtml(routing.regime)} — ${escHtml(routing.text)}
+      </div>
+  `;
+
+  const effectiveFps = [0, 1, 2].map(i => getEffectiveFrictionPoint(i)).filter(Boolean);
+
+  if (effectiveFps.length === 0) {
+    section1 += `<div class="interv-empty" style="padding:20px 0;">
+      Noch keine roten oder gelben Ampeln in der Auswertung gesetzt.<br>
+      Befülle zuerst die Ampeln im Tab <strong>Auswertung</strong>.
+    </div>`;
+  } else {
+    effectiveFps.forEach((fp, i) => {
+      const routingText = routingForPoint(fp.layer, fp.wert);
+      const rankClass = fp.wert === "rot" ? "" : "gelb";
+      section1 += `
+        <div class="interv-fp-card">
+          <span class="interv-fp-rank ${rankClass}">#${i + 1} ${fp.wert.toUpperCase()}</span>
+          <div class="interv-fp-body">
+            <div class="interv-fp-title">${escHtml(fp.layer)} · ${escHtml(fp.achse)}</div>
+            <div class="interv-fp-routing">${escHtml(routingText)}</div>
+            <button class="interv-override-toggle" data-idx="${i}">Manuell überschreiben</button>
+            <div class="interv-override-row" id="intervOverride${i}">
+              ${renderIntervOverrideControls(i, fp)}
+            </div>
+          </div>
+        </div>
+      `;
+    });
+  }
+  section1 += `</div>`;
+
+  // SEKTION 2 — Interventions-Empfehlungen
+  let section2 = `
+    <div class="interv-section" id="intervSection2">
+      <div class="interv-section-title">2 · Interventions-Empfehlungen</div>
+      <div class="interv-section-sub">
+        ADA generiert pro Friction-Point: Interventions-Typ, Spezialist-Profil und Regime-Check.
+        ${intervRecommendations.length > 0 ? "Re-generieren überschreibt die aktuellen Empfehlungen." : "Empfehlungen werden nur temporär gehalten (nicht persistiert)."}
+      </div>
+      <div class="interv-generate-row">
+        <button class="btn btn-primary" id="intervGenerateBtn" ${effectiveFps.length === 0 ? "disabled" : ""}>
+          ${intervRecommendations.length > 0 ? "Empfehlungen neu generieren" : "Empfehlungen generieren"}
+        </button>
+        <span class="interv-generate-status" id="intervGenerateStatus"></span>
+      </div>
+  `;
+  if (intervRecommendations.length > 0) {
+    intervRecommendations.forEach((rec, i) => {
+      section2 += renderIntervRecCard(rec, i);
+    });
+  } else if (effectiveFps.length > 0) {
+    section2 += `<div class="interv-empty" style="padding:20px 0;">Noch keine Empfehlungen generiert. Klick auf "Empfehlungen generieren" für einen ADA-Call.</div>`;
+  }
+  section2 += `</div>`;
+
+  // SEKTION 3 — Netzwerk-Notiz
+  let section3 = `
+    <div class="interv-section" id="intervSection3">
+      <div class="interv-section-title">3 · Netzwerk-Notizen</div>
+      <div class="interv-section-sub">Wen kenne ich für diese Intervention? (auto-save, pro Friction-Point separat)</div>
+  `;
+  if (effectiveFps.length === 0) {
+    section3 += `<div class="interv-empty" style="padding:20px 0;">Erst Friction-Points laden.</div>`;
+  } else {
+    effectiveFps.forEach((fp, i) => {
+      const noteKey = `${fp.layer}_${fp.achse}`;
+      const val = intervNetworkNotes[noteKey] || "";
+      section3 += `
+        <div class="interv-network-card">
+          <div class="interv-network-label">#${i + 1} · ${escHtml(fp.layer)} · ${escHtml(fp.achse)}</div>
+          <textarea class="interv-network-textarea" data-note-key="${escHtml(noteKey)}" placeholder="Name, Kontext, Verfügbarkeit…">${escHtml(val)}</textarea>
+        </div>
+      `;
+    });
+  }
+  section3 += `</div>`;
+
+  // Export
+  const exportRow = `
+    <div class="interv-export-row">
+      <button class="btn btn-ghost" id="intervExportBtn">Als PDF exportieren</button>
+    </div>
+  `;
+
+  $body.innerHTML = section1 + section2 + section3 + exportRow;
+
+  wireInterventionenEvents();
+}
+
+function renderIntervOverrideControls(idx, fp) {
+  // Dropdown für Layer, Achse, Ampel
+  const layers = Object.keys(AMPEL_AXES);
+  const currentAxes = AMPEL_AXES[fp.layer] || [];
+  const layerOpts = layers.map(l => `<option value="${l}" ${l === fp.layer ? "selected" : ""}>${l}</option>`).join("");
+  const achseOpts = currentAxes.map(a => `<option value="${escHtml(a)}" ${a === fp.achse ? "selected" : ""}>${escHtml(a)}</option>`).join("");
+  const wertOpts = ["rot", "gelb"].map(w => `<option value="${w}" ${w === fp.wert ? "selected" : ""}>${w}</option>`).join("");
+  return `
+    <label style="font-size:11px;color:var(--ink-dim);">Layer</label>
+    <select data-override="layer" data-idx="${idx}">${layerOpts}</select>
+    <label style="font-size:11px;color:var(--ink-dim);">Achse</label>
+    <select data-override="achse" data-idx="${idx}">${achseOpts}</select>
+    <label style="font-size:11px;color:var(--ink-dim);">Ampel</label>
+    <select data-override="wert" data-idx="${idx}">${wertOpts}</select>
+    <button class="interv-override-toggle" data-idx="${idx}" data-reset="1">Zurücksetzen</button>
+  `;
+}
+
+function renderIntervRecCard(rec, i) {
+  const profil = escHtml(rec.spezialist_profil || "—");
+  const profilGrund = escHtml(rec.spezialist_begruendung || "");
+  const rc = rec.regime_check || {};
+  const passt = (rc.passt || "").toLowerCase();
+  const regimeClass = passt === "ok" ? "ok" : passt === "warn" ? "warn" : passt === "no" ? "no" : "warn";
+  const regimeIcon = regimeClass === "ok" ? "✓ passt" : regimeClass === "warn" ? "⚠ hinterfragen" : "✗ widerspricht";
+  const regimeBegr = escHtml(rc.begruendung || "");
+
+  return `
+    <div class="interv-rec-card">
+      <div class="interv-rec-header">
+        <span class="interv-rec-rank">#${i + 1}</span>
+        <span class="interv-rec-typ">${escHtml(rec.typ || "—")}</span>
+        <span class="interv-rec-fp-label">${escHtml(rec.layer || "")} · ${escHtml(rec.achse || "")}</span>
+      </div>
+
+      <div class="interv-rec-subcard">
+        <div class="interv-rec-sub-label">Interventions-Typ</div>
+        <div class="interv-rec-row"><span>Was:</span><span>${escHtml(rec.was || "—")}</span></div>
+        <div class="interv-rec-row"><span>Warum:</span><span>${escHtml(rec.warum || "—")}</span></div>
+        <div class="interv-rec-row"><span>Wann:</span><span>${escHtml(rec.wann || "—")}</span></div>
+        <div class="interv-rec-row"><span>Wann nicht:</span><span>${escHtml(rec.wann_nicht || "—")}</span></div>
+      </div>
+
+      <div class="interv-rec-subcard">
+        <div class="interv-rec-sub-label">Spezialist-Profil</div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px;">
+          <span class="interv-badge-profil">${profil}</span>
+          <span style="font-size:13px;color:var(--ink);">${profilGrund}</span>
+        </div>
+      </div>
+
+      <div class="interv-rec-subcard">
+        <div class="interv-rec-sub-label">Regime-Check</div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px;">
+          <span class="interv-badge-regime ${regimeClass}">${regimeIcon}</span>
+          <span style="font-size:13px;color:var(--ink);">${regimeBegr}</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function wireInterventionenEvents() {
+  // Override-Toggle
+  document.querySelectorAll(".interv-override-toggle").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      const idx = parseInt(btn.dataset.idx, 10);
+      const reset = btn.dataset.reset === "1";
+      if (reset) {
+        delete intervFpOverrides[idx];
+        // Kompletten Tab neu rendern, damit der auto-FP wiederkommt
+        renderInterventionenBody();
+        return;
+      }
+      const row = document.getElementById(`intervOverride${idx}`);
+      if (row) row.classList.toggle("open");
+    });
+  });
+
+  // Override-Dropdowns
+  document.querySelectorAll("[data-override]").forEach(sel => {
+    sel.addEventListener("change", () => {
+      const idx = parseInt(sel.dataset.idx, 10);
+      const current = getEffectiveFrictionPoint(idx) || { layer: "L1", achse: "", wert: "rot" };
+      const field = sel.dataset.override;
+      const next = { ...current, [field]: sel.value };
+      // Wenn Layer wechselt: Achse auf ersten Eintrag des neuen Layers setzen
+      if (field === "layer") {
+        const axes = AMPEL_AXES[sel.value] || [];
+        if (!axes.includes(next.achse)) next.achse = axes[0] || "";
+      }
+      intervFpOverrides[idx] = next;
+      renderInterventionenBody();
+    });
+  });
+
+  // Generieren-Button
+  const $gen = document.getElementById("intervGenerateBtn");
+  if ($gen) $gen.addEventListener("click", generateInterventionRecommendations);
+
+  // Export-Button
+  const $exp = document.getElementById("intervExportBtn");
+  if ($exp) $exp.addEventListener("click", () => window.print());
+
+  // Netzwerk-Notizen → Autosave
+  document.querySelectorAll(".interv-network-textarea").forEach(el => {
+    el.addEventListener("input", () => {
+      const key = el.dataset.noteKey;
+      intervNetworkNotes[key] = el.value;
+      scheduleInterventionenSave();
+    });
+  });
+}
+
+async function generateInterventionRecommendations() {
+  if (intervGenerating) return;
+  const effective = [0, 1, 2].map(i => getEffectiveFrictionPoint(i)).filter(Boolean);
+  if (effective.length === 0) return;
+
+  intervGenerating = true;
+  const $btn = document.getElementById("intervGenerateBtn");
+  const $status = document.getElementById("intervGenerateStatus");
+  if ($btn) { $btn.disabled = true; $btn.textContent = "Generiere…"; }
+  if ($status) $status.textContent = "ADA-Call läuft (kann 10–30s dauern)…";
+
+  const routing = computeRoutingEmpfehlung();
+
+  try {
+    const r = await fetch("/api/ada/interventions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        friction_points: effective,
+        regime: `${routing.regime} — ${routing.text}`,
+        kunde_name: currentIntervScan?.kunde_name || "Klient",
+      }),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+
+    if (Array.isArray(data.recommendations) && data.recommendations.length > 0) {
+      // Sortiere nach der aktuellen FP-Reihenfolge, falls ADA eine andere liefert
+      intervRecommendations = effective.map(fp => {
+        const match = data.recommendations.find(r =>
+          r.layer === fp.layer && r.achse === fp.achse
+        );
+        return match || {
+          layer: fp.layer, achse: fp.achse, wert: fp.wert,
+          typ: "— keine Empfehlung erhalten —",
+          was: "", warum: "", wann: "", wann_nicht: "",
+          spezialist_profil: "—", spezialist_begruendung: "",
+          regime_check: { passt: "warn", begruendung: "Keine Antwort von ADA" },
+        };
+      });
+      if ($status) $status.textContent = `✓ ${intervRecommendations.length} Empfehlungen generiert.`;
+    } else if (data._raw) {
+      // Parse-Fehler: zeige Rohtext als eine Karte
+      intervRecommendations = [{
+        layer: effective[0].layer, achse: effective[0].achse, wert: effective[0].wert,
+        typ: "JSON-Parse-Fehler",
+        was: data._raw,
+        warum: `Parse-Fehler: ${data._parse_error || "unbekannt"}`,
+        wann: "", wann_nicht: "",
+        spezialist_profil: "—", spezialist_begruendung: "",
+        regime_check: { passt: "warn", begruendung: "Rohe ADA-Antwort — bitte manuell interpretieren." },
+      }];
+      if ($status) $status.textContent = "⚠ Parse-Fehler — Rohtext angezeigt.";
+    } else {
+      if ($status) $status.textContent = "⚠ Keine Empfehlungen erhalten.";
+    }
+  } catch (e) {
+    if ($status) $status.textContent = "✗ Fehler: " + e.message;
+    console.error("generateInterventionRecommendations:", e.message);
+  } finally {
+    intervGenerating = false;
+    renderInterventionenBody();
+  }
+}
+
+function scheduleInterventionenSave() {
+  if (_intervSaveTimer) clearTimeout(_intervSaveTimer);
+  _intervSaveTimer = setTimeout(persistInterventionenNotes, 1500);
+}
+
+async function persistInterventionenNotes() {
+  if (!currentIntervAuswertung?.id) return;
+  try {
+    const r = await fetch(`/api/auswertungen/${currentIntervAuswertung.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ interventions_notizen: intervNetworkNotes }),
+    });
+    if (r.ok) {
+      const toast = document.getElementById("intervSaveToast");
+      if (toast) {
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 1200);
+      }
+    }
+  } catch (e) {
+    console.warn("Interventionen: save failed:", e.message);
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════════════

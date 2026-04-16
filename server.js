@@ -1002,18 +1002,32 @@ app.post("/api/auswertungen", async (req, res) => {
 // PATCH /api/auswertungen/:id → updated bestehende Auswertung
 app.patch("/api/auswertungen/:id", async (req, res) => {
   if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
-  const allowed = ["friction_points", "befund_entwurf", "routing_empfehlung"];
+  const allowed = ["friction_points", "befund_entwurf", "routing_empfehlung", "interventions_notizen"];
   const updates = {};
   for (const k of allowed) {
     if (k in (req.body || {})) updates[k] = req.body[k];
   }
   updates.updated_at = new Date().toISOString();
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from("auswertungen")
     .update(updates)
     .eq("id", req.params.id)
     .select()
     .single();
+  if (error && updates.interventions_notizen !== undefined
+      && /interventions_notizen/.test(error.message || "")) {
+    // Column missing — retry without it so other fields still update.
+    // Migration 011_interventions_notizen.sql adds the column.
+    delete updates.interventions_notizen;
+    const r2 = await supabase
+      .from("auswertungen")
+      .update(updates)
+      .eq("id", req.params.id)
+      .select()
+      .single();
+    if (r2.error) return res.status(500).json({ error: r2.error.message });
+    return res.json(r2.data);
+  }
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
 });
@@ -1293,6 +1307,132 @@ app.post("/api/ada/chat", async (req, res) => {
         ? "Zu viele Anfragen. Bitte kurz warten."
         : "ADA-Fehler: " + e.message;
       return res.status(500).json({ error: userMsg });
+    }
+  }
+});
+
+// ─── ADA INTERVENTIONS ────────────────────────────────────────────────────
+// Generiert strukturierte Interventions-Empfehlungen fuer den Interventionen-Tab.
+// Input: 3 Haupt-Friction-Points + Regime + Klienten-Name.
+// Output: JSON-Array mit Empfehlungen (typ, was, warum, wann, wann_nicht,
+// spezialist_profil, spezialist_begruendung, regime_check).
+// Empfehlungen werden NICHT persistiert — session-temporaer im Frontend.
+app.post("/api/ada/interventions", async (req, res) => {
+  if (!anthropic) return res.status(503).json({ error: "ANTHROPIC_API_KEY nicht konfiguriert" });
+  const { friction_points, regime, kunde_name } = req.body || {};
+  if (!Array.isArray(friction_points) || friction_points.length === 0) {
+    return res.status(400).json({ error: "friction_points array erforderlich" });
+  }
+
+  const fpBlock = friction_points.map((fp, i) =>
+    `${i + 1}. Layer ${fp.layer} — ${fp.achse} — Ampel: ${fp.wert}`
+  ).join("\n");
+
+  // NELION Master Context (read-only) as additional context
+  let masterCtx = "";
+  try {
+    const { content } = await githubGetContextFile();
+    if (content) masterCtx = `\n\n─── NELION MASTER CONTEXT (read-only) ───\n${content}\n─── ENDE CONTEXT ───`;
+  } catch {}
+
+  const systemPrompt = `Du bist ADA und generierst strukturierte Interventions-Empfehlungen für den Organizational Friction Scan bei ${kunde_name || "Klient"}.
+
+Input: 3 Haupt-Friction-Points (Layer, Achse, Ampel) + aktuelles Regime-Routing.
+
+Für JEDEN Friction-Point gib zurück:
+  - layer: "L1" | "L1b" | "L2" | "L3" (wie im Input)
+  - achse: Achsen-Name (wie im Input)
+  - wert: "rot" | "gelb" (wie im Input)
+  - typ: Interventions-Name. Nutze primär diese Vault-Bibliothek:
+    L1 → Workload-Reduktion / Regenerationsstruktur / Kapazitätsplanung / neurologische Entlastung
+    L2 → Psychological Safety Aufbau / Immunity-to-Change Arbeit / Attribution Training / Threat-State Deeskalation
+    L3 → Entscheidungsarchitektur-Redesign / Incentive-Struktur-Audit / Rollenklärung + Verantwortungsmatrix / Informationsfluss-Mapping
+  - was: 2–3 Sätze (konkrete Beschreibung der Intervention)
+  - warum: Theorie/Methode mit Autor + Validitäts-Status (★★★ validiert / ★★☆ emerging / ★☆☆ proprietär)
+  - wann: Bedingungen, unter denen die Intervention wirkt
+  - wann_nicht: Kontraindikationen
+  - spezialist_profil: genau einer von ["OE-Berater", "Coach", "Therapeut", "HR", "Strukturberater", "Kombiniert"]
+  - spezialist_begruendung: 1 Satz, warum dieses Profil
+  - regime_check: Objekt { "passt": "ok" | "warn" | "no", "begruendung": 1 Satz }
+    - "ok" = Intervention passt zum aktuellen Regime
+    - "warn" = hinterfragen, Sequenzierung prüfen
+    - "no" = widerspricht dem Regime (z.B. L3-Intervention bei L1 rot)
+
+Klienten-Name first. Wissenschaftliche Namen/Autoren in Klammern (z.B. "Psychological Safety (Edmondson, 1999)").
+
+Antwort AUSSCHLIESSLICH als JSON-Objekt mit genau diesem Format, kein Text davor oder danach:
+{
+  "recommendations": [
+    { "layer": "...", "achse": "...", "wert": "...", "typ": "...", "was": "...", "warum": "...", "wann": "...", "wann_nicht": "...", "spezialist_profil": "...", "spezialist_begruendung": "...", "regime_check": { "passt": "ok", "begruendung": "..." } },
+    ...
+  ]
+}
+
+Sprache: Deutsch, normale Umlaute ä/ö/ü.${masterCtx}`;
+
+  const userMsg = `Klient: ${kunde_name || "Unbekannt"}
+Aktuelles Regime: ${regime || "—"}
+
+3 Haupt-Friction-Points:
+${fpBlock}
+
+Bitte generiere die strukturierten Empfehlungen im geforderten JSON-Format.`;
+
+  const maxRetries = 3;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await anthropic.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 4096,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userMsg }],
+      });
+
+      const text = response.content
+        .filter(c => c.type === "text")
+        .map(c => c.text)
+        .join("");
+
+      // Strip code fences if present, then parse JSON
+      let json = text.trim();
+      const fenceMatch = json.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/);
+      if (fenceMatch) json = fenceMatch[1].trim();
+      // Find first { and last } to be robust
+      const firstBrace = json.indexOf("{");
+      const lastBrace = json.lastIndexOf("}");
+      if (firstBrace >= 0 && lastBrace > firstBrace) {
+        json = json.slice(firstBrace, lastBrace + 1);
+      }
+
+      try {
+        const parsed = JSON.parse(json);
+        return res.json({
+          recommendations: Array.isArray(parsed.recommendations) ? parsed.recommendations : [],
+        });
+      } catch (parseErr) {
+        // Return raw text so frontend can display a fallback
+        return res.json({
+          recommendations: [],
+          _raw: text,
+          _parse_error: parseErr.message,
+        });
+      }
+    } catch (e) {
+      const isOverloaded = e.status === 529 || (e.message && e.message.includes("529"));
+      const isRateLimit = e.status === 429;
+      if ((isOverloaded || isRateLimit) && attempt < maxRetries) {
+        const wait = attempt * 2000;
+        console.warn(`ADA interventions attempt ${attempt}/${maxRetries} failed (${e.status || "?"}), retrying in ${wait}ms...`);
+        await new Promise(r => setTimeout(r, wait));
+        continue;
+      }
+      console.error("ADA interventions error:", e.message);
+      const userErr = isOverloaded
+        ? "Claude ist gerade überlastet. Bitte in 30 Sekunden nochmal versuchen."
+        : isRateLimit
+        ? "Zu viele Anfragen. Bitte kurz warten."
+        : "ADA-Fehler: " + e.message;
+      return res.status(500).json({ error: userErr });
     }
   }
 });
