@@ -239,6 +239,17 @@
     background: var(--surface2); color: var(--ink);
     border-color: var(--ink-dim);
   }
+  .cockpit-export-btn {
+    margin-left: auto; background: var(--surface);
+    border: 1px solid var(--border2); color: var(--ink-dim);
+    border-radius: 20px; padding: 6px 12px; cursor: pointer;
+    font-family: var(--sans); font-size: 12px; font-weight: 500;
+    white-space: nowrap; transition: all .15s;
+  }
+  .cockpit-export-btn:hover {
+    background: var(--ada-bg); color: var(--ada-accent);
+    border-color: var(--ada-accent);
+  }
   .cockpit-contact {
     display: flex; align-items: center; gap: 10px;
     font-family: var(--mono); font-size: 12px; color: var(--ink-dim);
@@ -2444,6 +2455,68 @@
     margin-top: 4px;
   }
 
+  /* Diagnostischer Kompass V2 — Layer-Signale + Vertiefungsfragen */
+  .kompass-v2-wrap { margin: 12px 0; }
+  .kompass-v2-title {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--ada-accent);
+    font-weight: 500; margin-bottom: 6px;
+  }
+  .kompass-signale-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+  }
+  .kompass-signale-col {
+    background: var(--surface); border: 1px solid var(--border);
+    border-top: 3px solid var(--ink-dim);
+    border-radius: var(--rs); padding: 10px 12px;
+  }
+  .kompass-signale-col.l1 { border-top-color: #8e44ad; }
+  .kompass-signale-col.l2 { border-top-color: #2980b9; }
+  .kompass-signale-col.l3 { border-top-color: #e67e22; }
+  .kompass-signale-col.cross { border-top-color: var(--ada-accent); }
+  .kompass-signale-head {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-mute);
+    font-weight: 500; margin-bottom: 6px;
+  }
+  .kompass-signale-list {
+    margin: 0; padding-left: 18px; font-size: 12px;
+    color: var(--ink); line-height: 1.5;
+  }
+  .kompass-signale-list li { margin-bottom: 4px; }
+
+  .kompass-vertief-section {
+    border-left: 3px solid var(--ink-dim);
+    padding: 8px 12px; margin-bottom: 14px;
+    background: var(--surface); border-radius: 0 var(--rs) var(--rs) 0;
+  }
+  .kompass-vertief-section.l1 { border-left-color: #8e44ad; }
+  .kompass-vertief-section.l2 { border-left-color: #2980b9; }
+  .kompass-vertief-section.l3 { border-left-color: #e67e22; }
+  .kompass-vertief-section.cross { border-left-color: var(--ada-accent); }
+  .kompass-vertief-head {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-mute);
+    font-weight: 500; margin-bottom: 8px;
+  }
+  .kompass-vertief-item {
+    padding: 8px 0; border-top: 1px dashed var(--border);
+  }
+  .kompass-vertief-item:first-child { border-top: none; padding-top: 0; }
+  .kompass-vertief-signal {
+    font-size: 12px; color: var(--ink); margin-bottom: 4px;
+  }
+  .kompass-vertief-signal em { font-style: normal; color: var(--ink-mute); }
+  .kompass-vertief-q {
+    font-size: 12px; color: var(--ink-mid); line-height: 1.45;
+    margin-top: 2px; padding-left: 12px;
+  }
+  .kompass-vertief-label {
+    font-family: var(--mono); font-size: 10px; color: var(--ada-accent);
+    font-weight: 500;
+  }
+
   /* Kaskaden-Flowchart (ASCII-Style mit Layout) */
   .kaskaden-flowchart {
     font-family: var(--mono); font-size: 12px; line-height: 1.4;
@@ -3840,6 +3913,61 @@ function renderCockpitHeader() {
   $cockpitContact.appendChild(backBtn);
   $cockpitContact.appendChild(nameEl);
   $cockpitContact.appendChild(dateEl);
+  // TXT-Export — rechts im Header
+  const exportBtn = document.createElement("button");
+  exportBtn.className = "cockpit-export-btn";
+  exportBtn.title = "Notizen als TXT exportieren";
+  exportBtn.innerHTML = "📄 Notizen exportieren";
+  exportBtn.addEventListener("click", exportErstgespraechNotes);
+  $cockpitContact.appendChild(exportBtn);
+}
+
+// Exportiert alle ausgefüllten Felder des Erstgespräch-Tabs als TXT-Download.
+function exportErstgespraechNotes() {
+  if (!currentConsultation) return;
+  const c = currentConsultation;
+  const datum = c.consultation_date
+    ? new Date(c.consultation_date).toLocaleDateString("de-CH", { day:"2-digit", month:"2-digit", year:"numeric" })
+    : new Date().toLocaleDateString("de-CH", { day:"2-digit", month:"2-digit", year:"numeric" });
+  const klient = currentContact ? currentContact.name : "";
+
+  // Signal-Summen + Regime
+  const sig = { L1: 0, L2: 0, L3: 0 };
+  for (const p of Object.keys(signalCounts || {})) {
+    const pc = signalCounts[p] || {};
+    sig.L1 += pc.L1 || 0; sig.L2 += pc.L2 || 0; sig.L3 += pc.L3 || 0;
+  }
+  const signalLine = `L1: ${sig.L1} · L2: ${sig.L2} · L3: ${sig.L3}`;
+
+  const section = (title, content) => {
+    const txt = (content || "").trim();
+    return `---\n${title}\n${txt || "[nicht ausgefüllt]"}\n`;
+  };
+
+  const lines = [
+    "NELION — Erstgespräch Notizen",
+    `Datum: ${datum}`,
+    klient ? `Klient: ${klient}` : "Klient: [nicht erfasst]",
+    section("SYNC", c.phase1_notes),
+    section("SCAN", c.phase2_notes),
+    `---\nSIGNALE\n${signalLine}\n`,
+    section("SPIEGELN", c.phase3_notes),
+    `---\nSLICE\nKleinster nächster Schritt: ${(c.phase4_notes || "").trim() || "[nicht ausgefüllt]"}\nIdealzustand: ${(c.phase4_notes_ideal || c.phase4_notes || "").trim() ? "(siehe oben — Phase 4 Notizen)" : "[nicht ausgefüllt]"}\n`,
+    section("ABSCHLUSS", c.phase5_notes),
+    section("HYPOTHESEN (Claude)", c.hyp_generated),
+    `---\nREGIME-EINSCHÄTZUNG\n${c.hyp_regime ? ("Regime " + c.hyp_regime) : "[nicht gewählt]"}\n`,
+  ];
+  const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  const safeKlient = (klient || "kein_klient").replace(/[^a-zA-Z0-9äöüÄÖÜß_-]+/g, "_");
+  const safeDate = datum.replace(/\./g, "-");
+  link.href = url;
+  link.download = `NELION_Erstgespraech_${safeKlient}_${safeDate}.txt`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 
 function editCockpitName(nameEl) {
@@ -3899,14 +4027,15 @@ function renderPhase(num) {
   html += `</div>`;
   // 2. Signalradar (Signal-Tracker) — direkt unter Leitfaden
   html += renderSignalTracker();
-  // Phase 2 extras: Signal-Radar-Button + CLT-Check (als Toggle-Block zugeklappt).
-  // Der alte "Diagnostische Kompass" wurde entfernt — er wird im nächsten
-  // Schritt als eigener Block (Layer-Signale + Vertiefungsfragen) neu aufgebaut.
+  // Phase 2 extras: Signal-Radar-Button + Diagnostischer Kompass (neue
+  // Version: Layer-Signale + Vertiefungsfragen als zwei Toggles) + CLT-Check.
   if (num === 2) {
     html += `<div class="feature-btn-row">
       <button class="feature-btn" onclick="document.getElementById('signalRadarOverlay').classList.add('open')">Signal-Radar</button>
     </div>`;
-    // 3. CLT-Check als ausklappbarer Block mit eigenem Toggle-Header (standard: zu)
+    // 3. Diagnostischer Kompass — zwei ausklappbare Blöcke
+    html += renderDiagnostischerKompassV2();
+    // 4. CLT-Check als ausklappbarer Block mit eigenem Toggle-Header (standard: zu)
     html += renderCltBlock();
   }
   // Phase 5: Hypothesen-Zusammenfassung
@@ -5234,6 +5363,169 @@ function renderDiagnostischerKompass() {
       </div>
     </div>
   `;
+}
+
+// ── DIAGNOSTISCHER KOMPASS V2 (Erstgespräch Phase 2) ──
+// Zwei separate Toggle-Blöcke unter einem gemeinsamen Titel:
+//   1. Layer-Signale — 4 Spalten (L1/L2/L3/Cross-Layer) mit je 5 Signalen
+//   2. Vertiefungsfragen — je Signal eine Exploration + Präzisionsfrage
+function renderDiagnostischerKompassV2() {
+  return `
+    <div class="kompass-v2-wrap">
+      <div class="kompass-v2-title">Diagnostischer Kompass</div>
+      <div class="disclosure-block">
+        <button class="disclosure-toggle" type="button" onclick="toggleDisclosure('kompassSignaleDisclosure', this)">
+          <span class="disclosure-title">Layer-Signale</span>
+          <span class="disclosure-arrow">&#9660;</span>
+        </button>
+        <div class="disclosure-content" id="kompassSignaleDisclosure">
+          ${renderKompassLayerSignale()}
+        </div>
+      </div>
+      <div class="disclosure-block">
+        <button class="disclosure-toggle" type="button" onclick="toggleDisclosure('kompassVertiefungDisclosure', this)">
+          <span class="disclosure-title">Vertiefungsfragen</span>
+          <span class="disclosure-arrow">&#9660;</span>
+        </button>
+        <div class="disclosure-content" id="kompassVertiefungDisclosure">
+          ${renderKompassVertiefungsfragen()}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderKompassLayerSignale() {
+  const signals = {
+    L1: [
+      '"Wir sind alle am Limit"',
+      '"Nach dem Wochenende gleich wieder leer"',
+      '"Ich schlafe schlecht seit Monaten"',
+      '"Das Team funktioniert, aber irgendwie auf Reserve"',
+      '"Krankenstand ist gestiegen"',
+    ],
+    L2: [
+      '"Das traut sich niemand ansprechen"',
+      '"Wir haben das schon versucht — hat nichts gebracht"',
+      '"Eigentlich weiss jeder was falsch läuft, aber..."',
+      '"Die Stimmung ist gereizt, ohne dass man weiss warum"',
+      '"Feedback kommt nicht an oder wird nicht gegeben"',
+    ],
+    L3: [
+      '"Keiner weiss wer wirklich entscheidet"',
+      '"Die rechte Hand weiss nicht was die linke tut"',
+      '"Wir haben Prozesse — aber niemand hält sie ein"',
+      '"Meetings ohne Ergebnis, immer wieder"',
+      '"Verantwortung ist unklar — alle zuständig, keiner verantwortlich"',
+    ],
+    "Cross-Layer": [
+      "CEO beschreibt Strukturproblem (L3), Operative beschreiben Erschöpfung (L1) → Attraktor über alle Layer",
+      '"Wir wissen was falsch ist aber können es nicht ändern" → L2 blockiert L3-Fix',
+      "Hohe Fluktuation + schlechte Stimmung + unklare Prozesse gleichzeitig → Systemische Friction, Regime 3",
+      "Massnahmen werden beschlossen aber nicht umgesetzt → L2 Immunity to Change",
+      "Neue Struktur eingeführt, altes Verhalten bleibt → L1/L2 nicht adressiert vor L3",
+    ],
+  };
+  const COL_CLASS = { "L1": "l1", "L2": "l2", "L3": "l3", "Cross-Layer": "cross" };
+  let html = `<div class="kompass-signale-grid">`;
+  for (const [layer, items] of Object.entries(signals)) {
+    html += `<div class="kompass-signale-col ${COL_CLASS[layer]}">
+      <div class="kompass-signale-head">${escHtml(layer)} — Signale</div>
+      <ol class="kompass-signale-list">`;
+    for (const s of items) html += `<li>${escHtml(s)}</li>`;
+    html += `</ol></div>`;
+  }
+  html += `</div>`;
+  return html;
+}
+
+function renderKompassVertiefungsfragen() {
+  // Struktur: pro Signal { layer, signal, exploration, praezision }
+  const data = {
+    L1: [
+      { signal: '"Wir sind alle am Limit"',
+        exploration: '"Erzähl mir mehr — wie äussert sich das konkret?"',
+        praezision: '"Wann hat das angefangen — gab es einen Moment wo es gekippt ist?"' },
+      { signal: '"Nach dem Wochenende gleich wieder leer"',
+        exploration: '"Wie ist das für dich persönlich — oder hörst du das auch von anderen?"',
+        praezision: '"Wie viele im Team würden das so beschreiben?"' },
+      { signal: '"Krankenstand ist gestiegen"',
+        exploration: '"Was glaubst du, was dahintersteckt?"',
+        praezision: '"Seit wann — und in welchen Teams zuerst?"' },
+      { signal: '"Das Team funktioniert, aber irgendwie auf Reserve"',
+        exploration: '"Was meinst du mit Reserve — was fehlt?"',
+        praezision: '"Was würde sich ändern wenn diese Reserve wieder da wäre?"' },
+      { signal: '"Ich schlafe schlecht seit Monaten"',
+        exploration: '"Magst du das etwas ausführen?"',
+        praezision: '"Ist das bei dir allein so — oder hörst du das auch von anderen?"' },
+    ],
+    L2: [
+      { signal: '"Das traut sich niemand ansprechen"',
+        exploration: '"Erzähl mir mehr — was passiert wenn jemand es doch anspricht?"',
+        praezision: '"Wann ist das zuletzt konkret passiert — was war die Situation?"' },
+      { signal: '"Wir haben das schon versucht — hat nichts gebracht"',
+        exploration: '"Was habt ihr versucht — was genau?"',
+        praezision: '"Was ist danach passiert — warum hat es nicht gehalten?"' },
+      { signal: '"Eigentlich weiss jeder was falsch läuft, aber..."',
+        exploration: '"Aber — was kommt nach diesem Aber?"',
+        praezision: '"Wer weiss es — und wer tut so als ob nicht?"' },
+      { signal: '"Die Stimmung ist gereizt"',
+        exploration: '"Wie zeigt sich das — kannst du ein Beispiel nennen?"',
+        praezision: '"In welchen Situationen ist es am stärksten spürbar?"' },
+      { signal: '"Feedback kommt nicht an"',
+        exploration: '"In welche Richtung — von oben nach unten, oder umgekehrt, oder beides?"',
+        praezision: '"Was passiert konkret wenn Feedback gegeben wird?"' },
+    ],
+    L3: [
+      { signal: '"Keiner weiss wer wirklich entscheidet"',
+        exploration: '"Wie läuft das bei euch ab — wer entscheidet was formal, was informell?"',
+        praezision: '"Nenn mir eine Entscheidung der letzten Wochen — wer hat sie getroffen?"' },
+      { signal: '"Meetings ohne Ergebnis"',
+        exploration: '"Was passiert in diesen Meetings — wie laufen sie ab?"',
+        praezision: '"Was müsste anders sein damit ein Meeting für dich ein Ergebnis hat?"' },
+      { signal: '"Prozesse die niemand einhält"',
+        exploration: '"Welche Prozesse meinst du — gibt es Beispiele?"',
+        praezision: '"Warum hält niemand sie ein — was ist die Erklärung die du hörst?"' },
+      { signal: '"Verantwortung unklar"',
+        exploration: '"Wo ist das am stärksten spürbar?"',
+        praezision: '"Gab es mal einen Moment wo das konkret zu einem Problem geführt hat?"' },
+      { signal: '"Rechte Hand weiss nicht was linke tut"',
+        exploration: '"Zwischen welchen Bereichen passiert das am häufigsten?"',
+        praezision: '"Was kostet euch das — in Zeit, Energie, Geld?"' },
+    ],
+    "Cross-Layer": [
+      { signal: "CEO sieht L3, Operative erleben L1",
+        exploration: '"Wenn du deine Leute fragst was gerade am schwierigsten ist — was sagen die?"',
+        praezision: '"Und was sagst du selbst — ist das dasselbe?"' },
+      { signal: '"Wir wissen es aber können es nicht ändern"',
+        exploration: '"Was hindert euch — was steht im Weg?"',
+        praezision: '"Was habt ihr konkret versucht um das zu ändern?"' },
+      { signal: "Hohe Fluktuation + schlechte Stimmung + unklare Prozesse",
+        exploration: '"Was glaubst du, was zuerst da war — oder hängt das alles zusammen?"',
+        praezision: '"Wenn du einen Hebel hättest — wo würdest du anfangen?"' },
+      { signal: "Massnahmen beschlossen, nicht umgesetzt",
+        exploration: '"Was passiert zwischen Beschluss und Umsetzung — wo geht es verloren?"',
+        praezision: '"Ist das bei allen Massnahmen so — oder bei bestimmten Themen?"' },
+      { signal: "Neue Struktur, altes Verhalten",
+        exploration: '"Was hat sich verändert seit der neuen Struktur — und was nicht?"',
+        praezision: '"Was müsste sich verändern damit das neue System wirklich greift?"' },
+    ],
+  };
+  const COL_CLASS = { "L1": "l1", "L2": "l2", "L3": "l3", "Cross-Layer": "cross" };
+  let html = "";
+  for (const [layer, items] of Object.entries(data)) {
+    html += `<div class="kompass-vertief-section ${COL_CLASS[layer]}">
+      <div class="kompass-vertief-head">${escHtml(layer)} — Vertiefungsfragen</div>`;
+    for (const it of items) {
+      html += `<div class="kompass-vertief-item">
+        <div class="kompass-vertief-signal"><em>Signal:</em> ${escHtml(it.signal)}</div>
+        <div class="kompass-vertief-q"><span class="kompass-vertief-label">→ Exploration:</span> ${escHtml(it.exploration)}</div>
+        <div class="kompass-vertief-q"><span class="kompass-vertief-label">→ Präzision:</span> ${escHtml(it.praezision)}</div>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+  return html;
 }
 
 // ── FÜNF-KERN-CHECK (Modul 2 Phase 5) ──
