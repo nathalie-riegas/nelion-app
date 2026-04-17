@@ -794,6 +794,43 @@
     cursor: pointer; user-select: none;
   }
   .landing-tasks-toggle:hover { opacity: 0.8; }
+  /* Plus-Button zum Erstellen eines neuen Tasks direkt auf der Landing.
+     Sitzt rechts neben dem Arrow im "Heute"-Toggle. Klick öffnet eine
+     Input-Row unterhalb (.landing-task-add-row). */
+  .landing-task-add-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; padding: 0; margin-right: 8px;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 50%; color: var(--ink-dim); cursor: pointer;
+    font-size: 16px; line-height: 1; flex-shrink: 0;
+    transition: all .15s;
+  }
+  .landing-task-add-btn:hover {
+    background: var(--ada-bg); color: var(--ada-accent);
+    border-color: var(--ada-accent);
+  }
+  .landing-task-add-row {
+    display: none; align-items: center; gap: 6px;
+    margin: 10px 0 4px; padding: 8px 10px;
+    background: var(--surface); border: 1px solid var(--ada-accent);
+    border-radius: var(--rs);
+  }
+  .landing-task-add-row.open { display: flex; }
+  .landing-task-add-row input {
+    flex: 1; border: none; outline: none; background: transparent;
+    font-family: var(--sans); font-size: 14px; color: var(--ink);
+    padding: 4px 2px;
+  }
+  .landing-task-add-row button {
+    background: var(--ada-accent); color: #fff; border: none;
+    border-radius: var(--rs); padding: 6px 12px; font-size: 13px;
+    font-weight: 500; cursor: pointer; transition: background .12s;
+  }
+  .landing-task-add-row button:hover { background: var(--ada-accent-h); }
+  .landing-task-add-row .cancel {
+    background: transparent; color: var(--ink-mute); padding: 6px 8px;
+  }
+  .landing-task-add-row .cancel:hover { color: var(--ink); background: var(--surface2); }
   .landing-tasks-count {
     font-size: 15px; color: var(--ink); font-weight: 500;
   }
@@ -2336,7 +2373,17 @@
           <div class="landing-section-title" style="margin-bottom:0;">Heute</div>
           <div class="landing-tasks-count" id="landingTasksCount">0 offene Tasks</div>
         </div>
-        <div class="landing-tasks-arrow" id="landingTasksArrow">&#9660;</div>
+        <div style="display:flex;align-items:center;">
+          <button class="landing-task-add-btn" id="landingTaskAddBtn"
+            onclick="event.stopPropagation(); openLandingTaskAdd();"
+            title="Neuen Task erstellen" aria-label="Neuen Task erstellen">+</button>
+          <div class="landing-tasks-arrow" id="landingTasksArrow">&#9660;</div>
+        </div>
+      </div>
+      <div class="landing-task-add-row" id="landingTaskAddRow" onclick="event.stopPropagation()">
+        <input type="text" id="landingTaskAddInput" placeholder="Neuen Task eingeben… (Enter speichert, Esc schliesst)">
+        <button onclick="submitLandingTaskAdd()">Hinzufügen</button>
+        <button class="cancel" onclick="closeLandingTaskAdd()">×</button>
       </div>
       <div class="landing-tasks-list" id="landingTasksList"></div>
     </div>
@@ -3005,6 +3052,52 @@ function toggleLandingTasks() {
   const arrow = document.getElementById("landingTasksArrow");
   if (list) list.classList.toggle("open");
   if (arrow) arrow.classList.toggle("open");
+}
+
+// ── Neuen Task direkt auf Landing erstellen ───────────────────────────────
+function openLandingTaskAdd() {
+  const row = document.getElementById("landingTaskAddRow");
+  const input = document.getElementById("landingTaskAddInput");
+  const list = document.getElementById("landingTasksList");
+  const arrow = document.getElementById("landingTasksArrow");
+  if (!row || !input) return;
+  // Task-Liste aufklappen falls zu (damit der neue Task gleich sichtbar wird)
+  if (list && !list.classList.contains("open")) {
+    list.classList.add("open");
+    if (arrow) arrow.classList.add("open");
+  }
+  row.classList.add("open");
+  input.value = "";
+  input.focus();
+  // Enter = speichern, Escape = schliessen (einmal binden pro Open)
+  input.onkeydown = (e) => {
+    if (e.key === "Enter") { e.preventDefault(); submitLandingTaskAdd(); }
+    if (e.key === "Escape") { e.preventDefault(); closeLandingTaskAdd(); }
+  };
+}
+
+function closeLandingTaskAdd() {
+  const row = document.getElementById("landingTaskAddRow");
+  if (row) row.classList.remove("open");
+}
+
+async function submitLandingTaskAdd() {
+  const input = document.getElementById("landingTaskAddInput");
+  if (!input) return;
+  const titel = input.value.trim();
+  if (!titel) { input.focus(); return; }
+  try {
+    const r = await fetch("/api/tasks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ titel, nathalie_approved: true }),
+    });
+    const newTask = await r.json();
+    if (newTask && newTask.id) allTasks.push(newTask);
+  } catch (e) { console.warn("Task-Create failed:", e.message); }
+  input.value = "";
+  closeLandingTaskAdd();
+  refreshAllTaskViews();
 }
 
 // ── ERLEDIGTE TASKS (Landing Page History) ────────────────────────────────
