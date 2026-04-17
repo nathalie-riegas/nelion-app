@@ -56,14 +56,14 @@ guide:
 ## PHASE 4
 
 num: Phase 4
-title: Slice + Firewall
+title: Slice + Idealzustand
 time: ~5 min
 
-instruction: Slice: Ein konkretes, machbares Stück herausschneiden. Firewall: Was schützt vor Überforderung? Biologie vor Technologie.
+instruction: Slice: Ein konkretes, machbares Stück herausschneiden. Idealzustand: Was würde sich das Gegenüber wünschen — die positive Zielvorstellung vor dem ersten Schritt.
 
 guide:
 - "Was wäre der kleinste mögliche erste Schritt?"
-- "Was darf auf keinen Fall passieren — was ist die Firewall?"
+- "Was würde sich Ihr Gegenüber wünschen — wie sieht der Idealzustand aus?"
 - Wenn nötig: Organizational Friction Scan als konkretes Angebot positionieren — "3 Tage, 3-seitiger Befund, Klarheit bevor investiert wird."
 
 ---

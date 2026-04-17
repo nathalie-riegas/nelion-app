@@ -3639,6 +3639,16 @@ function renderPhase(num) {
   updateNotesLabel();
   const noteKey = `phase${num}_notes`;
   $phaseNotes.value = currentConsultation[noteKey] || "";
+  // Phase 4: Label + Placeholder = Idealzustand (ersetzt ehemalige Firewall-Frage)
+  if (num === 4) {
+    const lbl = document.getElementById("notesLabel");
+    if (lbl) lbl.textContent = "Idealzustand";
+    $phaseNotes.placeholder = "Was würde sich Ihr Gegenüber wünschen — wie sieht der Idealzustand aus?";
+    $phaseNotes.rows = 6;
+  } else {
+    $phaseNotes.placeholder = "Notizen zu dieser Phase…";
+    $phaseNotes.removeAttribute("rows");
+  }
   notesDirty = false;
   $phaseButtons.innerHTML = "";
   if (num > 1) { const b = document.createElement("button"); b.className = "btn btn-ghost"; b.textContent = "Zurück"; b.addEventListener("click", () => goToPhase(num - 1)); $phaseButtons.appendChild(b); }
@@ -5015,33 +5025,36 @@ function renderHypothesenZusammenfassung() {
 }
 
 // ── TRANSKRIPT-ANALYSE (ADA-gestützt, Modul 2 Phase 2) ──
-const TRANSKRIPT_ANALYSE_PROMPT = `Analysiere dieses Interview-Transkript nach NELION-Framework.
+const TRANSKRIPT_ANALYSE_PROMPT = `Du bist NELION Friction Diagnostics.
+Analysiere das folgende Interview-Transkript.
 
-Aufgabe:
-1. Identifiziere L1/L2/L3-Signale (mit direktem Zitat als Evidenz)
-2. Führe Omission Bias Check durch:
-   - Biologische Last über Systemsprache?
-   - Person beschreibt was ihr passiert?
-   - Geschützte Kollegen?
-   - Was treibt Person an — nicht gefragt?
-   - Ton-Wechsel? (Stelle benennen)
-3. Schlage Ampel-Werte vor: je Achse grün/gelb/rot mit Begründung
-4. Identifiziere welche der 7 Kaskaden am ehesten passt
+Extrahiere:
+1. Layer-Hypothesen (L1/L2/L3) — je mit direktem Zitat als Evidenz
+2. Omission Bias Check:
+   - Wurde biologische Last über Systemsprache kommuniziert?
+   - Hat die Person beschrieben was ihr 'passiert' ohne eigene Entscheidungen?
+   - Gibt es geschützte Kollegen die nie als Reibungsquelle genannt wurden?
+   - Wo hat der Ton gewechselt (sachlich → emotional)?
+3. Stärkste Friction-Hypothese (1 Satz)
+4. Empfohlene Vertiefungsfrage für Hypothesen-Spiegel
 
-Format:
-## SIGNALE (mit Zitat)
-## OMISSION BIAS CHECK
-## AMPEL-VORSCHLÄGE
-## KASKADEN-EINSCHÄTZUNG`;
+Antworte strukturiert, deutsch, maximal 400 Wörter.`;
 
 function renderTranskriptUpload(slotNum) {
   return `
     <div style="margin-top:10px">
       <button class="feature-btn" onclick="toggleTranskriptUpload(${slotNum})">Transkript analysieren</button>
       <div id="transkriptUpload${slotNum}" style="display:none;margin-top:8px">
-        <textarea class="form-input" id="transkriptText${slotNum}" rows="4" placeholder="Transkript hier einfügen (Text)..."></textarea>
+        <div style="font-size:12px;color:var(--ink-mute);margin-bottom:6px">Transkript-Datei hochladen (.txt, .docx, .pdf) oder Text einfügen.</div>
+        <div class="btn-row" style="margin-bottom:6px;align-items:center;gap:8px;flex-wrap:wrap">
+          <input type="file" id="transkriptFile${slotNum}" accept=".txt,.docx,.pdf" style="display:none" onchange="handleTranskriptFile(${slotNum}, this.files && this.files[0])">
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('transkriptFile${slotNum}').click()">Datei wählen…</button>
+          <span id="transkriptFileStatus${slotNum}" style="font-size:12px;color:var(--ink-mute)"></span>
+        </div>
+        <div id="transkriptPreview${slotNum}" style="display:none;margin-bottom:6px;padding:8px;background:var(--surface2);border-radius:6px;font-size:12px;white-space:pre-wrap;color:var(--ink-mid);max-height:120px;overflow:auto"></div>
+        <textarea class="form-input" id="transkriptText${slotNum}" rows="4" placeholder="…oder Transkript hier einfügen (Text)"></textarea>
         <div class="btn-row" style="margin-top:6px">
-          <button class="btn btn-primary btn-sm" onclick="analyseTranskript(${slotNum})">Mit ADA analysieren</button>
+          <button class="btn btn-primary btn-sm" onclick="analyseTranskript(${slotNum})">Transkript analysieren</button>
         </div>
         <div id="transkriptResult${slotNum}" style="margin-top:10px"></div>
       </div>
@@ -5052,6 +5065,48 @@ function renderTranskriptUpload(slotNum) {
 function toggleTranskriptUpload(num) {
   const el = document.getElementById(`transkriptUpload${num}`);
   if (el) el.style.display = el.style.display === "none" ? "block" : "none";
+}
+
+async function handleTranskriptFile(slotNum, file) {
+  if (!file) return;
+  const statusEl = document.getElementById(`transkriptFileStatus${slotNum}`);
+  const previewEl = document.getElementById(`transkriptPreview${slotNum}`);
+  const textEl = document.getElementById(`transkriptText${slotNum}`);
+  if (statusEl) statusEl.textContent = `… ${file.name} wird geladen`;
+
+  const name = file.name.toLowerCase();
+  let text = "";
+  try {
+    if (name.endsWith(".txt")) {
+      text = await file.text();
+    } else if (name.endsWith(".docx") || name.endsWith(".pdf")) {
+      const fd = new FormData();
+      fd.append("file", file);
+      const r = await fetch("/api/upload", { method: "POST", body: fd });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || d.error) throw new Error(d.error || `HTTP ${r.status}`);
+      text = d.text || "";
+    } else {
+      throw new Error("Format nicht unterstützt. Erlaubt: .txt, .docx, .pdf");
+    }
+  } catch (e) {
+    if (statusEl) statusEl.innerHTML = `<span style="color:var(--red)">Fehler: ${escHtml(e.message)}</span>`;
+    return;
+  }
+
+  text = (text || "").replace(/\r\n/g, "\n").trim();
+  if (!text) {
+    if (statusEl) statusEl.innerHTML = `<span style="color:var(--red)">Kein Text extrahierbar.</span>`;
+    return;
+  }
+
+  if (textEl) textEl.value = text;
+  if (previewEl) {
+    const head = text.slice(0, 300);
+    previewEl.style.display = "block";
+    previewEl.textContent = head + (text.length > 300 ? `\n\n… [vollständiger Text geladen — ${text.length} Zeichen]` : "");
+  }
+  if (statusEl) statusEl.innerHTML = `<span style="color:var(--green)">\u2705 ${escHtml(file.name)} geladen (${text.length} Zeichen)</span>`;
 }
 
 function gatherObFindings(slotNum) {
@@ -5073,18 +5128,15 @@ function gatherObFindings(slotNum) {
 
 async function analyseTranskript(slotNum) {
   const text = document.getElementById(`transkriptText${slotNum}`)?.value?.trim();
-  if (!text) { alert("Bitte Transkript-Text einfügen."); return; }
+  if (!text) { alert("Bitte Transkript-Datei laden oder Text einfügen."); return; }
 
-  const obFindings = gatherObFindings(slotNum);
   const rolle = document.getElementById(`iv${slotNum}Rolle`)?.value || "unbekannt";
 
   const resultEl = document.getElementById(`transkriptResult${slotNum}`);
-  if (resultEl) resultEl.innerHTML = '<div class="ada-msg thinking" style="font-size:13px">ADA analysiert Transkript mit OB-Findings...</div>';
+  if (resultEl) resultEl.innerHTML = '<div class="ada-msg thinking" style="font-size:13px">Analysiere Transkript…</div>';
 
   const fullPrompt = TRANSKRIPT_ANALYSE_PROMPT +
-    `\n\n---\n\nInterview [${rolle}]:\n${text}` +
-    `\n\n---\n\nOB-Findings [${rolle}]:\n${obFindings}` +
-    `\n\nZusätzlich analysiere:\n- Welche biologische Last ist NICHT benannt worden?\n- Welche Machtdynamiken sind versteckt?\n- Welche Beziehungs-Trigger sind echte Friction-Punkte?`;
+    `\n\n---\n\nInterview-Transkript [Rolle: ${rolle}]:\n${text}`;
 
   try {
     const r = await fetch("/api/ada/chat", {
@@ -5098,12 +5150,13 @@ async function analyseTranskript(slotNum) {
     const data = await r.json();
     if (data.error) {
       resultEl.innerHTML = `<div style="color:var(--red);font-size:13px">Fehler: ${escHtml(data.error)}</div>`;
-    } else {
-      resultEl.innerHTML = `<div class="scan-card" style="background:var(--ada-bg);border-color:rgba(75,0,130,0.2)">
-        <div class="scan-card-title" style="color:var(--ada-accent)">ADA Analyse — Interview ${slotNum}</div>
-        <div style="font-size:13px;white-space:pre-wrap;line-height:1.6">${escHtml(data.content)}</div>
-      </div>`;
+      return;
     }
+    resultEl.innerHTML = `<div class="scan-card" style="background:var(--ada-bg);border-color:rgba(75,0,130,0.2)">
+      <div class="scan-card-title" style="color:var(--ada-accent)">Transkript-Analyse — Interview ${slotNum}</div>
+      <div style="font-size:13px;white-space:pre-wrap;line-height:1.6">${escHtml(data.content)}</div>
+      <div style="font-size:11px;color:var(--ink-mute);margin-top:8px;font-style:italic">Hinweis: Analyse wird nicht automatisch gespeichert — Spalte <code>transkript_analyse</code> in interviews-Tabelle fehlt. Bitte bei Bedarf manuell in Live-Notizen übernehmen.</div>
+    </div>`;
   } catch (e) {
     if (resultEl) resultEl.innerHTML = `<div style="color:var(--red);font-size:13px">Verbindungsfehler: ${escHtml(e.message)}</div>`;
   }
