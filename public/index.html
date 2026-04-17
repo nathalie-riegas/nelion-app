@@ -2432,6 +2432,34 @@
     border-top: 1px solid var(--border);
   }
   .disclosure-content.open { display: block; padding-top: 12px; }
+  /* Scan-Erklärung: Gedankenstütze, keine Gesprächsleitlinie — dezent abgesetzt */
+  .disclosure-block.scan-erklaerung {
+    background: #f7f5f0; border-color: rgba(120,90,40,0.12);
+  }
+  .disclosure-block.scan-erklaerung .disclosure-toggle { color: var(--ink-mid); }
+  .disclosure-block.scan-erklaerung .disclosure-toggle:hover { background: #efebdf; }
+  .disclosure-block.scan-erklaerung .disclosure-content { border-top-color: rgba(120,90,40,0.12); }
+  .scan-erklaerung-section {
+    margin-top: 14px; padding-top: 12px; border-top: 1px dashed rgba(120,90,40,0.18);
+  }
+  .scan-erklaerung-section:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+  .scan-erklaerung-h {
+    font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-mid); margin-bottom: 8px;
+  }
+  .scan-erklaerung-body { font-size: 13px; line-height: 1.6; color: var(--ink); }
+  .scan-erklaerung-body p { margin: 0 0 8px 0; }
+  .scan-erklaerung-body p:last-child { margin-bottom: 0; }
+  .scan-erklaerung-day {
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    color: var(--ink-mid); margin-top: 8px; margin-bottom: 2px;
+  }
+  .scan-erklaerung-day:first-child { margin-top: 0; }
+  .scan-erklaerung-price {
+    font-family: var(--mono); font-size: 15px; font-weight: 500; color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .scan-erklaerung-meta { font-size: 12px; color: var(--ink-dim); font-style: italic; }
   .clt-panel-inline { margin-top: 0; border: none; padding: 0; background: transparent; }
 
   /* Hypothesen-Output (Claude-Antwort) */
@@ -2780,8 +2808,9 @@
 <nav class="tab-nav" id="appTabNav">
   <button class="tab-btn" data-tab="modul1" onclick="switchTab('modul1')">Erstgespräch</button>
   <button class="tab-btn" data-tab="modul2" onclick="switchTab('modul2')">Friction Scan</button>
-  <button class="tab-btn" data-tab="modul3" onclick="switchTab('modul3')">PAI Interview</button>
-  <button class="tab-btn" data-tab="modul4" onclick="switchTab('modul4')">PAI Self-Assessment</button>
+  <button class="tab-btn" data-tab="modul3" onclick="switchTab('modul3')">PAI</button>
+  <!-- PAI Self-Assessment deaktiviert (2026-04-17) — Tab zusammengeführt mit PAI Interview. Code bleibt erhalten. -->
+  <!-- <button class="tab-btn" data-tab="modul4" onclick="switchTab('modul4')">PAI Self-Assessment</button> -->
   <button class="tab-btn" data-tab="auswertung" onclick="switchTab('auswertung')">Auswertung</button>
   <button class="tab-btn" data-tab="interventionen" onclick="switchTab('interventionen')">Interventionen</button>
   <button class="tab-btn" data-tab="ada" onclick="switchTab('ada')">ADA<span class="tab-badge" id="adaTabBadge" style="display:none;">🎓 <span id="adaTabBadgeCount">0</span></span></button>
@@ -2857,8 +2886,9 @@
     <div class="landing-buttons">
       <button class="landing-btn" onclick="switchTab('modul1')">Erstgespräch starten</button>
       <button class="landing-btn" onclick="switchTab('modul2')">Friction Scan</button>
-      <button class="landing-btn" onclick="switchTab('modul3')">PAI Interview</button>
-      <button class="landing-btn" onclick="switchTab('modul4')">PAI Self-Assessment</button>
+      <button class="landing-btn" onclick="switchTab('modul3')">PAI</button>
+      <!-- PAI Self-Assessment Landing-Button deaktiviert (2026-04-17) — Tab zusammengeführt. Code bleibt erhalten. -->
+      <!-- <button class="landing-btn" onclick="switchTab('modul4')">PAI Self-Assessment</button> -->
       <button class="landing-btn" onclick="switchTab('auswertung')">Auswertung</button>
       <button class="landing-btn ada" onclick="switchTab('ada')">ADA öffnen</button>
     </div>
@@ -5787,6 +5817,45 @@ function renderHypothesenZusammenfassung() {
         </div>
       </div>
     </div>
+
+    <div class="disclosure-block scan-erklaerung">
+      <button class="disclosure-toggle" type="button" onclick="toggleDisclosure('scanErklaerungDisclosure', this)">
+        <span class="disclosure-title">Scan erklären (Gedankenstütze)</span>
+        <span class="disclosure-arrow">&#9660;</span>
+      </button>
+      <div class="disclosure-content" id="scanErklaerungDisclosure">
+        <div class="scan-erklaerung-section">
+          <div class="scan-erklaerung-h">Wie ein Scan abläuft</div>
+          <div class="scan-erklaerung-body">
+            <div class="scan-erklaerung-day">Tag 1</div>
+            <p>Survey geht an 3 Personen: du, jemand eine Ebene tiefer, jemand operativ. 15 Minuten, anonym.</p>
+            <div class="scan-erklaerung-day">Tag 2</div>
+            <p>3 kurze Interviews à 20 Minuten. Ich höre zu, frage nach, notiere.</p>
+            <div class="scan-erklaerung-day">Tag 3 Vormittag</div>
+            <p>Ich spiegle meine Hypothesen — 30 Minuten mit dir.</p>
+            <div class="scan-erklaerung-day">Tag 3 Nachmittag</div>
+            <p>Du bekommst den Befund. 3 Seiten: wo das Problem liegt, auf welcher Ebene, was als erstes zu tun ist.</p>
+          </div>
+        </div>
+        <div class="scan-erklaerung-section">
+          <div class="scan-erklaerung-h">Was es kostet</div>
+          <div class="scan-erklaerung-body">
+            <div class="scan-erklaerung-price">CHF 3'500</div>
+            <div class="scan-erklaerung-meta">Pilot-Preis</div>
+            <p style="margin-top:10px"><strong>Was du bekommst:</strong> Klarheit bevor du das nächste Mal CHF 50'000 investierst.</p>
+          </div>
+        </div>
+        <div class="scan-erklaerung-section">
+          <div class="scan-erklaerung-h">Mehrere Abteilungen / Standorte</div>
+          <div class="scan-erklaerung-body">
+            <p>Pro Einheit ein Scan — oder erweiterter Scan ab CHF 3'500+. Kurzes Vorgespräch klärt welcher Ansatz passt.</p>
+            <p style="margin-top:8px"><strong>Methodisch:</strong></p>
+            <p>Verschiedene Kulturen / Führung → Pro Einheit ein Scan</p>
+            <p>Gleiche Organisation, geografisch verteilt → Erweiterter Scan</p>
+          </div>
+        </div>
+      </div>
+    </div>
   `;
 }
 
@@ -7464,12 +7533,11 @@ let paiKpis = {};         // key: kpi_key → wert
 let _paiAutoSaveTimer = null;
 
 const PAI_PHASES = [
-  { num: 0, title: "Person erfassen", short: "Person" },
-  { num: 1, title: "Strukturiertes Interview", short: "Interview" },
-  { num: 2, title: "Behavioral Micro-Survey", short: "Survey" },
-  { num: 3, title: "Sprach-Signale", short: "Signale" },
-  { num: 4, title: "Friction Profil", short: "Profil" },
-  { num: 5, title: "Hypothesen & Schritte", short: "Hypothesen" },
+  { num: 0, title: "Person & Kontext", short: "Person" },
+  { num: 1, title: "Interview", short: "Interview" },
+  { num: 2, title: "Transkript & Analyse", short: "Transkript" },
+  { num: 3, title: "Hypothesen", short: "Hypothesen" },
+  { num: 4, title: "Abschluss", short: "Abschluss" },
 ];
 
 const PAI_KPI_KEYS = [
@@ -7617,12 +7685,14 @@ function renderPaiPhaseSidebar(activeNum) {
 function isPaiPhaseDone(num) {
   if (!currentPaiSession) return false;
   switch (num) {
-    case 0: return !!currentPaiSession.person_name;
+    case 0: return !!(currentPaiSession.person_name && (getPaiVal(0, "branche") || getPaiVal(0, "wachstumsphase") || getPaiVal(0, "unternehmensgroesse")));
     case 1: return !!(getPaiVal(1, "f1") && getPaiVal(1, "f2") && getPaiVal(1, "f3"));
-    case 2: return ["ms1","ms2","ms3","ms4","ms5"].every(k => getPaiVal(2, k) !== "");
-    case 3: return !!(getPaiVal(3, "pronomen") || getPaiVal(3, "absolutismen") || getPaiVal(3, "koerper"));
-    case 4: return Object.keys(paiAmpeln).some(k => paiAmpeln[k] && paiAmpeln[k] !== "grau");
-    case 5: return !!(getPaiVal(5, "hyp1_mechanismus"));
+    case 2: return !!(getPaiVal(2, "transkript_text") || (currentPaiSession.pai_transkript_analyse));
+    case 3: return !!(getPaiVal(3, "hyp1_mechanismus") || getPaiVal(3, "hyp2_mechanismus") || getPaiVal(3, "hyp3_mechanismus"));
+    case 4: {
+      const a = currentPaiSession.pai_abschluss_ampeln || {};
+      return !!(a.L1 || a.L2 || a.L3);
+    }
     default: return false;
   }
 }
@@ -7637,7 +7707,6 @@ function renderPaiPhase(num) {
     case 2: content = renderPaiPhase2(); break;
     case 3: content = renderPaiPhase3(); break;
     case 4: content = renderPaiPhase4(); break;
-    case 5: content = renderPaiPhase5(); break;
   }
   $el.innerHTML = `
     <div class="cockpit-contact">
@@ -7670,25 +7739,60 @@ async function savePaiState() {
   } catch (e) { console.warn("PAI state save:", e.message); }
 }
 
-// ── PAI PHASE 0: PERSON ERFASSEN ──
+// ── PAI PHASE 0: PERSON & KONTEXT ──
 function renderPaiPhase0() {
   const s = currentPaiSession;
-  // Gespeicherte Werte für die L1a-Radio-Gruppen (A/B/C/D)
   const kogDiv = getPaiVal(0, "kognitive_diversitaet");
   const koerper = getPaiVal(0, "koerperwahrnehmung");
   const chk = (saved, val) => saved === val ? "checked" : "";
-  // Radio-Label-Helper — normaler Label-Container mit native Radio
   const radio = (name, feld, val, text) =>
     `<label class="pai-radio"><input type="radio" name="${name}" value="${val}" data-pai-feld="${feld}" data-pai-phase="0" ${chk(name === "paiKognitiveDiv" ? kogDiv : koerper, val)}><span>${text}</span></label>`;
+
+  const wachstum = getPaiVal(0, "wachstumsphase");
+  const ugroesse = getPaiVal(0, "unternehmensgroesse");
+  const opt = (cur, val, label) => `<option value="${val}" ${cur === val ? "selected" : ""}>${escHtml(label)}</option>`;
+
   return `
-    <div class="phase-header"><span class="phase-number">Phase 0</span><span class="phase-title">Person erfassen</span></div>
-    <div class="phase-instruction">Grunddaten der Person erfassen. Session wurde bereits angelegt.</div>
+    <div class="phase-header"><span class="phase-number">Phase 0</span><span class="phase-title">Person & Kontext</span></div>
+    <div class="phase-instruction">Grunddaten, Arbeitskontext und kognitives Profil. Basis für alle folgenden Phasen.</div>
+
     <div class="scan-card">
       <div class="scan-card-title">Personendaten</div>
       <div class="form-group"><label class="form-label pflicht">Name</label><input class="form-input" type="text" id="paiName" value="${escHtml(s.person_name)}" readonly></div>
       <div class="form-group" style="margin-top:10px"><label class="form-label">Rolle</label><input class="form-input" type="text" id="paiRolle" value="${escHtml(s.person_rolle)}" data-pai-feld="rolle"></div>
       <div class="form-group" style="margin-top:10px"><label class="form-label">Datum</label><input class="form-input" type="date" id="paiDatum" value="${getPaiVal(0, 'datum') || new Date().toISOString().slice(0,10)}" data-pai-feld="datum" data-pai-phase="0"></div>
-      <div class="form-group" style="margin-top:10px"><label class="form-label">Kontext / Notizen</label><textarea class="form-input" id="paiKontext" rows="3" placeholder="Wie kam der Kontakt zustande, erster Eindruck…" data-pai-feld="kontext" data-pai-phase="0">${escHtml(getPaiVal(0, 'kontext'))}</textarea></div>
+    </div>
+
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title">Arbeitskontext</div>
+      <div class="form-group">
+        <label class="form-label">Branche</label>
+        <input class="form-input" type="text" placeholder="z.B. Software, Gesundheitswesen, Maschinenbau" value="${escHtml(getPaiVal(0, 'branche'))}" data-pai-feld="branche" data-pai-phase="0">
+      </div>
+      <div class="form-group" style="margin-top:10px">
+        <label class="form-label">Wachstumsphase</label>
+        <select class="form-input" data-pai-feld="wachstumsphase" data-pai-phase="0">
+          <option value="">— wählen —</option>
+          ${opt(wachstum, "startup", "Startup")}
+          ${opt(wachstum, "scaleup", "Scale-up")}
+          ${opt(wachstum, "established", "Established")}
+        </select>
+      </div>
+      <div class="form-group" style="margin-top:10px">
+        <label class="form-label">Unternehmensgrösse</label>
+        <select class="form-input" data-pai-feld="unternehmensgroesse" data-pai-phase="0">
+          <option value="">— wählen —</option>
+          ${opt(ugroesse, "1-10", "1–10")}
+          ${opt(ugroesse, "11-30", "11–30")}
+          ${opt(ugroesse, "31-80", "31–80")}
+          ${opt(ugroesse, "80+", "80+")}
+        </select>
+      </div>
+      <div class="form-group" style="margin-top:10px">
+        <label class="form-label">Erwartungen</label>
+        <div class="pai-diag-hint" style="margin-bottom:6px">Was erhoffen Sie sich von einer auf Sie massgeschneiderten KI (PAI)?</div>
+        <textarea class="form-input" rows="3" placeholder="Erwartungen, Hoffnung…" data-pai-feld="erwartungen" data-pai-phase="0">${escHtml(getPaiVal(0, 'erwartungen'))}</textarea>
+      </div>
     </div>
 
     <div class="pai-subheading">L1a — Kognitive Profile</div>
@@ -7732,293 +7836,404 @@ async function savePaiPhase0AndNext() {
       body: JSON.stringify({ person_rolle: rolle, current_phase: 1 }),
     });
   }
-  await savePaiErhebungField(0, "datum", document.getElementById("paiDatum")?.value || "");
-  await savePaiErhebungField(0, "kontext", document.getElementById("paiKontext")?.value || "");
-  // L1a — Kognitive Profile (falls User direkt weiterklickt vor Debounce)
-  const kogDiv = document.querySelector('input[name="paiKognitiveDiv"]:checked')?.value || "";
-  if (kogDiv) await savePaiErhebungField(0, "kognitive_diversitaet", kogDiv);
-  const koerper = document.querySelector('input[name="paiKoerper"]:checked')?.value || "";
-  if (koerper) await savePaiErhebungField(0, "koerperwahrnehmung", koerper);
+  // Alle data-pai-feld-Felder der Phase 0 sichern (Branche, Wachstum, Grösse, Erwartungen, L1a-Radios…)
+  const fields = document.querySelectorAll('#paiContent [data-pai-feld][data-pai-phase="0"]');
+  const seen = new Set();
+  for (const el of fields) {
+    const feld = el.dataset.paiFeld;
+    if (seen.has(feld)) continue;
+    let wert = "";
+    if (el.type === "radio") {
+      if (!el.checked) continue;
+      wert = el.value;
+    } else {
+      wert = el.tagName === "SELECT" ? el.value : (el.value || "");
+    }
+    seen.add(feld);
+    await savePaiErhebungField(0, feld, wert);
+  }
   goToPaiPhase(1);
 }
 
-// ── PAI PHASE 1: STRUKTURIERTES INTERVIEW ──
+// ── PAI PHASE 1: INTERVIEW (6 Abschnitte) ──
 function renderPaiPhase1() {
+  const energieSkala = getPaiVal(1, "energie_skala") || "5";
+  const selbstbild = getPaiVal(1, "selbstbild_reaktion");
+  const chk = (v) => selbstbild === v ? "checked" : "";
+  const sbRadio = (val, text) =>
+    `<label class="pai-radio"><input type="radio" name="paiSelbstbild" value="${val}" data-pai-feld="selbstbild_reaktion" data-pai-phase="1" ${chk(val)}><span>${text}</span></label>`;
+
+  const ms = (key) => getPaiVal(1, key);
+  const msRow = (layer, key, q) => `
+    <div class="pai-ms-row">
+      <span class="pai-ms-layer">${layer}</span>
+      <span class="pai-ms-q">${q}</span>
+      <div class="pai-ms-toggle">
+        <button class="pai-toggle-btn${ms(key)==='ja'?' active':''}" data-ms="${key}" data-v="ja" onclick="setPaiMs1(this)">Ja</button>
+        <button class="pai-toggle-btn${ms(key)==='nein'?' active':''}" data-ms="${key}" data-v="nein" onclick="setPaiMs1(this)">Nein</button>
+      </div>
+    </div>`;
+
   return `
-    <div class="phase-header"><span class="phase-number">Phase 1</span><span class="phase-title">Strukturiertes Interview</span><span class="phase-time">30–45 Min</span></div>
-    <div class="phase-instruction">3 Kernfragen + 2 optionale Vertiefungsfragen. Notizen direkt in die Felder.</div>
+    <div class="phase-header"><span class="phase-number">Phase 1</span><span class="phase-title">Interview</span><span class="phase-time">30–45 Min</span></div>
+    <div class="phase-instruction">Strukturiertes Interview in sechs Abschnitten. Autosave aktiv.</div>
+
+    <!-- Abschnitt 1: Energie -->
     <div class="scan-card">
-      <div class="scan-card-title">Kernfrage 1</div>
+      <div class="scan-card-title">Energiebild</div>
+      <div class="pai-diag-hint" style="margin-bottom:8px">Einstieg — wie steht es um die Person gerade?</div>
+      <div class="form-group">
+        <label class="form-label">Wie würden Sie Ihren aktuellen Energiezustand einschätzen? (1–10)</label>
+        <div class="pai-audit-scale-row">
+          <span style="font-size:11px;color:var(--ink-mute)">leer</span>
+          <input type="range" min="1" max="10" value="${escHtml(energieSkala)}" data-pai-feld="energie_skala" data-pai-phase="1" oninput="document.getElementById('paiEnergieSkalaVal').textContent = this.value">
+          <span style="font-size:11px;color:var(--ink-mute)">voll</span>
+          <span class="pai-audit-scale-val" id="paiEnergieSkalaVal">${escHtml(energieSkala)}</span>
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:10px">
+        <label class="form-label">Wie würden Sie Ihren aktuellen Energiezustand beschreiben?</label>
+        <textarea class="form-input" rows="3" placeholder="Erschöpft / getrieben / ruhig / unruhig…" data-pai-feld="energie_freitext" data-pai-phase="1">${escHtml(getPaiVal(1, 'energie_freitext'))}</textarea>
+      </div>
+      <div class="form-group" style="margin-top:10px">
+        <label class="form-label">Wann hatten Sie zuletzt das Gefühl: heute war ein guter Tag?</label>
+        <textarea class="form-input" rows="3" placeholder="Wann, Umstände, was war anders…" data-pai-feld="guter_tag" data-pai-phase="1">${escHtml(getPaiVal(1, 'guter_tag'))}</textarea>
+      </div>
+    </div>
+
+    <!-- Abschnitt 2: Kernfragen -->
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title">Kernfragen</div>
       <div class="kernfrage"><span class="kernfrage-num">F1</span><br>"Wofür willst du in 10 Jahren beruflich bekannt sein?"</div>
-      <div style="font-size:11px;color:var(--ada-accent);margin:4px 0 6px;font-family:var(--mono)">[Signal-Tag: Wert-Dimension notieren]</div>
-      <textarea class="form-input" id="paiF1" rows="4" placeholder="Notizen…" data-pai-feld="f1" data-pai-phase="1">${escHtml(getPaiVal(1, 'f1'))}</textarea>
+      <div style="font-size:11px;color:var(--ink-mute);margin:4px 0 6px">Signal-Tag: Wert-Dimension</div>
+      <textarea class="form-input" rows="3" placeholder="Notizen…" data-pai-feld="f1" data-pai-phase="1">${escHtml(getPaiVal(1, 'f1'))}</textarea>
+
+      <div class="kernfrage" style="margin-top:12px"><span class="kernfrage-num">F2</span><br>"Was hast du letzte Woche konkret getan das in diese Richtung geht?"</div>
+      <div style="font-size:11px;color:var(--ink-mute);margin:4px 0 6px">Signal-Tag: Value-Behavior Gap</div>
+      <textarea class="form-input" rows="3" placeholder="Notizen…" data-pai-feld="f2" data-pai-phase="1">${escHtml(getPaiVal(1, 'f2'))}</textarea>
+
+      <div class="kernfrage" style="margin-top:12px"><span class="kernfrage-num">F3</span><br>"Was hat dich davon abgehalten, das konsequenter umzusetzen?"</div>
+      <div style="font-size:11px;color:var(--ink-mute);margin:4px 0 6px">Signal-Tag: L2-Muster / Attribution Style</div>
+      <textarea class="form-input" rows="3" placeholder="Notizen…" data-pai-feld="f3" data-pai-phase="1">${escHtml(getPaiVal(1, 'f3'))}</textarea>
+
+      <details class="pai-details" style="margin-top:12px">
+        <summary style="cursor:pointer;font-size:13px;color:var(--ink-mid);font-weight:500">Optional: Vertiefung</summary>
+        <div style="margin-top:10px">
+          <div class="kernfrage" style="border-left-color:var(--ink-mute)"><span class="kernfrage-num">F4</span><br>"Erzähl mir von einem Moment der alles verändert hat — beruflich oder privat."</div>
+          <textarea class="form-input" rows="3" placeholder="Notizen…" data-pai-feld="f4" data-pai-phase="1" style="margin-top:6px">${escHtml(getPaiVal(1, 'f4'))}</textarea>
+
+          <div class="kernfrage" style="margin-top:12px;border-left-color:var(--ink-mute)"><span class="kernfrage-num">F5</span><br>"Worauf bist du in den letzten 12 Monaten stolz — auch wenn niemand es bemerkt hat?"</div>
+          <textarea class="form-input" rows="3" placeholder="Notizen…" data-pai-feld="f5" data-pai-phase="1" style="margin-top:6px">${escHtml(getPaiVal(1, 'f5'))}</textarea>
+        </div>
+      </details>
     </div>
+
+    <!-- Abschnitt 3: Systembild -->
     <div class="scan-card" style="margin-top:12px">
-      <div class="scan-card-title">Kernfrage 2</div>
-      <div class="kernfrage"><span class="kernfrage-num">F2</span><br>"Was hast du letzte Woche konkret getan das in diese Richtung geht?"</div>
-      <div style="font-size:11px;color:var(--ada-accent);margin:4px 0 6px;font-family:var(--mono)">[Signal-Tag: Value-Behavior Gap]</div>
-      <textarea class="form-input" id="paiF2" rows="4" placeholder="Notizen…" data-pai-feld="f2" data-pai-phase="1">${escHtml(getPaiVal(1, 'f2'))}</textarea>
+      <div class="scan-card-title">Systembild</div>
+      <div class="pai-diag-hint" style="margin-bottom:8px">Was funktioniert — was wurde versucht?</div>
+      <div class="form-group">
+        <label class="form-label">Was läuft in Ihrem Unternehmen gerade gut — trotz allem?</label>
+        <textarea class="form-input" rows="3" placeholder="Bereiche, Teams, Prozesse die trotz Druck liefern…" data-pai-feld="system_gut" data-pai-phase="1">${escHtml(getPaiVal(1, 'system_gut'))}</textarea>
+      </div>
+      <div class="form-group" style="margin-top:10px">
+        <label class="form-label">Was haben Sie in den letzten 12 Monaten versucht zu verändern?</label>
+        <textarea class="form-input" rows="3" placeholder="Initiativen, Massnahmen — was hat gehalten, was nicht?" data-pai-feld="system_versucht" data-pai-phase="1">${escHtml(getPaiVal(1, 'system_versucht'))}</textarea>
+      </div>
     </div>
+
+    <!-- Abschnitt 4: Friction -->
     <div class="scan-card" style="margin-top:12px">
-      <div class="scan-card-title">Kernfrage 3</div>
-      <div class="kernfrage"><span class="kernfrage-num">F3</span><br>"Was hat dich davon abgehalten mehr in diese Richtung zu tun?"</div>
-      <div style="font-size:11px;color:var(--ada-accent);margin:4px 0 6px;font-family:var(--mono)">[Signal-Tag: L2-Muster / Attribution Style]</div>
-      <textarea class="form-input" id="paiF3" rows="4" placeholder="Notizen…" data-pai-feld="f3" data-pai-phase="1">${escHtml(getPaiVal(1, 'f3'))}</textarea>
+      <div class="scan-card-title">Friction</div>
+      <div class="pai-diag-hint" style="margin-bottom:8px">Wo läuft es nicht rund?</div>
+      <div class="form-group">
+        <label class="form-label">Wo sitzt die Reibung aktuell am stärksten?</label>
+        <textarea class="form-input" rows="3" placeholder="Prozesse, Personen, Strukturen, Energie…" data-pai-feld="friction_wo" data-pai-phase="1">${escHtml(getPaiVal(1, 'friction_wo'))}</textarea>
+      </div>
+      <div class="form-group" style="margin-top:10px">
+        <label class="form-label">Was wäre anders wenn dieses Problem weg wäre?</label>
+        <textarea class="form-input" rows="3" placeholder="Konkret, nicht abstrakt…" data-pai-feld="friction_anders" data-pai-phase="1">${escHtml(getPaiVal(1, 'friction_anders'))}</textarea>
+      </div>
     </div>
-    <div class="scan-card" style="margin-top:12px;border-left:3px solid var(--ink-mute)">
-      <div class="scan-card-title" style="color:var(--ink-mute)">Optional: Vertiefung</div>
-      <div class="kernfrage" style="border-left-color:var(--ink-mute)"><span class="kernfrage-num">F4</span><br>"Erzähl mir von einem Moment wo sich etwas fundamental verändert hat."</div>
-      <textarea class="form-input" id="paiF4" rows="3" placeholder="Notizen…" data-pai-feld="f4" data-pai-phase="1">${escHtml(getPaiVal(1, 'f4'))}</textarea>
-      <div class="kernfrage" style="margin-top:12px;border-left-color:var(--ink-mute)"><span class="kernfrage-num">F5</span><br>"Worauf bist du in den letzten 12 Monaten am meisten stolz — ohne dass es jemand gemerkt hat?"</div>
-      <textarea class="form-input" id="paiF5" rows="3" placeholder="Notizen…" data-pai-feld="f5" data-pai-phase="1" style="margin-top:8px">${escHtml(getPaiVal(1, 'f5'))}</textarea>
+
+    <!-- Abschnitt 5: Selbstbild -->
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title">Selbstbild</div>
+      <div class="form-group">
+        <label class="form-label">Wie reagieren Sie persönlich wenn Dinge nicht vorankommen?</label>
+        <div class="pai-radio-group">
+          ${sbRadio("A", "A. Ich packe es aktiv an — ich handle, statt zu warten")}
+          ${sbRadio("B", "B. Ich warte ab — ich beobachte erst")}
+          ${sbRadio("C", "C. Ich werde frustriert — es macht mich wütend")}
+          ${sbRadio("D", "D. Ich resigniere — es bringt eh nichts")}
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:10px">
+        <label class="form-label">Optional: Kontext</label>
+        <textarea class="form-input" rows="3" placeholder="Kontext, Beispiel, Muster…" data-pai-feld="selbstbild_freitext" data-pai-phase="1">${escHtml(getPaiVal(1, 'selbstbild_freitext'))}</textarea>
+      </div>
+      <div class="form-group" style="margin-top:10px">
+        <label class="form-label">Was würden Sie in Ihrem Unternehmen als letztes aufgeben — auch wenn es rational vielleicht keinen Sinn mehr macht?</label>
+        <textarea class="form-input" rows="3" placeholder="Prozesse, Personen, Strukturen, eigene Rolle…" data-pai-feld="selbstbild_schutz" data-pai-phase="1">${escHtml(getPaiVal(1, 'selbstbild_schutz'))}</textarea>
+      </div>
     </div>
+
+    <!-- Abschnitt 6: Behavioral Survey -->
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title">Behavioral Survey</div>
+      <div class="pai-diag-hint" style="margin-bottom:10px">5 Ja/Nein-Fragen — du stellst sie mündlich.</div>
+      ${msRow("L1", "ms1", '"Mindestens einmal 20 Minuten Pause ohne Bildschirm letzte Woche?"')}
+      ${msRow("L1", "ms2", '"Körper-Signale oder Erschöpfung letzte Woche bewusst ignoriert?"')}
+      ${msRow("L2", "ms3", '"Eine Aufgabe übernommen die jemand anderes hätte tun sollen?"')}
+      ${msRow("L2", "ms4", '"Etwas nicht angesprochen aus Angst vor der Reaktion?"')}
+      ${msRow("L3", "ms5", '"Eine Entscheidung mehr als 3 Tage vor sich hergeschoben?"')}
+      <div id="paiMsAuswertung" style="margin-top:10px">${renderPaiMsAuswertung1()}</div>
+    </div>
+
     <div class="btn-row" style="margin-top:12px">
       <button class="btn btn-ghost" onclick="goToPaiPhase(0)">Zurück</button>
-      <button class="btn btn-primary" onclick="savePaiPhase1WithGuard()">Weiter</button>
+      <button class="btn btn-primary" onclick="savePaiPhaseAndNext(1, 2)">Weiter</button>
     </div>
   `;
 }
 
-// ── PAI PHASE 2: BEHAVIORAL MICRO-SURVEY ──
-function renderPaiPhase2() {
-  const ms = (key) => getPaiVal(2, key);
-  return `
-    <div class="phase-header"><span class="phase-number">Phase 2</span><span class="phase-title">Behavioral Micro-Survey</span><span class="phase-time">5 Min</span></div>
-    <div class="phase-instruction">5 Ja/Nein-Fragen. Jede Antwort liefert ein Layer-Signal.</div>
-    <div class="scan-card">
-      <div class="scan-card-title">Micro-Survey</div>
-      <div class="pai-ms-row">
-        <span class="pai-ms-layer">L1</span>
-        <span class="pai-ms-q">"Mindestens einmal 20 Min Pause ohne Bildschirm letzte Woche?"</span>
-        <div class="pai-ms-toggle">
-          <button class="pai-toggle-btn${ms('ms1')==='ja'?' active':''}" data-ms="ms1" data-v="ja" onclick="setPaiMs(this)">Ja</button>
-          <button class="pai-toggle-btn${ms('ms1')==='nein'?' active':''}" data-ms="ms1" data-v="nein" onclick="setPaiMs(this)">Nein</button>
-        </div>
-      </div>
-      <div class="pai-ms-row">
-        <span class="pai-ms-layer">L1</span>
-        <span class="pai-ms-q">"Erschöpfung oder Körper-Signale bewusst ignoriert letzte Woche?"</span>
-        <div class="pai-ms-toggle">
-          <button class="pai-toggle-btn${ms('ms2')==='ja'?' active':''}" data-ms="ms2" data-v="ja" onclick="setPaiMs(this)">Ja</button>
-          <button class="pai-toggle-btn${ms('ms2')==='nein'?' active':''}" data-ms="ms2" data-v="nein" onclick="setPaiMs(this)">Nein</button>
-        </div>
-      </div>
-      <div class="pai-ms-row">
-        <span class="pai-ms-layer">L2</span>
-        <span class="pai-ms-q">"Aufgabe übernommen die jemand anderes hätte tun sollen?"</span>
-        <div class="pai-ms-toggle">
-          <button class="pai-toggle-btn${ms('ms3')==='ja'?' active':''}" data-ms="ms3" data-v="ja" onclick="setPaiMs(this)">Ja</button>
-          <button class="pai-toggle-btn${ms('ms3')==='nein'?' active':''}" data-ms="ms3" data-v="nein" onclick="setPaiMs(this)">Nein</button>
-        </div>
-      </div>
-      <div class="pai-ms-row">
-        <span class="pai-ms-layer">L2</span>
-        <span class="pai-ms-q">"Etwas nicht angesprochen aus Angst vor Reaktion?"</span>
-        <div class="pai-ms-toggle">
-          <button class="pai-toggle-btn${ms('ms4')==='ja'?' active':''}" data-ms="ms4" data-v="ja" onclick="setPaiMs(this)">Ja</button>
-          <button class="pai-toggle-btn${ms('ms4')==='nein'?' active':''}" data-ms="ms4" data-v="nein" onclick="setPaiMs(this)">Nein</button>
-        </div>
-      </div>
-      <div class="pai-ms-row">
-        <span class="pai-ms-layer">L3</span>
-        <span class="pai-ms-q">"Entscheidung >3 Tage vor sich hergeschoben?"</span>
-        <div class="pai-ms-toggle">
-          <button class="pai-toggle-btn${ms('ms5')==='ja'?' active':''}" data-ms="ms5" data-v="ja" onclick="setPaiMs(this)">Ja</button>
-          <button class="pai-toggle-btn${ms('ms5')==='nein'?' active':''}" data-ms="ms5" data-v="nein" onclick="setPaiMs(this)">Nein</button>
-        </div>
-      </div>
-    </div>
-    <div class="scan-card" style="margin-top:12px" id="paiMsResult">
-      <div class="scan-card-title">Automatische Auswertung</div>
-      <div id="paiMsAuswertung">${renderPaiMsAuswertung()}</div>
-    </div>
-    <div class="btn-row" style="margin-top:12px">
-      <button class="btn btn-ghost" onclick="goToPaiPhase(1)">Zurück</button>
-      <button class="btn btn-primary" onclick="savePaiPhaseAndNext(2, 3)">Weiter</button>
-    </div>
-  `;
-}
-
-function setPaiMs(btn) {
+// Ja/Nein-Toggle für die 5 Behavioral-Survey-Fragen in Phase 1 (neu)
+function setPaiMs1(btn) {
   const key = btn.dataset.ms;
   const val = btn.dataset.v;
-  // Toggle: click same again → deselect
-  if (getPaiVal(2, key) === val) {
-    paiErhebung[`2_${key}`] = "";
+  if (getPaiVal(1, key) === val) {
+    paiErhebung[`1_${key}`] = "";
   } else {
-    paiErhebung[`2_${key}`] = val;
+    paiErhebung[`1_${key}`] = val;
   }
-  // Update button states
   btn.parentElement.querySelectorAll(".pai-toggle-btn").forEach(b => {
-    b.classList.toggle("active", paiErhebung[`2_${b.dataset.ms}`] === b.dataset.v);
+    b.classList.toggle("active", paiErhebung[`1_${b.dataset.ms}`] === b.dataset.v);
   });
-  savePaiErhebungField(2, key, paiErhebung[`2_${key}`] || "");
-  document.getElementById("paiMsAuswertung").innerHTML = renderPaiMsAuswertung();
+  savePaiErhebungField(1, key, paiErhebung[`1_${key}`] || "");
+  // KPI-Tracking (Panel hidden bis nach Gate 1 — Daten werden still erfasst)
+  updatePaiL1L2L3Warnungen();
+  const slot = document.getElementById("paiMsAuswertung");
+  if (slot) slot.innerHTML = renderPaiMsAuswertung1();
 }
 
-function renderPaiMsAuswertung() {
-  const ms = (key) => getPaiVal(2, key);
+function renderPaiMsAuswertung1() {
+  const ms = (key) => getPaiVal(1, key);
   let warnings = [];
-  // L1: ms1=nein (keine Pause) + ms2=ja (Signale ignoriert) → L1 Warnsignal
   if (ms("ms1") === "nein" && ms("ms2") === "ja") {
-    warnings.push('<div style="color:var(--red);font-weight:500">⚠ L1 Warnsignal — Körper-Signale werden ignoriert, keine Erholungsphasen</div>');
+    warnings.push('<div style="color:var(--red);font-weight:500">⚠ L1 Warnsignal — Körper-Signale werden ignoriert, keine Erholung</div>');
   } else if (ms("ms1") === "nein" || ms("ms2") === "ja") {
     warnings.push('<div style="color:var(--yellow);font-weight:500">⚠ L1 Hinweis — Erholung oder Körperwahrnehmung eingeschränkt</div>');
   }
-  if (ms("ms3") === "ja") warnings.push('<div style="color:var(--red);font-weight:500">⚠ Helfersyndrom-Indikator — Aufgaben anderer übernommen</div>');
-  if (ms("ms4") === "ja") warnings.push('<div style="color:var(--red);font-weight:500">⚠ Psychological Safety niedrig — Angst vor Reaktion</div>');
-  if (ms("ms5") === "ja") warnings.push('<div style="color:var(--yellow);font-weight:500">⚠ Entscheidungsblockade — Entscheidung aufgeschoben</div>');
+  if (ms("ms3") === "ja") warnings.push('<div style="color:var(--red);font-weight:500">⚠ L2 Helfersyndrom-Indikator — Aufgaben anderer übernommen</div>');
+  if (ms("ms4") === "ja") warnings.push('<div style="color:var(--red);font-weight:500">⚠ L2 Psychological Safety niedrig — Angst vor Reaktion</div>');
+  if (ms("ms5") === "ja") warnings.push('<div style="color:var(--yellow);font-weight:500">⚠ L3 Entscheidungsblockade — Entscheidung aufgeschoben</div>');
   if (warnings.length === 0) {
     const anyAnswered = ["ms1","ms2","ms3","ms4","ms5"].some(k => ms(k));
-    if (anyAnswered) return '<div style="color:var(--green)">Keine Warnsignale erkannt.</div>';
-    return '<div style="color:var(--ink-mute)">Noch keine Antworten.</div>';
+    return anyAnswered
+      ? '<div style="color:var(--green)">Keine Warnsignale erkannt.</div>'
+      : '<div style="color:var(--ink-mute);font-size:12px">Noch keine Antworten.</div>';
   }
   return warnings.join("");
 }
 
-// ── PAI PHASE 3: SPRACH-SIGNALE ──
-function renderPaiPhase3() {
+// KPI L1/L2/L3 Warnungen aus Behavioral Survey ableiten (stilles Tracking)
+function updatePaiL1L2L3Warnungen() {
+  const ms = (key) => getPaiVal(1, key);
+  paiKpis['l1_warnungen'] = (ms("ms1") === "nein" ? 1 : 0) + (ms("ms2") === "ja" ? 1 : 0);
+  paiKpis['l2_warnungen'] = (ms("ms3") === "ja" ? 1 : 0) + (ms("ms4") === "ja" ? 1 : 0);
+  paiKpis['l3_warnungen'] = (ms("ms5") === "ja" ? 1 : 0);
+  paiKpis['helfersyndrom_indikator'] = ms("ms3") === "ja" ? 1 : 0;
+  paiKpis['psych_safety_niedrig'] = ms("ms4") === "ja" ? 1 : 0;
+  paiKpis['entscheidungsblockade'] = ms("ms5") === "ja" ? 1 : 0;
+  savePaiKpis();
+}
+
+// ── PAI PHASE 2: TRANSKRIPT & SIGNALANALYSE ──
+const PAI_TRANSKRIPT_ANALYSE_PROMPT = `Du bist NELION PAI Diagnostics.
+Analysiere dieses Interview-Transkript einer Führungsperson.
+
+Extrahiere:
+
+1. Linguistische Signale:
+   - Pronomen-Muster (ich / wir / sie) Tendenz und Bedeutung
+   - Absolutismen (immer/nie/alle) konkrete Beispiele
+   - Körper-Referenzen (falls vorhanden)
+
+2. Layer-Signale:
+   - L1: Hinweise auf biologische Last
+   - L2: Hinweise auf Blockaden / Vermeidung
+   - L3: Hinweise auf strukturelle Friction
+
+3. Omission Bias:
+   - Wurde biologische Last über Systemsprache kommuniziert?
+   - Geschützte Personen die nie als Reibungsquelle genannt wurden?
+   - Wo hat der Ton gewechselt?
+
+Antworte strukturiert, deutsch, Umlaute ausschreiben (ä ö ü), maximal 400 Wörter.`;
+
+function renderPaiPhase2() {
+  const s = currentPaiSession;
+  const hasAnalysis = s && s.pai_transkript_analyse && s.pai_transkript_analyse.text;
   return `
-    <div class="phase-header"><span class="phase-number">Phase 3</span><span class="phase-title">Sprach-Signale</span><span class="phase-time">Beobachtung</span></div>
-    <div class="phase-instruction">Linguistische Muster aus dem Interview beobachten und dokumentieren.</div>
+    <div class="phase-header"><span class="phase-number">Phase 2</span><span class="phase-title">Transkript & Signalanalyse</span></div>
+    <div class="phase-instruction">Transkript hochladen — Claude wertet Linguistik und Layer-Signale automatisch aus.</div>
+
     <div class="scan-card">
-      <div class="scan-card-title">Pronomen-Muster (ich / wir / sie)</div>
-      <textarea class="form-input" id="paiPronomen" rows="3" placeholder="z.B. 'Verwendet fast ausschliesslich wir, kaum ich-Aussagen bei Erfolgen…'" data-pai-feld="pronomen" data-pai-phase="3">${escHtml(getPaiVal(3, 'pronomen'))}</textarea>
+      <div class="scan-card-title">Transkript hochladen</div>
+      <div class="pai-diag-hint" style="margin-bottom:8px">Akzeptierte Formate: .txt / .docx</div>
+      <div class="btn-row" style="margin-bottom:6px;align-items:center;gap:8px;flex-wrap:wrap">
+        <input type="file" id="paiTranskriptFile" accept=".txt,.docx" style="display:none" onchange="handlePaiTranskriptFile(this.files && this.files[0])">
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('paiTranskriptFile').click()">Datei wählen…</button>
+        <span id="paiTranskriptStatus" style="font-size:12px;color:var(--ink-mute)"></span>
+      </div>
+      <div id="paiTranskriptPreview" style="display:none;margin-bottom:6px;padding:8px;background:var(--surface2);border-radius:6px;font-size:12px;white-space:pre-wrap;color:var(--ink-mid);max-height:140px;overflow:auto"></div>
+      <textarea class="form-input" id="paiTranskriptText" rows="5" placeholder="…oder Transkript hier einfügen (Text)" data-pai-feld="transkript_text" data-pai-phase="2">${escHtml(getPaiVal(2, 'transkript_text'))}</textarea>
+      <div class="btn-row" style="margin-top:8px">
+        <button class="btn btn-primary btn-sm" onclick="analysePaiTranskript()" id="btnPaiTranskriptAnalyze">Transkript analysieren</button>
+      </div>
     </div>
+
     <div class="scan-card" style="margin-top:12px">
-      <div class="scan-card-title">Absolutismen beobachtet? (immer/nie/alle)</div>
-      <textarea class="form-input" id="paiAbsolutismen" rows="3" placeholder="z.B. 'Dreimal nie verwendet: nie Zeit, nie Budget, nie Unterstuetzung…'" data-pai-feld="absolutismen" data-pai-phase="3">${escHtml(getPaiVal(3, 'absolutismen'))}</textarea>
+      <div class="scan-card-title">Analyse-Ergebnis</div>
+      <div id="paiTranskriptResult">${hasAnalysis ? renderPaiTranskriptAnalysis(s.pai_transkript_analyse) : '<div style="font-size:13px;color:var(--ink-mute);padding:6px">Noch keine Analyse. Transkript hochladen und analysieren klicken.</div>'}</div>
     </div>
-    <div class="scan-card" style="margin-top:12px">
-      <div class="scan-card-title">Körper-Referenzen erwähnt?</div>
-      <textarea class="form-input" id="paiKoerper" rows="3" placeholder="z.B. 'Erwähnt Rückenschmerzen beiläufig, spricht sonst nie über Körper…'" data-pai-feld="koerper" data-pai-phase="3">${escHtml(getPaiVal(3, 'koerper'))}</textarea>
-    </div>
-    <div class="scan-card" style="margin-top:12px">
-      <div class="scan-card-title">Weitere Signale</div>
-      <textarea class="form-input" id="paiWeitere" rows="3" placeholder="Freie Beobachtungen, Tonwechsel, Pausen…" data-pai-feld="weitere" data-pai-phase="3">${escHtml(getPaiVal(3, 'weitere'))}</textarea>
-    </div>
+
     <div class="btn-row" style="margin-top:12px">
-      <button class="btn btn-ghost" onclick="goToPaiPhase(2)">Zurück</button>
-      <button class="btn btn-primary" onclick="savePaiPhaseAndNext(3, 4)">Weiter</button>
+      <button class="btn btn-ghost" onclick="goToPaiPhase(1)">Zurück</button>
+      <button class="btn btn-primary" onclick="goToPaiPhase(3)">Weiter</button>
     </div>
   `;
 }
 
-// ── PAI PHASE 4: FRICTION PROFIL ──
-function renderPaiPhase4() {
+function renderPaiTranskriptAnalysis(data) {
+  if (!data) return '';
+  const text = data.text || "";
+  const when = data.analyzed_at ? new Date(data.analyzed_at).toLocaleString("de-CH") : "";
   return `
-    <div class="phase-header"><span class="phase-number">Phase 4</span><span class="phase-title">Friction Profil setzen</span></div>
-    <div class="phase-instruction">12 Ampeln setzen — identisch zum organisationalen Friction Scan. Drei Layer × 4 Achsen.</div>
-    <div class="scan-card">
-      <div class="scan-card-title">Friction Profil — Individuelle Einschaetzung</div>
-      ${renderPaiAmpelGrid()}
-    </div>
-    <div class="btn-row" style="margin-top:12px">
-      <button class="btn btn-ghost" onclick="goToPaiPhase(3)">Zurück</button>
-      <button class="btn btn-primary" onclick="savePaiPhase4AndNext()">Weiter</button>
+    <div class="scan-card" style="background:var(--ada-bg);border-color:rgba(75,0,130,0.2);padding:10px">
+      <div class="scan-card-title" style="color:var(--ada-accent)">Linguistik- und Layer-Analyse${when ? ` <span style="font-weight:400;font-size:11px;color:var(--ink-mute)">· ${escHtml(when)}</span>` : ""}</div>
+      <div style="font-size:13px;white-space:pre-wrap;line-height:1.6">${escHtml(text)}</div>
     </div>
   `;
 }
 
-function renderPaiAmpelGrid() {
-  let html = '<div class="ampel-grid">';
-  for (const [layer, axes] of Object.entries(AMPEL_AXES)) {
-    html += `<div class="layer-label">${layer}</div>`;
-    for (const achse of axes) {
-      const key = `${layer}_${achse}`;
-      const current = paiAmpeln[key] || "grau";
-      html += `<div class="ampel-row"><span class="ampel-label">${escHtml(achse)}</span><div class="ampel-dots">`;
-      for (const farbe of ["gruen", "gelb", "rot"]) {
-        html += `<div class="ampel-dot ${current === farbe ? farbe : ""}" data-key="${key}" data-farbe="${farbe}" onclick="setPaiAmpel(this)"></div>`;
-      }
-      html += `<input class="form-input ampel-notiz" placeholder="Notiz…" data-ampel-notiz="${key}" value="${escHtml(getPaiVal(4, 'notiz_' + key))}">`;
-      html += `</div></div>`;
-    }
-  }
-  html += '</div>';
-  return html;
-}
+async function handlePaiTranskriptFile(file) {
+  if (!file) return;
+  const statusEl = document.getElementById("paiTranskriptStatus");
+  const previewEl = document.getElementById("paiTranskriptPreview");
+  const textEl = document.getElementById("paiTranskriptText");
+  if (statusEl) statusEl.textContent = `… ${file.name} wird geladen`;
 
-function setPaiAmpel(dot) {
-  const key = dot.dataset.key;
-  const farbe = dot.dataset.farbe;
-  if (paiAmpeln[key] === farbe) {
-    paiAmpeln[key] = "grau";
-    dot.parentElement.querySelectorAll(".ampel-dot").forEach(d => d.className = "ampel-dot");
-  } else {
-    paiAmpeln[key] = farbe;
-    dot.parentElement.querySelectorAll(".ampel-dot").forEach(d => {
-      d.className = "ampel-dot" + (d.dataset.farbe === farbe ? " " + farbe : "");
-    });
-  }
-  autoSavePaiPhase();
-}
-
-async function savePaiPhase4AndNext() {
-  await savePaiAmpeln();
-  await savePaiAmpelNotizen();
-  goToPaiPhase(5);
-}
-
-async function savePaiAmpeln() {
-  const ampeln = [];
-  for (const [layer, axes] of Object.entries(AMPEL_AXES)) {
-    for (const achse of axes) {
-      const key = `${layer}_${achse}`;
-      const val = paiAmpeln[key] || "grau";
-      if (val !== "grau") ampeln.push({ layer, achse, status: val });
-    }
-  }
-  if (ampeln.length === 0) return;
+  const name = file.name.toLowerCase();
+  let text = "";
   try {
-    await fetch(`/api/pai/ampeln/${currentPaiSession.id}`, {
-      method: "PUT", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ampeln }),
-    });
-  } catch (e) { console.warn("PAI ampeln save:", e.message); }
+    if (name.endsWith(".txt")) {
+      text = await file.text();
+    } else if (name.endsWith(".docx")) {
+      const fd = new FormData();
+      fd.append("file", file);
+      const r = await fetch("/api/upload", { method: "POST", body: fd });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || d.error) throw new Error(d.error || `HTTP ${r.status}`);
+      text = d.text || "";
+    } else {
+      throw new Error("Format nicht unterstützt. Erlaubt: .txt, .docx");
+    }
+  } catch (e) {
+    if (statusEl) statusEl.innerHTML = `<span style="color:var(--red)">Fehler: ${escHtml(e.message)}</span>`;
+    return;
+  }
+
+  text = (text || "").replace(/\r\n/g, "\n").trim();
+  if (!text) {
+    if (statusEl) statusEl.innerHTML = `<span style="color:var(--red)">Kein Text extrahierbar.</span>`;
+    return;
+  }
+
+  if (textEl) textEl.value = text;
+  if (previewEl) {
+    const head = text.slice(0, 300);
+    previewEl.style.display = "block";
+    previewEl.textContent = head + (text.length > 300 ? `\n\n… [vollständiger Text geladen — ${text.length} Zeichen]` : "");
+  }
+  if (statusEl) statusEl.innerHTML = `<span style="color:var(--green)">\u2705 ${escHtml(file.name)} geladen (${text.length} Zeichen)</span>`;
+  await savePaiErhebungField(2, "transkript_text", text);
 }
 
-async function savePaiAmpelNotizen() {
-  const notizEls = document.querySelectorAll("[data-ampel-notiz]");
-  for (const el of notizEls) {
-    const key = el.dataset.ampelNotiz;
-    const val = el.value.trim();
-    if (val) await savePaiErhebungField(4, "notiz_" + key, val);
+async function analysePaiTranskript() {
+  const text = document.getElementById("paiTranskriptText")?.value?.trim();
+  if (!text) { alert("Bitte Transkript hochladen oder einfügen."); return; }
+  const resultEl = document.getElementById("paiTranskriptResult");
+  const btn = document.getElementById("btnPaiTranskriptAnalyze");
+  if (btn) { btn.disabled = true; btn.textContent = "Analysiere…"; }
+  if (resultEl) resultEl.innerHTML = '<div class="ada-msg thinking" style="font-size:13px">Claude analysiert Transkript…</div>';
+  const fullPrompt = PAI_TRANSKRIPT_ANALYSE_PROMPT +
+    `\n\n---\n\nPerson: ${currentPaiSession.person_name}${currentPaiSession.person_rolle ? ", " + currentPaiSession.person_rolle : ""}\n\nTranskript:\n${text}`;
+  try {
+    const r = await fetch("/api/ada/chat", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: [{ role: "user", content: fullPrompt }] }),
+    });
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+    await savePaiErhebungField(2, "transkript_text", text);
+    const analysis = { text: data.content, analyzed_at: new Date().toISOString() };
+    currentPaiSession.pai_transkript_analyse = analysis;
+    try {
+      await fetch(`/api/pai/sessions/${currentPaiSession.id}`, {
+        method: "PATCH", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pai_transkript_analyse: analysis }),
+      });
+    } catch (e) { console.warn("PAI Transkript-Analyse save:", e.message); }
+    if (resultEl) resultEl.innerHTML = renderPaiTranskriptAnalysis(analysis);
+  } catch (e) {
+    if (resultEl) resultEl.innerHTML = `<div style="color:var(--red);font-size:13px;padding:6px">Fehler: ${escHtml(e.message)}</div>`;
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "Neu analysieren"; }
   }
 }
 
-// ── PAI PHASE 5: HYPOTHESEN & NAECHSTE SCHRITTE ──
-function renderPaiPhase5() {
-  const empStatus = getPaiVal(5, 'empathic_status');
+// ── PAI PHASE 3: HYPOTHESEN & EMPATHIC ACCURACY ──
+const PAI_HYPOTHESEN_GENERATOR_PROMPT = `Du bist NELION PAI Diagnostics.
+Generiere 3 Hypothesen für diese Führungsperson — eine pro Layer.
+
+Format pro Hypothese:
+Layer: L1 / L2 / L3
+Mechanismus: Was passiert und warum (1–2 Sätze)
+Evidenz: Direktes Zitat oder Beobachtung aus dem Gespräch
+
+Antworte auf Deutsch, Umlaute ausschreiben (ä ö ü), präzise, keine Floskeln.`;
+
+function renderPaiPhase3() {
+  const empStatus = getPaiVal(3, 'empathic_status');
+  const hasData = !!(getPaiVal(1, 'f1') || getPaiVal(1, 'f2') || getPaiVal(1, 'f3') || (currentPaiSession.pai_transkript_analyse));
   return `
-    <div class="phase-header"><span class="phase-number">Phase 5</span><span class="phase-title">Hypothesen & nächste Schritte</span></div>
-    <div class="phase-instruction">9 Hypothesen (3 pro Layer) formulieren, Evidenz verlinken, nächste Schritte definieren.</div>
+    <div class="phase-header"><span class="phase-number">Phase 3</span><span class="phase-title">Hypothesen & Empathic Accuracy</span></div>
+    <div class="phase-instruction">Claude generiert drei Hypothesen — eine pro Layer. Ergebnisse können manuell editiert werden.</div>
+
+    <div class="scan-card">
+      <div class="scan-card-title">Hypothesen-Generator</div>
+      <div class="pai-diag-hint" style="margin-bottom:8px">Nutzt Interview-Notizen (Phase 1) + Transkript-Analyse (Phase 2, falls vorhanden).</div>
+      <div class="btn-row">
+        <button class="btn btn-primary btn-sm" id="btnPaiHypGen" onclick="generatePaiHypothesen()" ${hasData ? "" : "disabled"}>Hypothesen generieren</button>
+        ${hasData ? "" : '<span style="font-size:11px;color:var(--ink-mute);align-self:center">Mindestens eine Kernfrage oder Transkript-Analyse nötig.</span>'}
+      </div>
+      <div id="paiHypGenStatus" style="margin-top:6px;font-size:12px;color:var(--ink-mute)"></div>
+    </div>
 
     <div class="scan-card" style="margin-top:12px">
-      <div class="scan-card-title">L1 — Neurobiologische Kapazität</div>
-      ${renderPaiHypotheseSlotLayered(1, 'L1')}
-      ${renderPaiHypotheseSlotLayered(2, 'L1')}
-      ${renderPaiHypotheseSlotLayered(3, 'L1')}
-    </div>
-    <div class="scan-card" style="margin-top:12px">
-      <div class="scan-card-title">L2 — Wissensblockaden</div>
-      ${renderPaiHypotheseSlotLayered(4, 'L2')}
-      ${renderPaiHypotheseSlotLayered(5, 'L2')}
-      ${renderPaiHypotheseSlotLayered(6, 'L2')}
-    </div>
-    <div class="scan-card" style="margin-top:12px">
-      <div class="scan-card-title">L3 — Strukturelle Reibung</div>
-      ${renderPaiHypotheseSlotLayered(7, 'L3')}
-      ${renderPaiHypotheseSlotLayered(8, 'L3')}
-      ${renderPaiHypotheseSlotLayered(9, 'L3')}
+      <div class="scan-card-title">3 Hypothesen (L1 / L2 / L3)</div>
+      ${renderPaiHypBlock(1, 'L1')}
+      ${renderPaiHypBlock(2, 'L2')}
+      ${renderPaiHypBlock(3, 'L3')}
     </div>
 
     <div class="scan-card" style="margin-top:12px">
       <div class="scan-card-title">Empathic Accuracy</div>
-      <div style="font-size:12px;color:var(--ink-mute);margin-bottom:10px">PAI benennt Momentanzustand — Person bestätigt oder korrigiert</div>
+      <div class="pai-diag-hint" style="margin-bottom:10px">PAI benennt Momentanzustand — Person bestätigt oder korrigiert.</div>
       <div class="form-group">
         <label class="form-label">Inferenz</label>
-        <textarea class="form-input" id="paiEmpathicInferenz" rows="2" placeholder="Mein Eindruck: Diese Person ist gerade [Zustand]" data-pai-feld="empathic_inferenz" data-pai-phase="5">${escHtml(getPaiVal(5, 'empathic_inferenz'))}</textarea>
+        <textarea class="form-input" rows="2" placeholder="Mein Eindruck: Diese Person ist gerade [Zustand]" data-pai-feld="empathic_inferenz" data-pai-phase="3">${escHtml(getPaiVal(3, 'empathic_inferenz'))}</textarea>
       </div>
       <div class="btn-row" style="margin-top:8px;justify-content:flex-start;gap:8px">
         <button class="btn ${empStatus === 'correct' ? 'btn-primary' : 'btn-ghost'}" id="btnEmpathicCorrect" onclick="setEmpathicStatus('correct')">✓ Bestätigt</button>
@@ -8027,72 +8242,330 @@ function renderPaiPhase5() {
       <div id="empathicKorrekturBlock" style="margin-top:8px;display:${empStatus === 'corrected' ? 'block' : 'none'}">
         <div class="form-group">
           <label class="form-label">Tatsächlicher Zustand</label>
-          <textarea class="form-input" id="paiEmpathicKorrektur" rows="2" placeholder="Tatsächlicher Zustand:" data-pai-feld="empathic_korrektur" data-pai-phase="5">${escHtml(getPaiVal(5, 'empathic_korrektur'))}</textarea>
+          <textarea class="form-input" rows="2" placeholder="Tatsächlicher Zustand:" data-pai-feld="empathic_korrektur" data-pai-phase="3">${escHtml(getPaiVal(3, 'empathic_korrektur'))}</textarea>
         </div>
+      </div>
+    </div>
+
+    <!-- KPI-Panel: hidden bis nach Gate 1 — Daten werden still erfasst. -->
+    <div class="scan-card" style="margin-top:12px;display:none" id="paiKpiCard">
+      <div class="scan-card-title">KPI-Tracking (intern)</div>
+      <div class="pai-kpi-section open">${renderPaiKpis()}</div>
+    </div>
+
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-ghost" onclick="goToPaiPhase(2)">Zurück</button>
+      <button class="btn btn-primary" onclick="savePaiPhase3AndNext()">Weiter</button>
+    </div>
+  `;
+}
+
+function renderPaiHypBlock(num, layer) {
+  return `
+    <div class="hyp-card" style="margin-top:8px">
+      <div style="font-weight:500;margin-bottom:8px">Hypothese ${num} — ${layer}</div>
+      <input type="hidden" data-pai-feld="hyp${num}_layer" data-pai-phase="3" value="${layer}">
+      <div class="form-group">
+        <label class="form-label">Mechanismus</label>
+        <textarea class="form-input" id="paiHyp${num}Mech" rows="2" placeholder="Was passiert und warum…" data-pai-feld="hyp${num}_mechanismus" data-pai-phase="3">${escHtml(getPaiVal(3, 'hyp'+num+'_mechanismus'))}</textarea>
+      </div>
+      <div class="form-group" style="margin-top:8px">
+        <label class="form-label">Evidenz</label>
+        <textarea class="form-input" id="paiHyp${num}Ev" rows="2" placeholder="Direktes Zitat oder Beobachtung…" data-pai-feld="hyp${num}_evidenz" data-pai-phase="3">${escHtml(getPaiVal(3, 'hyp'+num+'_evidenz'))}</textarea>
+      </div>
+    </div>
+  `;
+}
+
+async function generatePaiHypothesen() {
+  const btn = document.getElementById("btnPaiHypGen");
+  const statusEl = document.getElementById("paiHypGenStatus");
+  if (btn) { btn.disabled = true; btn.textContent = "Generiere…"; }
+  if (statusEl) statusEl.textContent = "Claude analysiert alle ausgefüllten Felder…";
+  const ctx = [];
+  ctx.push(`Person: ${currentPaiSession.person_name}${currentPaiSession.person_rolle ? ", " + currentPaiSession.person_rolle : ""}`);
+  const fieldMap = {
+    "0_branche": "Branche",
+    "0_wachstumsphase": "Wachstumsphase",
+    "0_unternehmensgroesse": "Unternehmensgrösse",
+    "0_erwartungen": "Erwartungen an PAI",
+    "0_kognitive_diversitaet": "L1a Kognitive Diversität (A–D)",
+    "0_koerperwahrnehmung": "L1a Körperwahrnehmung (A–D)",
+    "1_energie_skala": "Energie-Skala (1–10)",
+    "1_energie_freitext": "Energie-Beschreibung",
+    "1_guter_tag": "Letzter guter Tag",
+    "1_f1": "F1 — 10-Jahre-Vision",
+    "1_f2": "F2 — letzte Woche",
+    "1_f3": "F3 — Abhaltung",
+    "1_f4": "F4 — Wendepunkt",
+    "1_f5": "F5 — unbemerkter Stolz",
+    "1_system_gut": "Systembild: Was läuft gut",
+    "1_system_versucht": "Systembild: Versuchte Veränderung",
+    "1_friction_wo": "Friction: Wo",
+    "1_friction_anders": "Friction: Anders wenn weg",
+    "1_selbstbild_reaktion": "Selbstbild: Reaktion (A–D)",
+    "1_selbstbild_freitext": "Selbstbild: Kontext",
+    "1_selbstbild_schutz": "Selbstbild: Zuletzt aufgeben",
+    "1_ms1": "Survey L1: 20-Min-Pause",
+    "1_ms2": "Survey L1: Signale ignoriert",
+    "1_ms3": "Survey L2: Aufgabe übernommen",
+    "1_ms4": "Survey L2: Nicht angesprochen",
+    "1_ms5": "Survey L3: Entscheidung aufgeschoben",
+  };
+  for (const [key, label] of Object.entries(fieldMap)) {
+    const v = paiErhebung[key];
+    if (v) ctx.push(`${label}: ${v}`);
+  }
+  if (currentPaiSession.pai_transkript_analyse && currentPaiSession.pai_transkript_analyse.text) {
+    ctx.push(`\n[Transkript-Analyse Phase 2]\n${currentPaiSession.pai_transkript_analyse.text}`);
+  }
+  const fullPrompt = PAI_HYPOTHESEN_GENERATOR_PROMPT + "\n\n---\n\n" + ctx.join("\n");
+  try {
+    const r = await fetch("/api/ada/chat", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: [{ role: "user", content: fullPrompt }] }),
+    });
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+    const parsed = parsePaiHypothesenResponse(data.content);
+    // Felder ausfüllen + speichern
+    for (const h of parsed) {
+      const n = h.num;
+      const mechEl = document.getElementById(`paiHyp${n}Mech`);
+      const evEl = document.getElementById(`paiHyp${n}Ev`);
+      if (mechEl) mechEl.value = h.mechanismus || "";
+      if (evEl) evEl.value = h.evidenz || "";
+      await savePaiErhebungField(3, `hyp${n}_mechanismus`, h.mechanismus || "");
+      await savePaiErhebungField(3, `hyp${n}_evidenz`, h.evidenz || "");
+      await savePaiErhebungField(3, `hyp${n}_layer`, h.layer || ["L1","L2","L3"][n-1]);
+    }
+    // KPI: Hypothesen gestellt
+    let hypCount = 0;
+    for (let i = 1; i <= 3; i++) {
+      if ((document.getElementById(`paiHyp${i}Mech`)?.value || "").trim()) hypCount++;
+    }
+    paiKpis['hypothesen_gestellt'] = hypCount;
+    await savePaiKpis();
+    if (statusEl) statusEl.innerHTML = `<span style="color:var(--green)">3 Hypothesen generiert — editierbar.</span>`;
+  } catch (e) {
+    if (statusEl) statusEl.innerHTML = `<span style="color:var(--red)">Fehler: ${escHtml(e.message)}</span>`;
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "Neu generieren"; }
+  }
+}
+
+// Parst Claude-Output in 3 Blöcke {num, layer, mechanismus, evidenz}.
+// Robust gegenüber unterschiedlichen Formatierungen (Zeilen Layer:/Mechanismus:/Evidenz:)
+function parsePaiHypothesenResponse(text) {
+  const out = [];
+  if (!text) return out;
+  // Split auf Hypothesen-Trenner (Layer:-Zeile leitet neue Hypothese ein)
+  const blocks = text.split(/\n(?=\s*(?:Hypothese\s*\d+|##?\s*Hypothese|Layer\s*[:\-]))/i);
+  let idx = 0;
+  for (const b of blocks) {
+    const layer = (b.match(/Layer\s*[:\-]\s*(L[123])/i) || [])[1];
+    const mech = (b.match(/Mechanismus\s*[:\-]\s*([\s\S]*?)(?=\n\s*(?:Evidenz|Layer|Hypothese\s*\d+|$))/i) || [])[1];
+    const ev = (b.match(/Evidenz\s*[:\-]\s*([\s\S]*?)(?=\n\s*(?:Layer|Hypothese\s*\d+|$))/i) || [])[1];
+    if (layer || mech || ev) {
+      idx++;
+      out.push({
+        num: idx,
+        layer: layer || ["L1","L2","L3"][idx-1] || "",
+        mechanismus: (mech || "").trim(),
+        evidenz: (ev || "").trim(),
+      });
+      if (idx >= 3) break;
+    }
+  }
+  while (out.length < 3) out.push({ num: out.length + 1, layer: ["L1","L2","L3"][out.length], mechanismus: "", evidenz: "" });
+  return out.slice(0, 3);
+}
+
+async function savePaiPhase3AndNext() {
+  const fields = document.querySelectorAll('#paiContent [data-pai-feld][data-pai-phase="3"]');
+  const seen = new Set();
+  for (const el of fields) {
+    const feld = el.dataset.paiFeld;
+    if (seen.has(feld)) continue;
+    seen.add(feld);
+    const wert = el.tagName === "SELECT" ? el.value : (el.value || "");
+    await savePaiErhebungField(3, feld, wert);
+  }
+  goToPaiPhase(4);
+}
+
+// ── PAI PHASE 4: ABSCHLUSS (Ampeln + Next Steps + Export) ──
+function renderPaiPhase4() {
+  const ampeln = (currentPaiSession.pai_abschluss_ampeln) || {};
+  const ampel = (layer) => {
+    const cur = ampeln[layer] || "grau";
+    return `<div class="ampel-row">
+      <span class="ampel-label">${layer}</span>
+      <div class="ampel-dots">
+        ${["gruen","gelb","rot"].map(f => `<div class="ampel-dot ${cur === f ? f : ""}" data-layer="${layer}" data-farbe="${f}" onclick="setPaiAbschlussAmpel(this)"></div>`).join("")}
+      </div>
+    </div>`;
+  };
+
+  return `
+    <div class="phase-header"><span class="phase-number">Phase 4</span><span class="phase-title">Abschluss & Next Steps</span></div>
+    <div class="phase-instruction">Finale Einschätzung, nächste Schritte, nächste Session.</div>
+
+    <div class="scan-card">
+      <div class="scan-card-title">Deine Einschätzung nach dem Gespräch</div>
+      <div class="pai-diag-hint" style="margin-bottom:10px">Drei Ampeln — dein Urteil als Beraterin.</div>
+      <div class="ampel-grid">
+        ${ampel("L1")}
+        ${ampel("L2")}
+        ${ampel("L3")}
       </div>
     </div>
 
     <div class="scan-card" style="margin-top:12px">
       <div class="scan-card-title">Empfohlene nächste Schritte</div>
-      <textarea class="form-input" id="paiNextSteps" rows="4" placeholder="Konkrete Empfehlungen…" data-pai-feld="next_steps" data-pai-phase="5">${escHtml(getPaiVal(5, 'next_steps'))}</textarea>
+      <textarea class="form-input" rows="4" placeholder="Konkrete Empfehlungen für die Person…" data-pai-feld="next_steps" data-pai-phase="4">${escHtml(getPaiVal(4, 'next_steps'))}</textarea>
     </div>
+
     <div class="scan-card" style="margin-top:12px">
-      <div class="scan-card-title" style="cursor:pointer" onclick="document.getElementById('paiKpiSection').classList.toggle('open')">
-        KPI-Tracking ▾
-      </div>
-      <div id="paiKpiSection" class="pai-kpi-section">
-        ${renderPaiKpis()}
-      </div>
+      <div class="scan-card-title">Nächste Session</div>
+      <textarea class="form-input" id="paiNextSession" rows="3" placeholder="Themen, Fragen, offene Punkte…">${escHtml(currentPaiSession.pai_next_session || "")}</textarea>
     </div>
+
     <div class="btn-row" style="margin-top:12px">
-      <button class="btn btn-ghost" onclick="goToPaiPhase(4)">Zurück</button>
-      <button class="btn btn-ghost" onclick="savePaiPhase5()">Zwischenspeichern</button>
+      <button class="btn btn-ghost" onclick="goToPaiPhase(3)">Zurück</button>
+      <button class="btn btn-ghost" onclick="savePaiPhase4()">Zwischenspeichern</button>
+      <button class="btn btn-ghost" onclick="exportPaiNotes()">Notizen exportieren (TXT)</button>
       <button class="btn btn-primary" onclick="finishPaiSession()">Session abschliessen</button>
     </div>
   `;
 }
 
-function renderPaiHypotheseSlot(num) {
-  // Legacy — replaced by renderPaiHypotheseSlotLayered
-  return renderPaiHypotheseSlotLayered(num, 'L1');
+async function setPaiAbschlussAmpel(dot) {
+  const layer = dot.dataset.layer;
+  const farbe = dot.dataset.farbe;
+  const a = currentPaiSession.pai_abschluss_ampeln || {};
+  if (a[layer] === farbe) {
+    delete a[layer];
+    dot.parentElement.querySelectorAll(".ampel-dot").forEach(d => d.className = "ampel-dot");
+  } else {
+    a[layer] = farbe;
+    dot.parentElement.querySelectorAll(".ampel-dot").forEach(d => {
+      d.className = "ampel-dot" + (d.dataset.farbe === farbe ? " " + farbe : "");
+    });
+  }
+  currentPaiSession.pai_abschluss_ampeln = a;
+  try {
+    await fetch(`/api/pai/sessions/${currentPaiSession.id}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pai_abschluss_ampeln: a }),
+    });
+  } catch (e) { console.warn("PAI Abschluss-Ampel save:", e.message); }
 }
 
-function renderPaiHypotheseSlotLayered(num, layer) {
-  return `
-    <div class="hyp-card" style="margin-top:8px">
-      <div style="font-weight:500;margin-bottom:8px">Hypothese ${num}</div>
-      <div class="hyp-fields">
-        <div class="form-group">
-          <label class="form-label">Layer</label>
-          <input class="form-input" value="${layer}" readonly style="background:var(--surface2);color:var(--ink-mid);font-family:var(--mono);font-size:12px" data-pai-feld="hyp${num}_layer" data-pai-phase="5">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Konfidenz</label>
-          <select class="form-input" id="paiHyp${num}Stern" data-pai-feld="hyp${num}_stern" data-pai-phase="5">
-            <option value="">—</option>
-            <option value="1" ${getPaiVal(5, 'hyp'+num+'_stern')==='1'?'selected':''}>★☆☆</option>
-            <option value="2" ${getPaiVal(5, 'hyp'+num+'_stern')==='2'?'selected':''}>★★☆</option>
-            <option value="3" ${getPaiVal(5, 'hyp'+num+'_stern')==='3'?'selected':''}>★★★</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-group" style="margin-top:8px">
-        <label class="form-label">Mechanismus</label>
-        <textarea class="form-input" id="paiHyp${num}Mech" rows="2" placeholder="Was passiert und warum…" data-pai-feld="hyp${num}_mechanismus" data-pai-phase="5">${escHtml(getPaiVal(5, 'hyp'+num+'_mechanismus'))}</textarea>
-      </div>
-      <div class="form-group" style="margin-top:8px">
-        <label class="form-label">Evidenz</label>
-        <textarea class="form-input" id="paiHyp${num}Ev" rows="2" placeholder="Direktes Zitat oder Beobachtung…" data-pai-feld="hyp${num}_evidenz" data-pai-phase="5">${escHtml(getPaiVal(5, 'hyp'+num+'_evidenz'))}</textarea>
-      </div>
-    </div>
-  `;
+async function savePaiPhase4() {
+  // Textareas (data-pai-feld phase=4)
+  const fields = document.querySelectorAll('#paiContent [data-pai-feld][data-pai-phase="4"]');
+  const seen = new Set();
+  for (const el of fields) {
+    const feld = el.dataset.paiFeld;
+    if (seen.has(feld)) continue;
+    seen.add(feld);
+    const wert = el.tagName === "SELECT" ? el.value : (el.value || "");
+    await savePaiErhebungField(4, feld, wert);
+  }
+  // Next Session (direkt in pai_sessions)
+  const nextSession = document.getElementById("paiNextSession")?.value || "";
+  currentPaiSession.pai_next_session = nextSession;
+  try {
+    await fetch(`/api/pai/sessions/${currentPaiSession.id}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pai_next_session: nextSession }),
+    });
+  } catch (e) { console.warn("PAI next_session save:", e.message); }
+  showSaveIndicator();
 }
 
+function exportPaiNotes() {
+  if (!currentPaiSession) return;
+  const s = currentPaiSession;
+  const name = s.person_name || "";
+  const heute = new Date();
+  const dd = String(heute.getDate()).padStart(2, "0");
+  const mm = String(heute.getMonth() + 1).padStart(2, "0");
+  const yyyy = heute.getFullYear();
+  const dateStr = `${dd}-${mm}-${yyyy}`;
+
+  const sec = (title, content) => `---\n${title}\n${(content || "").trim() || "[nicht ausgefüllt]"}\n`;
+  const ampelLine = () => {
+    const a = s.pai_abschluss_ampeln || {};
+    return `L1: ${a.L1 || "—"} · L2: ${a.L2 || "—"} · L3: ${a.L3 || "—"}`;
+  };
+
+  const lines = [
+    "NELION — PAI Session",
+    `Person: ${name}${s.person_rolle ? " (" + s.person_rolle + ")" : ""}`,
+    `Datum: ${getPaiVal(0, 'datum') || dateStr}`,
+    "",
+    sec("ARBEITSKONTEXT",
+      `Branche: ${getPaiVal(0, 'branche') || "—"}\n` +
+      `Wachstumsphase: ${getPaiVal(0, 'wachstumsphase') || "—"}\n` +
+      `Unternehmensgrösse: ${getPaiVal(0, 'unternehmensgroesse') || "—"}\n` +
+      `Erwartungen: ${getPaiVal(0, 'erwartungen') || "—"}`),
+    sec("L1a KOGNITIVE PROFILE",
+      `Kognitive Diversität: ${getPaiVal(0, 'kognitive_diversitaet') || "—"}\n` +
+      `Körperwahrnehmung: ${getPaiVal(0, 'koerperwahrnehmung') || "—"}`),
+    sec("ENERGIEBILD",
+      `Skala: ${getPaiVal(1, 'energie_skala') || "—"}/10\n` +
+      `Beschreibung: ${getPaiVal(1, 'energie_freitext') || "—"}\n` +
+      `Letzter guter Tag: ${getPaiVal(1, 'guter_tag') || "—"}`),
+    sec("KERNFRAGEN",
+      `F1: ${getPaiVal(1, 'f1') || "—"}\n\nF2: ${getPaiVal(1, 'f2') || "—"}\n\nF3: ${getPaiVal(1, 'f3') || "—"}\n\nF4: ${getPaiVal(1, 'f4') || "—"}\n\nF5: ${getPaiVal(1, 'f5') || "—"}`),
+    sec("SYSTEMBILD",
+      `Gut: ${getPaiVal(1, 'system_gut') || "—"}\n\nVersucht: ${getPaiVal(1, 'system_versucht') || "—"}`),
+    sec("FRICTION",
+      `Wo: ${getPaiVal(1, 'friction_wo') || "—"}\n\nAnders wenn weg: ${getPaiVal(1, 'friction_anders') || "—"}`),
+    sec("SELBSTBILD",
+      `Reaktion: ${getPaiVal(1, 'selbstbild_reaktion') || "—"}\n` +
+      `Kontext: ${getPaiVal(1, 'selbstbild_freitext') || "—"}\n` +
+      `Zuletzt aufgeben: ${getPaiVal(1, 'selbstbild_schutz') || "—"}`),
+    sec("BEHAVIORAL SURVEY",
+      `L1 20-Min-Pause: ${getPaiVal(1, 'ms1') || "—"}\n` +
+      `L1 Signale ignoriert: ${getPaiVal(1, 'ms2') || "—"}\n` +
+      `L2 Aufgabe übernommen: ${getPaiVal(1, 'ms3') || "—"}\n` +
+      `L2 Nicht angesprochen: ${getPaiVal(1, 'ms4') || "—"}\n` +
+      `L3 Entscheidung aufgeschoben: ${getPaiVal(1, 'ms5') || "—"}`),
+    sec("TRANSKRIPT-ANALYSE",
+      (s.pai_transkript_analyse && s.pai_transkript_analyse.text) || "—"),
+    sec("HYPOTHESEN",
+      `H1 (L1): ${getPaiVal(3, 'hyp1_mechanismus') || "—"}\nEvidenz: ${getPaiVal(3, 'hyp1_evidenz') || "—"}\n\n` +
+      `H2 (L2): ${getPaiVal(3, 'hyp2_mechanismus') || "—"}\nEvidenz: ${getPaiVal(3, 'hyp2_evidenz') || "—"}\n\n` +
+      `H3 (L3): ${getPaiVal(3, 'hyp3_mechanismus') || "—"}\nEvidenz: ${getPaiVal(3, 'hyp3_evidenz') || "—"}`),
+    sec("EMPATHIC ACCURACY",
+      `Inferenz: ${getPaiVal(3, 'empathic_inferenz') || "—"}\nStatus: ${getPaiVal(3, 'empathic_status') || "—"}\nKorrektur: ${getPaiVal(3, 'empathic_korrektur') || "—"}`),
+    `---\nABSCHLUSS-AMPELN\n${ampelLine()}\n`,
+    sec("NÄCHSTE SCHRITTE", getPaiVal(4, 'next_steps')),
+    sec("NÄCHSTE SESSION", s.pai_next_session || ""),
+  ];
+
+  const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  const safeName = (name || "person").replace(/[^a-zA-Z0-9äöüÄÖÜß_-]+/g, "_");
+  link.href = url;
+  link.download = `NELION_PAI_${safeName}_${dateStr}.txt`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+// Empathic Accuracy lebt in Phase 3 (neu) — nutzt denselben empathic_*-Schlüsselraum
+// Tracking (empathic_accuracy_correct/_corrected) bleibt aktiv, KPI-Panel ist ausgeblendet.
 function setEmpathicStatus(status) {
-  const current = getPaiVal(5, 'empathic_status');
+  const current = getPaiVal(3, 'empathic_status');
   const next = current === status ? '' : status;
-  paiErhebung['5_empathic_status'] = next;
-  savePaiErhebungField(5, 'empathic_status', next);
+  paiErhebung['3_empathic_status'] = next;
+  savePaiErhebungField(3, 'empathic_status', next);
   if (next === 'correct') paiKpis['empathic_accuracy_correct'] = (paiKpis['empathic_accuracy_correct'] || 0) + 1;
   if (next === 'corrected') paiKpis['empathic_accuracy_corrected'] = (paiKpis['empathic_accuracy_corrected'] || 0) + 1;
   const btnC = document.getElementById('btnEmpathicCorrect');
@@ -8101,6 +8574,7 @@ function setEmpathicStatus(status) {
   if (btnX) btnX.className = `btn ${next === 'corrected' ? 'btn-primary' : 'btn-ghost'}`;
   const korr = document.getElementById('empathicKorrekturBlock');
   if (korr) korr.style.display = next === 'corrected' ? 'block' : 'none';
+  savePaiKpis();
   autoSavePaiPhase();
 }
 
@@ -8175,13 +8649,21 @@ function autoSavePaiPhase() {
         seen.add(key);
         await savePaiErhebungField(phase, feld, wert);
       }
-      // Save ampeln if on phase 4
+      // Phase 4: Next Session (separates Feld in pai_sessions)
       if (paiPhase === 4) {
-        await savePaiAmpeln();
-        await savePaiAmpelNotizen();
+        const nextSession = document.getElementById("paiNextSession")?.value;
+        if (nextSession !== undefined && nextSession !== currentPaiSession.pai_next_session) {
+          currentPaiSession.pai_next_session = nextSession;
+          try {
+            await fetch(`/api/pai/sessions/${currentPaiSession.id}`, {
+              method: "PATCH", headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ pai_next_session: nextSession }),
+            });
+          } catch (e) { console.warn("PAI next_session auto-save:", e.message); }
+        }
       }
-      // Save KPIs if on phase 5
-      if (paiPhase === 5) await savePaiKpis();
+      // KPI-Panel ist hidden bis nach Gate 1 — KPIs werden still erfasst.
+      await savePaiKpis();
       showSaveIndicator();
     } catch (e) { console.warn("PAI auto-save:", e.message); }
   }, 1500);
@@ -8207,71 +8689,54 @@ async function savePaiKpis() {
   } catch (e) { console.warn("PAI KPI save:", e.message); }
 }
 
-function savePaiPhase1WithGuard() {
-  const ids = ['paiF1', 'paiF2', 'paiF3'];
-  let valid = true;
-  ids.forEach(id => {
-    const existing = document.getElementById(`${id}Warn`);
-    if (existing) existing.remove();
-    const val = document.getElementById(id)?.value?.trim() || '';
-    if (!val) {
-      valid = false;
-      const warn = document.createElement('div');
-      warn.id = `${id}Warn`;
-      warn.style.cssText = 'color:var(--red,#e74c3c);font-size:11px;margin-top:4px;font-family:var(--mono)';
-      warn.textContent = 'Dieses Feld ist für die Diagnose erforderlich.';
-      document.getElementById(id)?.insertAdjacentElement('afterend', warn);
-    }
-  });
-  if (valid) savePaiPhaseAndNext(1, 2);
-}
-
 async function savePaiPhaseAndNext(fromPhase, toPhase) {
-  // Collect and save all fields on current page
-  const fields = document.querySelectorAll("[data-pai-feld][data-pai-phase]");
+  // Collect and save all fields on current page (dedupliziert pro feld)
+  const fields = document.querySelectorAll(`#paiContent [data-pai-feld][data-pai-phase="${fromPhase}"]`);
+  const seen = new Set();
   for (const el of fields) {
     const feld = el.dataset.paiFeld;
-    const phase = parseInt(el.dataset.paiPhase);
-    const wert = el.tagName === "SELECT" ? el.value : (el.value || "");
-    await savePaiErhebungField(phase, feld, wert);
+    if (seen.has(feld)) continue;
+    let wert;
+    if (el.type === "radio") {
+      if (!el.checked) continue;
+      wert = el.value;
+    } else {
+      wert = el.tagName === "SELECT" ? el.value : (el.value || "");
+    }
+    seen.add(feld);
+    await savePaiErhebungField(fromPhase, feld, wert);
   }
   goToPaiPhase(toPhase);
 }
 
-async function savePaiPhase5() {
-  const fields = document.querySelectorAll("[data-pai-feld][data-pai-phase]");
-  for (const el of fields) {
-    const feld = el.dataset.paiFeld;
-    const phase = parseInt(el.dataset.paiPhase);
-    const wert = el.tagName === "SELECT" ? el.value : (el.value || "");
-    await savePaiErhebungField(phase, feld, wert);
-  }
-  // Auto-calculate hypothesen_gestellt: count slots 1-9 where mechanismus is not empty
+async function finishPaiSession() {
+  // Phase 4 speichern + Session abschliessen
+  if (paiPhase === 4) await savePaiPhase4();
+  // Hypothesen_gestellt aktualisieren (Phase 3: 3 Slots)
   let hypCount = 0;
-  for (let i = 1; i <= 9; i++) {
-    const mech = document.getElementById(`paiHyp${i}Mech`)?.value?.trim() || getPaiVal(5, `hyp${i}_mechanismus`);
+  for (let i = 1; i <= 3; i++) {
+    const mech = (document.getElementById(`paiHyp${i}Mech`)?.value?.trim()) || getPaiVal(3, `hyp${i}_mechanismus`);
     if (mech) hypCount++;
   }
   paiKpis['hypothesen_gestellt'] = hypCount;
   await savePaiKpis();
-  showSaveIndicator();
-}
-
-async function finishPaiSession() {
-  await savePaiPhase5();
-  await savePaiAmpeln();
   currentPaiSession.status = "abgeschlossen";
   await fetch(`/api/pai/sessions/${currentPaiSession.id}`, {
     method: "PATCH", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ status: "abgeschlossen", current_phase: 5 }),
+    body: JSON.stringify({ status: "abgeschlossen", current_phase: 4 }),
   });
   alert("PAI Session abgeschlossen und gespeichert.");
   renderPaiList();
 }
 
 // ══════════════════════════════════════════════════════════════════════════
-// PAI SELF-ASSESSMENT
+// PAI SELF-ASSESSMENT  ·  DEAKTIVIERT (2026-04-17)
 // ══════════════════════════════════════════════════════════════════════════
+// Survey-Logik in den zusammengeführten PAI-Tab migriert (Phase 0–4).
+// Code + Backend-Routen bleiben intakt für späteren Survey-Modus.
+// Kein Nav-Entry, kein Landing-Entry → initPAIAuditTab() wird nicht mehr aufgerufen.
+// Bei Reaktivierung: Nav-Button in appTabNav wieder einkommentieren.
+// ——————————————————————————————————————————————————————————————————————————
 // Parallel zum PAI Interview. Eigener Tab (modul4), eigene Sessions (tool_type='audit').
 // Nutzt dieselben Backend-Routen für Sessions und Erhebung (pai_sessions, pai_erhebung)
 // via flexibles Key-Value. Eigene data-Attribute (data-pai-audit-feld / data-pai-audit-phase)
