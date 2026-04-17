@@ -501,6 +501,46 @@ app.get("/api/consultations/:id/regime", async (req, res) => {
   res.json({ regime: (data && data.hyp_regime) || null });
 });
 
+// Liste aller Consultations für den Klient eines Scans (Phase 0 Dropdown).
+// Matching: scans.kunde_name → contacts.name → consultations
+// Rückgabe: [{ id, consultation_date, hyp_regime }, …] (absteigend nach Datum).
+app.get("/api/scans/:id/consultations", async (req, res) => {
+  if (!supabase) return res.json([]);
+  try {
+    const scanRes = await supabase
+      .from("scans").select("kunde_name").eq("id", req.params.id).maybeSingle();
+    if (scanRes.error || !scanRes.data) return res.json([]);
+    const kundeName = (scanRes.data.kunde_name || "").trim();
+    if (!kundeName) return res.json([]);
+    const contactRes = await supabase
+      .from("contacts").select("id").ilike("name", kundeName).limit(1);
+    if (contactRes.error || !contactRes.data || contactRes.data.length === 0) return res.json([]);
+    const contactId = contactRes.data[0].id;
+    const consRes = await supabase
+      .from("consultations")
+      .select("id, consultation_date, hyp_regime")
+      .eq("contact_id", contactId)
+      .order("consultation_date", { ascending: false })
+      .order("created_at", { ascending: false });
+    if (consRes.error) {
+      // hyp_regime Spalte evtl. nicht migriert — retry ohne
+      if (/hyp_regime/.test(consRes.error.message || "")) {
+        const r2 = await supabase
+          .from("consultations")
+          .select("id, consultation_date")
+          .eq("contact_id", contactId)
+          .order("consultation_date", { ascending: false })
+          .order("created_at", { ascending: false });
+        return res.json(r2.data || []);
+      }
+      return res.json([]);
+    }
+    res.json(consRes.data || []);
+  } catch (e) {
+    res.json([]);
+  }
+});
+
 // Convenience: findet die neueste Consultation für den Klient eines Scans
 // via Name-Matching (scans.kunde_name → contacts.name → consultations).
 // Rückgabe: { consultation_id, regime, consultation_date } oder { regime: null }.
@@ -650,6 +690,12 @@ app.patch("/api/scans/:id", async (req, res) => {
     // Interview Kernfragen-Notizen (Migration 015)
     "interview_f1_notiz", "interview_f2_notiz",
     "interview_f3_notiz", "interview_abschluss_notiz",
+    // Scan-Umbau 2026-04-17 (Migration 017)
+    "linked_consultation_id", "arbeitshypothese", "friction_profil_manual_override",
+    "respondent_ceo_status", "respondent_fk_status", "respondent_op_status",
+    "respondent_ceo_kuerzel", "respondent_fk_kuerzel", "respondent_op_kuerzel",
+    "respondent_ceo_deadline", "respondent_fk_deadline", "respondent_op_deadline",
+    "respondent_ceo_verschickt", "respondent_fk_verschickt", "respondent_op_verschickt",
   ];
   const updates = {};
   for (const key of allowed) {
@@ -658,22 +704,41 @@ app.patch("/api/scans/:id", async (req, res) => {
   if (Object.keys(updates).length === 0) {
     return res.status(400).json({ error: "Keine Felder zum Update" });
   }
-  let { data, error } = await supabase
-    .from("scans").update(updates).eq("id", req.params.id).select().single();
-  // Graceful fallback: wenn Interview-Notiz-Spalten fehlen, retry ohne sie
-  if (error && /interview_f1_notiz|interview_f2_notiz|interview_f3_notiz|interview_abschluss_notiz/.test(error.message || "")) {
-    delete updates.interview_f1_notiz;
-    delete updates.interview_f2_notiz;
-    delete updates.interview_f3_notiz;
-    delete updates.interview_abschluss_notiz;
-    if (Object.keys(updates).length === 0) {
-      return res.status(500).json({ error: "Migration 015 nötig (scans Interview-Notizen)" });
-    }
-    const r2 = await supabase.from("scans").update(updates).eq("id", req.params.id).select().single();
-    if (r2.error) return res.status(500).json({ error: r2.error.message });
-    return res.json(r2.data);
+  // Graceful Update: wenn eine Spalte fehlt, strippen wir nicht-existente
+  // Felder und versuchen erneut. So bricht die App nicht, wenn Migration 015
+  // oder 017 noch nicht ausgeführt wurde.
+  const MIGRATION_017_COLS = [
+    "linked_consultation_id", "arbeitshypothese", "friction_profil_manual_override",
+    "respondent_ceo_status", "respondent_fk_status", "respondent_op_status",
+    "respondent_ceo_kuerzel", "respondent_fk_kuerzel", "respondent_op_kuerzel",
+    "respondent_ceo_deadline", "respondent_fk_deadline", "respondent_op_deadline",
+    "respondent_ceo_verschickt", "respondent_fk_verschickt", "respondent_op_verschickt",
+  ];
+  const MIGRATION_015_COLS = [
+    "interview_f1_notiz", "interview_f2_notiz",
+    "interview_f3_notiz", "interview_abschluss_notiz",
+  ];
+  async function tryUpdate(u) {
+    return supabase.from("scans").update(u).eq("id", req.params.id).select().single();
   }
-  if (error) return res.status(500).json({ error: error.message });
+  let { data, error } = await tryUpdate(updates);
+  if (error) {
+    const msg = error.message || "";
+    const m017 = MIGRATION_017_COLS.some(c => msg.includes(c));
+    const m015 = MIGRATION_015_COLS.some(c => msg.includes(c));
+    if (m017 || m015) {
+      const stripped = { ...updates };
+      if (m017) for (const c of MIGRATION_017_COLS) delete stripped[c];
+      if (m015) for (const c of MIGRATION_015_COLS) delete stripped[c];
+      if (Object.keys(stripped).length === 0) {
+        return res.status(500).json({ error: "Migration 015 oder 017 nötig (scans neue Spalten)" });
+      }
+      const r2 = await tryUpdate(stripped);
+      if (r2.error) return res.status(500).json({ error: r2.error.message });
+      return res.json(r2.data);
+    }
+    return res.status(500).json({ error: error.message });
+  }
   res.json(data);
 });
 

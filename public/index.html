@@ -663,6 +663,25 @@
   .gate-ok { background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
   .gate-fail { background: var(--red-bg); color: var(--red); border: 1px solid var(--red); }
 
+  /* ── RESPONDENTEN-ROW (Friction Scan Phase 1) ──────────────────────── */
+  .respondent-row {
+    border-top: 1px solid var(--border2);
+    padding: 10px 0;
+  }
+  .respondent-row:first-of-type { border-top: none; }
+  .respondent-rolle {
+    font-size: 13px; font-weight: 500; color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .respondent-fields {
+    display: grid;
+    grid-template-columns: 100px 1fr 1fr 1fr;
+    gap: 10px;
+  }
+  @media (max-width: 700px) {
+    .respondent-fields { grid-template-columns: 1fr 1fr; }
+  }
+
   /* ── AMPEL (Traffic Light) ──────────────────────────────────────────── */
   /* Zweispaltiges Grid. Die Box ist ein Flex-Container mit:
      Label (flex: 1, darf umbrechen) + Dots (fix) + optional Notiz (flex: 1).
@@ -4584,13 +4603,28 @@ async function openScan(scan) {
 function isScanPhaseDone(num) {
   if (!currentScan) return false;
   const s = currentScan;
+  // 2026-04-17 Umbau: neue 4 Phasen.
+  //   Phase 0: Klient-Name + alle 3 Mandat-Checks ✓
+  //   Phase 1: min. eine Rolle hat Status != "ausstehend"
+  //   Phase 2: Platzhalter — nie als erledigt markiert
+  //   Phase 3: Arbeitshypothese gesetzt ODER final-Ampeln vorhanden
   switch (num) {
-    case 0: return !!(s.mandatscheck_budget && s.mandatscheck_personen && s.mandatscheck_kein_krise);
-    case 1: return !!(s.anzahl_personen && s.survey_verschickt);
-    case 2: return scanInterviews.filter(iv => iv && iv.rolle).length >= 3;
-    case 3: return scanHypothesen.some(h => h && h.layer && h.layer.trim());
-    case 4: return !!s.hypothesen_spiegel_done;
-    case 5: return !!s.completed;
+    case 0:
+      return !!(s.kunde_name && s.mandatscheck_budget && s.mandatscheck_personen && s.mandatscheck_kein_krise);
+    case 1: {
+      const anyTouched = ["ceo", "fk", "op"].some(k => {
+        const st = s[`respondent_${k}_status`];
+        return st && st !== "ausstehend";
+      });
+      return anyTouched;
+    }
+    case 2:
+      return false;
+    case 3: {
+      const hasHyp = !!(s.arbeitshypothese && String(s.arbeitshypothese).trim());
+      const hasAmpel = Object.keys(scanAmpeln || {}).some(k => k.endsWith("_final") && scanAmpeln[k] && scanAmpeln[k] !== "grau");
+      return hasHyp || hasAmpel;
+    }
     default: return false;
   }
 }
@@ -4739,6 +4773,427 @@ async function saveScanState() {
     });
   } catch (e) { console.warn("Scan save failed:", e.message); }
 }
+
+// ══════════════════════════════════════════════════════════════════════════
+// FRICTION SCAN — UMBAU 2026-04-17
+// Neue 4-Phasen-Struktur:
+//   Phase 0 — Scan Setup          (Klient + Mandat-Check + Erstgespräch-Link)
+//   Phase 1 — Survey              (Tally + Respondenten-Tracking + Submission-Übersicht)
+//   Phase 2 — Interviews          (Platzhalter — Ausbau im nächsten Prompt)
+//   Phase 3 — Erste Einschätzung  (Friction Profil auto-befüllt + Arbeitshypothese)
+// Datenfelder: siehe Migration 017_scan_respondenten.sql.
+// ══════════════════════════════════════════════════════════════════════════
+
+// ── PHASE 0: SCAN SETUP ─────────────────────────────────────────────────
+function renderScanSetup() {
+  const s = currentScan;
+  const datum = s.datum_start ? String(s.datum_start).slice(0, 10)
+                              : new Date().toISOString().slice(0, 10);
+  return `
+    <div class="phase-header"><span class="phase-number">Phase 0</span><span class="phase-title">Scan Setup</span></div>
+    <div class="phase-instruction">Klient, Mandat und Erstgespräch erfassen, bevor der Scan losläuft.</div>
+
+    <div class="scan-card">
+      <div class="scan-card-title">Klient</div>
+      <div class="form-group"><label class="form-label">Name / Unternehmen</label>
+        <input class="form-input" type="text" id="setupKundeName" value="${escHtml(s.kunde_name)}" placeholder="Firmenname / Kundenname">
+      </div>
+      <div class="form-group" style="margin-top:8px"><label class="form-label">Organisation (optional)</label>
+        <input class="form-input" type="text" id="setupOrganisation" value="${escHtml(s.organisation)}" placeholder="Abteilung / Einheit">
+      </div>
+      <div class="form-group" style="margin-top:8px"><label class="form-label">Datum</label>
+        <input class="form-input" type="date" id="setupDatum" value="${escHtml(datum)}">
+      </div>
+      <div class="form-group" style="margin-top:8px"><label class="form-label">Notiz (optional)</label>
+        <textarea class="form-input" id="setupNotiz" rows="2" placeholder="Kontext, Quelle, erster Eindruck…">${escHtml(s.notizen)}</textarea>
+      </div>
+    </div>
+
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title">Mandat-Check</div>
+      <div class="phase-instruction" style="margin-top:0">Ausschlusskriterien prüfen bevor du den Scan startest.</div>
+      <div class="check-row"><input type="checkbox" id="setupMc1" ${s.mandatscheck_budget ? "checked" : ""} onchange="updateSetupMandatGate()"><label for="setupMc1">Entscheider mit Mandat vorhanden</label></div>
+      <div class="check-row"><input type="checkbox" id="setupMc2" ${s.mandatscheck_personen ? "checked" : ""} onchange="updateSetupMandatGate()"><label for="setupMc2">Unternehmen 5–100 Personen (oder Team mit Mandat)</label></div>
+      <div class="check-row"><input type="checkbox" id="setupMc3" ${s.mandatscheck_kein_krise ? "checked" : ""} onchange="updateSetupMandatGate()"><label for="setupMc3">Kein akuter Survival Mode (Runway &gt; 3 Monate, keine laufenden Entlassungen)</label></div>
+      <div id="setupMandatGate" style="margin-top:10px"></div>
+    </div>
+
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title">Erstgespräch-Verknüpfung</div>
+      <div class="form-group"><label class="form-label" for="setupConsultationSelect">Verknüpftes Erstgespräch</label>
+        <select class="form-input" id="setupConsultationSelect" onchange="onSetupConsultationChange(this)">
+          <option value="">— kein Erstgespräch verknüpft —</option>
+        </select>
+      </div>
+      <div id="setupConsultationRegime" style="margin-top:10px;font-size:12px;color:var(--ink-mute)">Lade…</div>
+    </div>
+
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-ghost" onclick="returnToScanList()">Zurück</button>
+      <button class="btn btn-primary" id="setupNextBtn" onclick="saveSetupAndNext()">Weiter</button>
+    </div>
+  `;
+}
+
+function updateSetupMandatGate() {
+  const a = document.getElementById("setupMc1")?.checked;
+  const b = document.getElementById("setupMc2")?.checked;
+  const c = document.getElementById("setupMc3")?.checked;
+  const all = a && b && c;
+  const gate = document.getElementById("setupMandatGate");
+  const btn = document.getElementById("setupNextBtn");
+  if (gate) {
+    gate.innerHTML = all
+      ? '<div class="gate-result gate-ok">✅ Mandat bestätigt — Scan kann starten.</div>'
+      : '<div class="gate-result gate-fail">⛔ Ausschlusskriterium aktiv — Scan nicht starten.</div>';
+  }
+  if (btn) {
+    btn.disabled = !all;
+    btn.style.opacity = all ? "1" : "0.4";
+  }
+}
+
+async function loadSetupConsultations() {
+  const sel = document.getElementById("setupConsultationSelect");
+  const regimeEl = document.getElementById("setupConsultationRegime");
+  if (!sel || !currentScan) return;
+  try {
+    const r = await fetch(`/api/scans/${currentScan.id}/consultations`);
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const list = await r.json();
+    sel.innerHTML = '<option value="">— kein Erstgespräch verknüpft —</option>';
+    if (!Array.isArray(list) || list.length === 0) {
+      sel.innerHTML += '<option disabled>Keine Erstgespräche für diesen Klienten</option>';
+      if (regimeEl) regimeEl.textContent = "Kein Erstgespräch für diesen Klienten gefunden.";
+      return;
+    }
+    const currentLinked = currentScan.linked_consultation_id || "";
+    for (const c of list) {
+      const d = c.consultation_date
+        ? new Date(c.consultation_date).toLocaleDateString("de-CH", { day:"2-digit", month:"2-digit", year:"2-digit" })
+        : "—";
+      const regimeTxt = c.hyp_regime ? ` · Regime ${c.hyp_regime}` : "";
+      const selAttr = c.id === currentLinked ? " selected" : "";
+      sel.innerHTML += `<option value="${escHtml(c.id)}"${selAttr}>${escHtml(d)}${escHtml(regimeTxt)}</option>`;
+    }
+    renderSetupConsultationRegimeFromSelect();
+  } catch (e) {
+    if (regimeEl) regimeEl.textContent = "Erstgespräche konnten nicht geladen werden.";
+    console.warn("loadSetupConsultations:", e.message);
+  }
+}
+
+function renderSetupConsultationRegimeFromSelect() {
+  const sel = document.getElementById("setupConsultationSelect");
+  const el = document.getElementById("setupConsultationRegime");
+  if (!sel || !el) return;
+  const optTxt = sel.options[sel.selectedIndex]?.textContent || "";
+  const m = /Regime\s+(1|2b|2|3)/.exec(optTxt);
+  if (!m) {
+    el.textContent = sel.value ? "Kein Regime im Erstgespräch gesetzt." : "Kein Erstgespräch verknüpft.";
+    return;
+  }
+  const key = m[1];
+  const cfg = REGIME_BANNER_CONFIG[key];
+  if (!cfg) { el.textContent = ""; return; }
+  el.innerHTML = `
+    <div class="regime-banner regime-banner-${cfg.color}" style="margin:0">
+      <span class="regime-banner-icon">${cfg.icon}</span>
+      <div class="regime-banner-body">
+        <span class="regime-banner-label">${escHtml(cfg.label)} aus Erstgespräch</span>
+        <span class="regime-banner-text">— ${escHtml(cfg.text)}</span>
+      </div>
+    </div>
+  `;
+}
+
+async function onSetupConsultationChange(sel) {
+  const id = sel.value || null;
+  currentScan.linked_consultation_id = id;
+  renderSetupConsultationRegimeFromSelect();
+  try {
+    await patchScan({ linked_consultation_id: id });
+    try { sessionStorage.removeItem(`regime_for_scan_${currentScan.id}`); } catch {}
+    loadAndRenderScanRegimeBanner();
+  } catch (e) { console.warn("linked consultation save:", e.message); }
+}
+
+async function saveSetupAndNext() {
+  const name = document.getElementById("setupKundeName")?.value?.trim();
+  if (!name) { document.getElementById("setupKundeName")?.focus(); return; }
+  const updates = {
+    kunde_name: name,
+    organisation: document.getElementById("setupOrganisation")?.value?.trim() || null,
+    datum_start: document.getElementById("setupDatum")?.value || null,
+    notizen: document.getElementById("setupNotiz")?.value || "",
+    mandatscheck_budget:     document.getElementById("setupMc1")?.checked || false,
+    mandatscheck_personen:   document.getElementById("setupMc2")?.checked || false,
+    mandatscheck_kein_krise: document.getElementById("setupMc3")?.checked || false,
+    status: "setup",
+    current_phase: 1,
+  };
+  Object.assign(currentScan, updates);
+  await patchScan(updates);
+  goToScanPhase(1);
+}
+
+// ── PHASE 1: SURVEY ─────────────────────────────────────────────────────
+function renderScanSurvey() {
+  const s = currentScan;
+  return `
+    <div class="phase-header"><span class="phase-number">Phase 1</span><span class="phase-title">Survey</span></div>
+    <div class="phase-instruction">Tally-Survey verschicken, Respondenten tracken, Rücklauf beobachten.</div>
+
+    <div class="scan-card">
+      <div class="scan-card-title">Tally-Link</div>
+      <div class="btn-row"><button class="btn btn-ghost btn-sm" onclick="window.open('https://tally.so','_blank')">Tally-Survey öffnen ↗</button></div>
+    </div>
+
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title">Respondenten</div>
+      <div class="phase-instruction" style="margin-top:0">Keine Email-Adressen speichern — nur Rolle, Status und Deadline.</div>
+      ${renderRespondentRow("ceo", "CEO / Entscheider", s)}
+      ${renderRespondentRow("fk",  "Führungskraft",    s)}
+      ${renderRespondentRow("op",  "Operativ",         s)}
+    </div>
+
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title">Submission-Übersicht</div>
+      <div class="phase-instruction" style="margin-top:0">Eingegangene Tally-Submissions für diese Auswertung. Vollständige Analyse im Auswertungs-Tab.</div>
+      <div id="scanSurveySubmissions">Lade…</div>
+      <div class="btn-row" style="margin-top:8px">
+        <button class="btn btn-ghost btn-sm" onclick="switchTab('auswertung')">→ Vollständige Auswertung</button>
+      </div>
+    </div>
+
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-ghost" onclick="goToScanPhase(0)">Zurück</button>
+      <button class="btn btn-primary" onclick="goToScanPhase(2)">Weiter</button>
+    </div>
+  `;
+}
+
+function renderRespondentRow(key, rolleLabel, s) {
+  const statusVal    = s[`respondent_${key}_status`] || "ausstehend";
+  const kuerzelVal   = s[`respondent_${key}_kuerzel`] || "";
+  const verschicktV  = s[`respondent_${key}_verschickt`] ? String(s[`respondent_${key}_verschickt`]).slice(0,10) : "";
+  const deadlineV    = s[`respondent_${key}_deadline`]   ? String(s[`respondent_${key}_deadline`]).slice(0,10)   : "";
+  return `
+    <div class="respondent-row">
+      <div class="respondent-rolle">${escHtml(rolleLabel)}</div>
+      <div class="respondent-fields">
+        <div class="form-group"><label class="form-label">Kürzel</label>
+          <input class="form-input" type="text" maxlength="10" placeholder="z.B. AB" data-resp-field="${key}_kuerzel" value="${escHtml(kuerzelVal)}">
+        </div>
+        <div class="form-group"><label class="form-label">Verschickt am</label>
+          <input class="form-input" type="date" data-resp-field="${key}_verschickt" value="${escHtml(verschicktV)}">
+        </div>
+        <div class="form-group"><label class="form-label">Deadline</label>
+          <input class="form-input" type="date" data-resp-field="${key}_deadline" value="${escHtml(deadlineV)}">
+        </div>
+        <div class="form-group"><label class="form-label">Status</label>
+          <select class="form-input" data-resp-field="${key}_status">
+            <option value="ausstehend"       ${statusVal==="ausstehend"?"selected":""}>Ausstehend</option>
+            <option value="verschickt"       ${statusVal==="verschickt"?"selected":""}>Verschickt</option>
+            <option value="eingegangen"      ${statusVal==="eingegangen"?"selected":""}>Eingegangen</option>
+            <option value="nicht_erreichbar" ${statusVal==="nicht_erreichbar"?"selected":""}>Nicht erreichbar</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function loadScanSurveySubmissions() {
+  const mount = document.getElementById("scanSurveySubmissions");
+  if (!mount || !currentScan) return;
+  let auswertungId = null;
+  try {
+    const r = await fetch(`/api/auswertungen/${currentScan.id}`);
+    if (r.ok) {
+      const a = await r.json();
+      auswertungId = a && a.id ? a.id : null;
+    }
+  } catch {}
+  if (!auswertungId) {
+    mount.innerHTML = '<div class="aus-empty" style="padding:12px">Noch keine Auswertung für diesen Scan angelegt — öffne den Auswertungs-Tab, um Tally-Submissions zuzuordnen.</div>';
+    return;
+  }
+  try {
+    const r = await fetch(`/api/tally/submissions/${encodeURIComponent(auswertungId)}`);
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const subs = await r.json();
+    if (!Array.isArray(subs) || subs.length === 0) {
+      mount.innerHTML = '<div class="aus-empty" style="padding:12px">Keine Submissions eingegangen.</div>';
+      return;
+    }
+    let html = `<table class="surv-sub-table"><thead><tr>
+      <th>Rolle</th><th>Eingegangen</th><th>Status</th>
+    </tr></thead><tbody>`;
+    const rolleCount = { CEO: 0, FK: 0, Operativ: 0 };
+    for (const s of subs) {
+      const dt = new Date(s.eingegangen_am).toLocaleString("de-CH",
+        { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" });
+      html += `<tr>
+        <td>${escHtml(s.respondent_rolle || "unbekannt")}</td>
+        <td>${escHtml(dt)}</td>
+        <td><span class="surv-sub-status assigned">eingegangen</span></td>
+      </tr>`;
+      if (s.respondent_rolle && rolleCount[s.respondent_rolle] !== undefined) {
+        rolleCount[s.respondent_rolle]++;
+      }
+    }
+    html += `</tbody></table>`;
+    mount.innerHTML = html;
+    // Status-Auto-Update: Rollen mit Submission → Status "eingegangen"
+    const mapping = { ceo: "CEO", fk: "FK", op: "Operativ" };
+    const updates = {};
+    for (const [key, rolleKey] of Object.entries(mapping)) {
+      if (rolleCount[rolleKey] > 0 && currentScan[`respondent_${key}_status`] !== "eingegangen") {
+        updates[`respondent_${key}_status`] = "eingegangen";
+        currentScan[`respondent_${key}_status`] = "eingegangen";
+        const sel = document.querySelector(`select[data-resp-field="${key}_status"]`);
+        if (sel) sel.value = "eingegangen";
+      }
+    }
+    if (Object.keys(updates).length > 0) {
+      try { await patchScan(updates); } catch {}
+    }
+  } catch (e) {
+    mount.innerHTML = `<div class="aus-empty" style="padding:12px">Submissions konnten nicht geladen werden: ${escHtml(e.message)}</div>`;
+  }
+}
+
+// ── PHASE 2: INTERVIEWS (PLATZHALTER) ───────────────────────────────────
+function renderScanInterviewsStub() {
+  return `
+    <div class="phase-header"><span class="phase-number">Phase 2</span><span class="phase-title">Interviews</span></div>
+    <div class="phase-instruction">Wird im nächsten Prompt ausgebaut.</div>
+    <div class="scan-card">
+      <div style="font-size:13px;color:var(--ink-mute);line-height:1.6">
+        Interview-Leitfaden und Transkript-Upload folgen in Phase 2.
+      </div>
+    </div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-ghost" onclick="goToScanPhase(1)">Zurück</button>
+      <button class="btn btn-primary" onclick="goToScanPhase(3)">Weiter</button>
+    </div>
+  `;
+}
+
+// ── PHASE 3: ERSTE EINSCHÄTZUNG ─────────────────────────────────────────
+function renderScanErsteEinschaetzung() {
+  const s = currentScan;
+  const manual = !!s.friction_profil_manual_override;
+  return `
+    <div class="phase-header"><span class="phase-number">Phase 3</span><span class="phase-title">Erste Einschätzung</span></div>
+    <div class="phase-instruction">Friction Profil — automatisch befüllt sobald alle 3 Submissions eingegangen sind. Manuelle Überschreibung möglich.</div>
+
+    <div class="scan-card">
+      <div class="scan-card-title">Friction Profil</div>
+      <div class="check-row" style="margin-bottom:10px">
+        <input type="checkbox" id="frictionManualOverride" ${manual ? "checked" : ""} onchange="onFrictionManualOverrideToggle(this)">
+        <label for="frictionManualOverride">Manuell überschreiben</label>
+      </div>
+      <div id="frictionProfilGrid">${renderFrictionProfilReadonly(manual)}</div>
+      <div id="frictionProfilStatus" style="font-size:11px;color:var(--ink-mute);margin-top:8px"></div>
+    </div>
+
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title">Arbeitshypothese</div>
+      <div class="phase-instruction" style="margin-top:0">Aus Erstgespräch übernommen falls vorhanden — sonst leer.</div>
+      <textarea class="form-input" id="arbeitshypothese" rows="3" placeholder="2–3 Zeilen…">${escHtml(s.arbeitshypothese || "")}</textarea>
+    </div>
+
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-ghost" onclick="goToScanPhase(2)">Zurück</button>
+    </div>
+  `;
+}
+
+function renderFrictionProfilReadonly(manual) {
+  if (manual) return renderAmpelGrid("final");
+  let html = '<div class="ampel-grid">';
+  for (const [layer, axes] of Object.entries(AMPEL_AXES)) {
+    html += `<div class="layer-label">${escHtml(layerLabel(layer))}</div>`;
+    for (const achse of axes) {
+      const wert = scanAmpeln[`${layer}_${achse}_final`] || "grau";
+      html += `<div class="ampel-row"><span class="ampel-label">${escHtml(axisLabel(achse))}</span><div class="ampel-dots">`;
+      for (const farbe of ["gruen", "gelb", "rot"]) {
+        html += `<div class="ampel-dot ${wert === farbe ? farbe : ""}" style="cursor:default"></div>`;
+      }
+      html += `</div></div>`;
+    }
+  }
+  html += '</div>';
+  return html;
+}
+
+async function onFrictionManualOverrideToggle(cb) {
+  currentScan.friction_profil_manual_override = !!cb.checked;
+  const grid = document.getElementById("frictionProfilGrid");
+  if (grid) grid.innerHTML = renderFrictionProfilReadonly(!!cb.checked);
+  try { await patchScan({ friction_profil_manual_override: !!cb.checked }); } catch {}
+}
+
+async function autoFillFrictionProfilFromTally() {
+  if (!currentScan) return;
+  const statusEl = document.getElementById("frictionProfilStatus");
+  if (currentScan.friction_profil_manual_override) {
+    if (statusEl) statusEl.textContent = "Manuelle Überschreibung aktiv — keine Auto-Befüllung.";
+    return;
+  }
+  let auswertungId = null;
+  try {
+    const r = await fetch(`/api/auswertungen/${currentScan.id}`);
+    if (r.ok) {
+      const a = await r.json();
+      auswertungId = a && a.id ? a.id : null;
+    }
+  } catch {}
+  if (!auswertungId) {
+    if (statusEl) statusEl.textContent = "Noch keine Auswertung — Friction Profil leer.";
+    return;
+  }
+  let subs = [];
+  try {
+    const r = await fetch(`/api/tally/submissions/${encodeURIComponent(auswertungId)}`);
+    if (r.ok) subs = await r.json();
+  } catch {}
+  if (!Array.isArray(subs) || subs.length < 3) {
+    if (statusEl) statusEl.textContent = `${(subs || []).length} von 3 Submissions — Profil wird bei 3 automatisch befüllt.`;
+    return;
+  }
+  const order = { rot: 0, gelb: 1, gruen: 2, grau: 3 };
+  for (const [layer, axes] of Object.entries(AMPEL_AXES)) {
+    for (const achse of axes) {
+      const values = [];
+      for (const s of subs) {
+        const amp = s.ampeln || {};
+        for (const [fKey, mapping] of Object.entries(TALLY_F_TO_AXIS)) {
+          if (mapping.layer === layer && mapping.achse === achse && amp[fKey]) {
+            values.push(amp[fKey]);
+          }
+        }
+      }
+      if (values.length === 0) continue;
+      let worst = "grau";
+      for (const v of values) { if (order[v] < order[worst]) worst = v; }
+      scanAmpeln[`${layer}_${achse}_final`] = worst;
+    }
+  }
+  try { await saveAmpeln("final"); } catch {}
+  const grid = document.getElementById("frictionProfilGrid");
+  if (grid) grid.innerHTML = renderFrictionProfilReadonly(false);
+  if (statusEl) statusEl.textContent = "Profil automatisch befüllt aus 3 Submissions (Gate-Logik: schwächster Wert dominiert).";
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// LEGACY — Friction Scan Phasen 0–5 (deaktiviert 2026-04-17)
+// Code bleibt erhalten als Referenz. Dispatcher ruft diese Funktionen nicht
+// mehr auf. Helper-Funktionen (renderAmpelGrid, setAmpel, saveAmpeln,
+// ensureInterviewSlots etc.) werden weiterhin von den neuen Phasen genutzt.
+// ══════════════════════════════════════════════════════════════════════════
 
 // ── PHASE 0: MANDATS-CHECK ──
 function renderPhase0() {
@@ -5191,40 +5646,40 @@ function autoSaveScanPhase() {
   _autoSaveTimer = setTimeout(async () => {
     if (!currentScan) return;
     try {
-      if (scanPhase === 1) {
-        await patchScan({
-          anzahl_personen: parseInt(document.getElementById("scanAnzahl")?.value) || null,
-          notizen: document.getElementById("scanNotizen")?.value || "",
-          survey_verschickt: document.getElementById("surveyDone")?.checked || false,
-          survey_notizen: document.getElementById("surveyNotizen")?.value || "",
-          current_phase: Math.max(currentScan.current_phase || 0, 1),
+      // 2026-04-17 Umbau: Auto-Save für neue 4-Phasen-Struktur.
+      if (scanPhase === 0) {
+        const updates = {
+          kunde_name:   document.getElementById("setupKundeName")?.value?.trim() || currentScan.kunde_name,
+          organisation: document.getElementById("setupOrganisation")?.value?.trim() || null,
+          datum_start:  document.getElementById("setupDatum")?.value || null,
+          notizen:      document.getElementById("setupNotiz")?.value || "",
+          mandatscheck_budget:     document.getElementById("setupMc1")?.checked || false,
+          mandatscheck_personen:   document.getElementById("setupMc2")?.checked || false,
+          mandatscheck_kein_krise: document.getElementById("setupMc3")?.checked || false,
+        };
+        Object.assign(currentScan, updates);
+        await patchScan(updates);
+      } else if (scanPhase === 1) {
+        const patch = {};
+        document.querySelectorAll("[data-resp-field]").forEach(el => {
+          const field = el.dataset.respField; // e.g. "ceo_status"
+          const col = `respondent_${field}`;
+          const val = el.type === "date"
+            ? (el.value || null)
+            : (el.value || "");
+          patch[col] = val;
+          currentScan[col] = val;
         });
-      } else if (scanPhase === 2) {
-        // Kernfragen-Notizen (4 Felder) mit-speichern
-        const kernfragenPatch = {};
-        document.querySelectorAll(".kernfrage-note[data-kernfrage-key]").forEach(el => {
-          const key = el.dataset.kernfrageKey;
-          const val = el.value || "";
-          kernfragenPatch[key] = val;
-          currentScan[key] = val;
-        });
-        if (Object.keys(kernfragenPatch).length > 0) {
-          await patchScan(kernfragenPatch);
-        }
-        await saveAllInterviews();
+        if (Object.keys(patch).length > 0) await patchScan(patch);
       } else if (scanPhase === 3) {
-        await saveAmpeln("interview");
-        await saveAllHypothesen();
-      } else if (scanPhase === 4) {
-        await patchScan({
-          hypothesen_spiegel_notizen: document.getElementById("spiegelNotizen")?.value || "",
-          hypothesen_spiegel_done: document.getElementById("spiegelDone")?.checked || false,
-        });
-      } else if (scanPhase === 5) {
-        await saveAmpeln("final");
-        currentScan.friction_vektor = document.getElementById("frictionVektor")?.value || "";
-        await patchScan({ friction_vektor: currentScan.friction_vektor });
-        await saveAllMassnahmen();
+        const updates = {
+          arbeitshypothese: document.getElementById("arbeitshypothese")?.value || "",
+        };
+        currentScan.arbeitshypothese = updates.arbeitshypothese;
+        await patchScan(updates);
+        if (currentScan.friction_profil_manual_override) {
+          await saveAmpeln("final");
+        }
       }
       showSaveIndicator();
     } catch (e) { console.warn("Auto-save:", e.message); }
@@ -5241,30 +5696,39 @@ function wireAutoSave() {
 }
 
 function bindScanPhaseEvents(num) {
+  // 2026-04-17 Umbau: Events für neue 4-Phasen-Struktur.
   if (num === 0) {
-    const checks = ["mc1", "mc2", "mc3"];
-    const updateGate = () => {
-      const all = checks.every(id => document.getElementById(id)?.checked);
-      const $result = document.getElementById("gateResult");
-      const $btns = document.getElementById("scanPhaseButtons");
-      if (all) {
-        $result.innerHTML = '<div class="gate-result gate-ok">Scan freigegeben ✓</div>';
-        $btns.innerHTML = '<button class="btn btn-primary" onclick="savePhase0AndNext()">Weiter zu Phase 1</button>';
-      } else {
-        let reason = "";
-        if (!document.getElementById("mc1").checked) reason = "Kein Budgetmandat vorhanden.";
-        else if (!document.getElementById("mc2").checked) reason = "Organisation hat weniger als 5 Personen.";
-        else reason = "Akuter Überlebensmodus — Scan nicht geeignet.";
-        $result.innerHTML = `<div class="gate-result gate-fail">Scan nicht geeignet — ${escHtml(reason)}</div>`;
-        $btns.innerHTML = '';
-      }
-    };
-    checks.forEach(id => document.getElementById(id)?.addEventListener("change", updateGate));
-    // Initial-Render: mc3-Status-Text synchron zu den (ggf. vorbefüllten) Sub-Checkboxen
-    if (typeof updateMc3 === "function") updateMc3();
-    updateGate();
+    updateSetupMandatGate();
+    loadSetupConsultations();
+  } else if (num === 1) {
+    loadScanSurveySubmissions();
+  } else if (num === 3) {
+    autoFillFrictionProfilFromTally();
+    // Arbeitshypothese aus verknüpftem Erstgespräch vorschlagen,
+    // wenn Feld leer ist und Consultation verlinkt.
+    prefillArbeitshypotheseFromConsultation();
   }
-  if (num === 5) calculateRegime();
+}
+
+async function prefillArbeitshypotheseFromConsultation() {
+  if (!currentScan || !currentScan.linked_consultation_id) return;
+  const ta = document.getElementById("arbeitshypothese");
+  if (!ta || ta.value.trim()) return;
+  if (currentScan.arbeitshypothese && String(currentScan.arbeitshypothese).trim()) return;
+  try {
+    const r = await fetch(`/api/consultations/${currentScan.linked_consultation_id}`);
+    if (!r.ok) return;
+    const c = await r.json();
+    // hyp_generated = generierte Hypothesen aus Erstgespräch (Markdown).
+    // Wir nehmen nur die erste sinnvolle Zeile als Vorschlag.
+    const raw = (c && c.hyp_generated) ? String(c.hyp_generated) : "";
+    if (!raw.trim()) return;
+    const firstLine = raw.split(/\n/).map(l => l.replace(/^[#\-*\s]+/, "").trim()).filter(Boolean)[0] || "";
+    if (!firstLine || ta.value.trim()) return;
+    ta.value = firstLine.slice(0, 500);
+    currentScan.arbeitshypothese = ta.value;
+    try { await patchScan({ arbeitshypothese: ta.value }); } catch {}
+  } catch {}
 }
 
 async function savePhase0AndNext() {
@@ -7831,7 +8295,7 @@ function renderPaiPhase0() {
     <div class="scan-card">
       <div class="scan-card-title">Personendaten</div>
       <div class="form-group"><label class="form-label pflicht">Name</label><input class="form-input" type="text" id="paiName" value="${escHtml(s.person_name)}" readonly></div>
-      <div class="form-group" style="margin-top:10px"><label class="form-label">Rolle</label><input class="form-input" type="text" id="paiRolle" value="${escHtml(s.person_rolle)}" data-pai-feld="rolle"></div>
+      <div class="form-group" style="margin-top:10px"><label class="form-label pflicht">Rolle</label><input class="form-input" type="text" id="paiRolle" value="${escHtml(s.person_rolle)}" data-pai-feld="rolle"></div>
       <div class="form-group" style="margin-top:10px"><label class="form-label">Datum</label><input class="form-input" type="date" id="paiDatum" value="${getPaiVal(0, 'datum') || new Date().toISOString().slice(0,10)}" data-pai-feld="datum" data-pai-phase="0"></div>
     </div>
 
@@ -9834,15 +10298,108 @@ function getBestAmpel(layer, achse) {
 
 // ── RENDER BODY (4 Survey-Sektionen + 3 manuelle Sektionen) ───────────────
 function renderAuswertungBody() {
+  // 2026-04-17 Umbau:
+  //   - renderSurveyDivergenz (Denzin-Konvergenz) auskommentiert — Neukonzeption im nächsten Prompt.
+  //   - renderSurveyRouting (altes Regime-Routing) ersetzt durch interaktive
+  //     Kaskaden-Simulation (gleiche Logik wie Erstgespräch-Tab).
+  // Die ausgebauten Renderer (renderSurveyDivergenz, renderSurveyRouting)
+  // bleiben im Code als Referenz erhalten.
   return [
     renderSurveyDataInput(),
     renderSurveyHeatmap(),
-    renderSurveyDivergenz(),
-    renderSurveyRouting(),
+    // renderSurveyDivergenz(),   // DEAKTIVIERT — Denzin-Konvergenz, Neukonzeption folgt
+    // renderSurveyRouting(),     // DEAKTIVIERT — ersetzt durch Kaskaden-Simulation
+    renderAuswertungKaskadenSimulation(),
     renderAuswertungHeatmap(),
     renderAuswertungFrictionPoints(),
     renderAuswertungBefund(),
   ].join("");
+}
+
+// ── KASKADEN-SIMULATION (Auswertungs-Tab, 2026-04-17) ────────────────────
+// Wiederverwendung der Logik aus Erstgespräch-Tab: determineKaskadenRegime
+// + KASKADEN_REGIMES + buildSimStep. Eigener State + eigener Mount, damit
+// Erstgespräch-Simulation unberührt bleibt.
+let simulationStateAus = { l1: null, l2: null, immunity: null };
+
+function renderAuswertungKaskadenSimulation() {
+  return `
+    <div class="aus-section" id="ausSectionKaskaden">
+      <div class="aus-section-title">Kaskaden-Routing Simulation</div>
+      <div class="aus-section-sub">Interaktive Sequenz: L1-Status → L2-Status → Immunity → Regime-Ergebnis. Gleiche Logik wie im Erstgespräch.</div>
+      <div id="kaskadenSimulationRootAus"></div>
+    </div>
+  `;
+}
+
+function renderKaskadenSimulationAus() {
+  const root = document.getElementById("kaskadenSimulationRootAus");
+  if (!root) return;
+  const s = simulationStateAus;
+  let html = `<div class="sim-wrap">`;
+
+  html += buildSimStep("1. L1-Status?", s.l1,
+    [
+      { v: "rot", label: "Rot", cls: "r3" },
+      { v: "gelb", label: "Gelb", cls: "r2" },
+      { v: "gruen", label: "Grün", cls: "r1" },
+    ],
+    (v) => `setKaskadenStepAus('l1', '${v}')`);
+
+  if (s.l1 === "gelb") {
+    html += buildSimStep("2. L2-Status?", s.l2,
+      [
+        { v: "hoch", label: "Hoch", cls: "r2" },
+        { v: "ok", label: "Ok", cls: "r1" },
+      ],
+      (v) => `setKaskadenStepAus('l2', '${v}')`);
+  } else if (s.l1 === "gruen") {
+    html += buildSimStep("2. Welche Layer sind auffällig?", s.l2,
+      [
+        { v: "dominant", label: "L2 dominant", cls: "r2" },
+        { v: "l3-dominant", label: "L3 dominant", cls: "r1" },
+        { v: "beide", label: "L2 + L3 beide", cls: "r2b" },
+      ],
+      (v) => `setKaskadenStepAus('l2', '${v}')`);
+  }
+
+  if (s.l1 === "gelb" && s.l2 === "ok") {
+    html += buildSimStep("3. L3 rot + L2 Immunity?", s.immunity,
+      [
+        { v: "ja", label: "Ja", cls: "r2b" },
+        { v: "nein", label: "Nein", cls: "r1" },
+      ],
+      (v) => `setKaskadenStepAus('immunity', '${v}')`);
+  }
+
+  const regimeKey = determineKaskadenRegime(s);
+  if (regimeKey) {
+    const r = KASKADEN_REGIMES[regimeKey];
+    html += `<div class="sim-result sim-result-${r.color}">
+      <div class="sim-result-label">${escHtml(r.label)}</div>
+      <div class="sim-result-expl">${escHtml(r.erklaerung)}</div>
+      <div class="sim-result-mean-head">Was das bedeutet:</div>
+      <ul class="sim-result-mean">`;
+    for (const p of r.bedeutet) html += `<li>${escHtml(p)}</li>`;
+    html += `</ul></div>`;
+  }
+
+  html += `<div class="sim-actions">
+    <button class="btn btn-ghost" type="button" onclick="resetKaskadenSimulationAus()">Simulation zurücksetzen</button>
+  </div></div>`;
+  root.innerHTML = html;
+}
+
+function setKaskadenStepAus(field, value) {
+  simulationStateAus[field] = value;
+  if (field === "l1") { simulationStateAus.l2 = null; simulationStateAus.immunity = null; }
+  if (field === "l2") { simulationStateAus.immunity = null; }
+  renderKaskadenSimulationAus();
+}
+
+function resetKaskadenSimulationAus() {
+  simulationStateAus = { l1: null, l2: null, immunity: null };
+  renderKaskadenSimulationAus();
 }
 
 // ── SEKTION 1: HEATMAP ────────────────────────────────────────────────────
@@ -10060,6 +10617,10 @@ function wireAuswertungAutoSave() {
   wire("ausBefSchluss", "schlussfolgerung");
   wire("ausBefBegr",    "begruendung");
   wire("ausBefMass",    "massnahmen");
+  // Kaskaden-Simulation im Auswertungs-Tab initialisieren (nach jedem Rerender)
+  if (document.getElementById("kaskadenSimulationRootAus")) {
+    renderKaskadenSimulationAus();
+  }
 }
 
 function scheduleAuswertungSave() {
