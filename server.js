@@ -298,8 +298,19 @@ app.get("/api/auth/status", (req, res) => {
   });
 });
 
-// Static files after auth
-app.use(express.static(path.join(__dirname, "public")));
+// Static files after auth.
+// HTML explizit ohne Cache ausliefern — damit Deploy-Updates sofort
+// beim User ankommen ohne Hard-Refresh. Andere Assets (JS/CSS/Bilder
+// werden aktuell nicht separat referenziert — alles inline in index.html).
+app.use(express.static(path.join(__dirname, "public"), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith(".html")) {
+      res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+      res.setHeader("Pragma", "no-cache");
+      res.setHeader("Expires", "0");
+    }
+  },
+}));
 
 // ─── FILE UPLOAD ──────────────────────────────────────────────────────────
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
