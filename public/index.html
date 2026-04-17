@@ -352,6 +352,31 @@
   .signal-btn.l1-active { border-color: #8e44ad; color: #8e44ad; background: #f5eef8; }
   .signal-btn.l2-active { border-color: #2980b9; color: #2980b9; background: #eaf2f8; }
   .signal-btn.l3-active { border-color: #e67e22; color: #e67e22; background: #fef5e7; }
+  /* Minus-Icon im Signal-Button: erscheint sobald Count > 0. Click = -1.
+     Rechtsklick auf den ganzen Button bleibt als Power-User-Shortcut. */
+  .signal-btn .signal-minus {
+    display: none; margin-left: 4px; padding: 0 6px; border-radius: 9px;
+    background: rgba(0,0,0,0.08); color: inherit; font-size: 13px;
+    line-height: 14px; cursor: pointer; user-select: none;
+    transition: background .12s;
+  }
+  .signal-btn.l1-active .signal-minus,
+  .signal-btn.l2-active .signal-minus,
+  .signal-btn.l3-active .signal-minus { display: inline-block; }
+  .signal-btn .signal-minus:hover { background: rgba(0,0,0,0.18); }
+  /* Reset-Button: setzt alle 3 Signale der aktuellen Phase auf 0 */
+  .signal-reset-btn {
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    padding: 4px 10px; border-radius: 14px; cursor: pointer;
+    border: 1px solid var(--border2); background: transparent;
+    color: var(--ink-mute); transition: all .15s;
+    display: inline-flex; align-items: center; gap: 4px;
+    margin-left: 4px;
+  }
+  .signal-reset-btn:hover {
+    border-color: var(--red); color: var(--red); background: var(--red-bg);
+  }
+  .signal-reset-btn.hidden { display: none; }
 
   .signal-summary {
     background: var(--surface); border: 1px solid var(--border);
@@ -2682,6 +2707,15 @@ function trackSignal(layer, decrement) {
   updateSignalButtons();
 }
 
+function resetSignalsCurrentPhase() {
+  const pc = signalCounts[currentPhase] || {L1:0,L2:0,L3:0};
+  const total = (pc.L1 || 0) + (pc.L2 || 0) + (pc.L3 || 0);
+  if (total === 0) return;
+  if (!confirm(`Alle ${total} Signale dieser Phase zurücksetzen?`)) return;
+  signalCounts[currentPhase] = {L1:0,L2:0,L3:0};
+  updateSignalButtons();
+}
+
 function updateSignalButtons() {
   const pc = signalCounts[currentPhase] || {L1:0,L2:0,L3:0};
   for (const l of ["L1","L2","L3"]) {
@@ -2692,15 +2726,30 @@ function updateSignalButtons() {
     if (countEl) { countEl.textContent = cnt; countEl.className = "signal-count" + (cnt === 0 ? " zero" : ""); }
     btn.className = "signal-btn" + (cnt > 0 ? ` ${l.toLowerCase()}-active` : "");
   }
+  const resetBtn = document.getElementById("sigReset");
+  if (resetBtn) {
+    const anyActive = (pc.L1 || 0) + (pc.L2 || 0) + (pc.L3 || 0) > 0;
+    resetBtn.classList.toggle("hidden", !anyActive);
+  }
 }
 
 function renderSignalTracker() {
   const pc = signalCounts[currentPhase] || {L1:0,L2:0,L3:0};
+  const anyActive = (pc.L1 || 0) + (pc.L2 || 0) + (pc.L3 || 0) > 0;
+  const btn = (layer) => {
+    const n = pc[layer] || 0;
+    const activeCls = n ? ` ${layer.toLowerCase()}-active` : "";
+    const zeroCls = n ? "" : " zero";
+    // Click = +1, Click auf Minus = -1 (stopPropagation), Rechtsklick = -1 (Power-User)
+    return `<button class="signal-btn${activeCls}" id="sig${layer}" onclick="trackSignal('${layer}')" oncontextmenu="event.preventDefault();trackSignal('${layer}',true)" title="Klick: +1 — Minus oder Rechtsklick: −1">`
+      + `${layer}<span class="signal-count${zeroCls}">${n}</span>`
+      + `<span class="signal-minus" onclick="event.stopPropagation();trackSignal('${layer}',true)" role="button" aria-label="${layer} Signal zurücknehmen">−</span>`
+      + `</button>`;
+  };
   return `<div class="signal-tracker">
     <span class="signal-tracker-label">Signal</span>
-    <button class="signal-btn${pc.L1 ? ' l1-active' : ''}" id="sigL1" onclick="trackSignal('L1')" oncontextmenu="event.preventDefault();trackSignal('L1',true)">L1<span class="signal-count${pc.L1 ? '' : ' zero'}">${pc.L1}</span></button>
-    <button class="signal-btn${pc.L2 ? ' l2-active' : ''}" id="sigL2" onclick="trackSignal('L2')" oncontextmenu="event.preventDefault();trackSignal('L2',true)">L2<span class="signal-count${pc.L2 ? '' : ' zero'}">${pc.L2}</span></button>
-    <button class="signal-btn${pc.L3 ? ' l3-active' : ''}" id="sigL3" onclick="trackSignal('L3')" oncontextmenu="event.preventDefault();trackSignal('L3',true)">L3<span class="signal-count${pc.L3 ? '' : ' zero'}">${pc.L3}</span></button>
+    ${btn("L1")}${btn("L2")}${btn("L3")}
+    <button class="signal-reset-btn${anyActive ? '' : ' hidden'}" id="sigReset" onclick="resetSignalsCurrentPhase()" title="Alle Signale dieser Phase auf 0 setzen">⟲ Reset</button>
   </div>`;
 }
 
