@@ -490,6 +490,8 @@ app.patch("/api/consultations/:id", async (req, res) => {
     "phase2_notes",
     "phase3_notes",
     "phase4_notes",
+    "phase4_schritt",
+    "phase4_idealzustand",
     "phase5_notes",
     "completed",
     "hyp_generated",
@@ -502,14 +504,17 @@ app.patch("/api/consultations/:id", async (req, res) => {
   if (Object.keys(updates).length === 0) {
     return res.status(400).json({ error: "Keine Felder zum Update" });
   }
-  // Graceful fallback falls hyp_generated/hyp_regime Spalten fehlen.
+  // Graceful fallback falls optional-Spalten noch nicht migriert sind.
   let { data, error } = await supabase
     .from("consultations").update(updates).eq("id", req.params.id).select().single();
-  if (error && /hyp_generated|hyp_regime/.test(error.message || "")) {
-    // Spalten fehlen — retry ohne diese Felder
-    delete updates.hyp_generated; delete updates.hyp_regime;
+  if (error && /hyp_generated|hyp_regime|phase4_schritt|phase4_idealzustand/.test(error.message || "")) {
+    // Fehlende optionale Spalten entfernen und erneut versuchen
+    delete updates.hyp_generated;
+    delete updates.hyp_regime;
+    delete updates.phase4_schritt;
+    delete updates.phase4_idealzustand;
     if (Object.keys(updates).length === 0) {
-      return res.status(500).json({ error: "Migration 013_consultations_hyp.sql nötig: ADD COLUMN hyp_generated TEXT, hyp_regime TEXT" });
+      return res.status(500).json({ error: "Migrationen nötig: 013_consultations_hyp.sql + 014_consultations_phase4_split.sql" });
     }
     const r2 = await supabase.from("consultations").update(updates).eq("id", req.params.id).select().single();
     if (r2.error) return res.status(500).json({ error: r2.error.message });

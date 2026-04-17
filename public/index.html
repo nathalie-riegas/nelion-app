@@ -2584,11 +2584,10 @@
     font-weight: 500; font-size: 14px;
   }
 
-  /* ── DIAGNOSTISCHER KOMPASS ────────────────────────────────────────── */
-  .kompass-panel {
-    background: var(--surface); border: 1px solid var(--border2);
-    border-radius: var(--r); padding: 16px 20px; margin: 12px 0;
-  }
+  /* ── KOMPASS-CHECK (Fünf-Kern-Check Modul 2 Phase 5) ─────────────── */
+  /* Hinweis: .kompass-panel + .kompass-check-hint wurden mit dem
+     V1-Diagnostischen-Kompass entfernt. Die Checkbox-Row-Styles unten
+     werden noch vom Fünf-Kern-Check verwendet und bleiben. */
   .kompass-check {
     display: flex; align-items: flex-start; gap: 10px; padding: 8px 0;
     border-bottom: 1px solid var(--border);
@@ -2596,7 +2595,6 @@
   .kompass-check:last-of-type { border-bottom: none; }
   .kompass-check input[type="checkbox"] { margin-top: 3px; accent-color: var(--ada-accent); }
   .kompass-check-label { font-size: 13px; font-weight: 500; color: var(--ink); }
-  .kompass-check-hint { font-size: 11px; color: var(--ink-dim); }
 
   /* ── FÜNF-KERN-CHECK ───────────────────────────────────────────────── */
   .kern-check-panel {
@@ -3952,7 +3950,7 @@ function exportErstgespraechNotes() {
     section("SCAN", c.phase2_notes),
     `---\nSIGNALE\n${signalLine}\n`,
     section("SPIEGELN", c.phase3_notes),
-    `---\nSLICE\nKleinster nächster Schritt: ${(c.phase4_notes || "").trim() || "[nicht ausgefüllt]"}\nIdealzustand: ${(c.phase4_notes_ideal || c.phase4_notes || "").trim() ? "(siehe oben — Phase 4 Notizen)" : "[nicht ausgefüllt]"}\n`,
+    `---\nSLICE\nKleinster nächster Schritt: ${(c.phase4_schritt || "").trim() || (c.phase4_notes || "").trim() || "[nicht ausgefüllt]"}\nIdealzustand: ${(c.phase4_idealzustand || "").trim() || "[nicht ausgefüllt]"}\n`,
     section("ABSCHLUSS", c.phase5_notes),
     section("HYPOTHESEN (Claude)", c.hyp_generated),
     `---\nREGIME-EINSCHÄTZUNG\n${c.hyp_regime ? ("Regime " + c.hyp_regime) : "[nicht gewählt]"}\n`,
@@ -4038,6 +4036,11 @@ function renderPhase(num) {
     // 4. CLT-Check als ausklappbarer Block mit eigenem Toggle-Header (standard: zu)
     html += renderCltBlock();
   }
+  // Phase 4: zwei getrennte Felder (Schritt + Idealzustand) direkt im Content,
+  // statt dem gemeinsamen phaseNotes. Autosave separat pro Feld.
+  if (num === 4) {
+    html += renderPhase4SplitFields();
+  }
   // Phase 5: Hypothesen-Zusammenfassung
   if (num === 5) {
     html += renderHypothesenZusammenfassung();
@@ -4046,17 +4049,31 @@ function renderPhase(num) {
   updateNotesLabel();
   const noteKey = `phase${num}_notes`;
   $phaseNotes.value = currentConsultation[noteKey] || "";
-  // Phase 4: Label + Placeholder = Idealzustand (ersetzt ehemalige Firewall-Frage)
+  // Phase 4: shared #phaseNotes ausblenden (wir nutzen split fields)
+  const sharedLabel = document.getElementById("notesLabel");
   if (num === 4) {
-    const lbl = document.getElementById("notesLabel");
-    if (lbl) lbl.textContent = "Idealzustand";
-    $phaseNotes.placeholder = "Was würde sich Ihr Gegenüber wünschen — wie sieht der Idealzustand aus?";
-    $phaseNotes.rows = 6;
+    if (sharedLabel) sharedLabel.style.display = "none";
+    $phaseNotes.style.display = "none";
   } else {
+    if (sharedLabel) sharedLabel.style.display = "";
+    $phaseNotes.style.display = "";
     $phaseNotes.placeholder = "Notizen zu dieser Phase…";
     $phaseNotes.removeAttribute("rows");
   }
   notesDirty = false;
+  // Phase 4: Autosave-Bindings für split fields (werden bei jedem Re-Render neu geknüpft)
+  if (num === 4) {
+    const schrittEl = document.getElementById("p4Schritt");
+    const idealEl = document.getElementById("p4Ideal");
+    if (schrittEl) {
+      schrittEl.addEventListener("input", () => { notesDirty = true; });
+      schrittEl.addEventListener("blur", () => { if (notesDirty) saveCurrentNotes(); });
+    }
+    if (idealEl) {
+      idealEl.addEventListener("input", () => { notesDirty = true; });
+      idealEl.addEventListener("blur", () => { if (notesDirty) saveCurrentNotes(); });
+    }
+  }
   $phaseButtons.innerHTML = "";
   if (num > 1) { const b = document.createElement("button"); b.className = "btn btn-ghost"; b.textContent = "Zurück"; b.addEventListener("click", () => goToPhase(num - 1)); $phaseButtons.appendChild(b); }
   if (num < 5) { const b = document.createElement("button"); b.className = "btn btn-primary"; b.textContent = "Weiter"; b.addEventListener("click", () => goToPhase(num + 1)); $phaseButtons.appendChild(b); }
@@ -4068,6 +4085,27 @@ async function goToPhase(num) { await saveCurrentNotes(); currentPhase = num; cu
 
 async function saveCurrentNotes() {
   if (!currentConsultation) return;
+  // Phase 4: zwei getrennte Felder statt phaseNotes
+  if (currentPhase === 4) {
+    const schrittEl = document.getElementById("p4Schritt");
+    const idealEl = document.getElementById("p4Ideal");
+    const schritt = schrittEl ? schrittEl.value : "";
+    const ideal = idealEl ? idealEl.value : "";
+    currentConsultation.phase4_schritt = schritt;
+    currentConsultation.phase4_idealzustand = ideal;
+    try {
+      await fetch(`/api/consultations/${currentConsultation.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phase4_schritt: schritt,
+          phase4_idealzustand: ideal,
+          current_phase: currentPhase,
+        }),
+      });
+    } catch (e) { console.warn("Save failed:", e.message); }
+    return;
+  }
   const noteKey = `phase${currentPhase}_notes`; const val = $phaseNotes.value;
   currentConsultation[noteKey] = val;
   try { await fetch(`/api/consultations/${currentConsultation.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ [noteKey]: val, current_phase: currentPhase }) }); }
@@ -5332,39 +5370,6 @@ function updateClt() {
   if (el) el.textContent = gesamt ? (gesamt === "rot" ? "Rot" : gesamt === "gelb" ? "Gelb" : "Grün") : "—";
 }
 
-// ── DIAGNOSTISCHER KOMPASS (Modul 1 Phase 2) ──
-function renderDiagnostischerKompass() {
-  return `
-    <div class="kompass-panel">
-      <div class="scan-card-title">Diagnostischer Kompass</div>
-      <div class="kompass-check">
-        <input type="checkbox" id="kompPS">
-        <div><div class="kompass-check-label">Psychological Safety</div><div class="kompass-check-hint">Werden Fehler offen angesprochen?</div></div>
-      </div>
-      <div class="kompass-check">
-        <input type="checkbox" id="kompCLT">
-        <div><div class="kompass-check-label">Cognitive Load Theory</div><div class="kompass-check-hint">Ist das Team kognitiv überlastet?</div></div>
-      </div>
-      <div class="kompass-check">
-        <input type="checkbox" id="kompSM">
-        <div><div class="kompass-check-label">Stacey Matrix</div><div class="kompass-check-hint">Wie komplex/unklar ist das Problem?</div></div>
-      </div>
-      <div class="kompass-check">
-        <input type="checkbox" id="kompPV">
-        <div><div class="kompass-check-label">Polyvagal Theory</div><div class="kompass-check-hint">Ist das System im Threat-State?</div></div>
-      </div>
-      <div class="kompass-check">
-        <input type="checkbox" id="kompITC">
-        <div><div class="kompass-check-label">Immunity to Change</div><div class="kompass-check-hint">Was wurde versucht — was blieb?</div></div>
-      </div>
-      <div class="form-group" style="margin-top:12px">
-        <label class="form-label">Erste Hypothese: welche 2-3 dominieren?</label>
-        <textarea class="form-input" id="kompHypothese" rows="2" placeholder="Freitext…"></textarea>
-      </div>
-    </div>
-  `;
-}
-
 // ── DIAGNOSTISCHER KOMPASS V2 (Erstgespräch Phase 2) ──
 // Zwei separate Toggle-Blöcke unter einem gemeinsamen Titel:
 //   1. Layer-Signale — 4 Spalten (L1/L2/L3/Cross-Layer) mit je 5 Signalen
@@ -5651,6 +5656,36 @@ function renderHypothesenZusammenfassung() {
 
 // SVG-Flowchart für die Kaskaden-Routing-Logik.
 // Keine externe Library — reines inline-SVG.
+// Phase 4 (Slice + Idealzustand) — zwei separate Felder, Autosave separat.
+// Fallback: falls phase4_schritt/idealzustand leer sind, den alten
+// phase4_notes Inhalt als Initial-Wert ins "Schritt"-Feld laden
+// (Rückwärtskompatibilität — bestehende Notizen gehen nicht verloren).
+function renderPhase4SplitFields() {
+  if (!currentConsultation) return "";
+  const schritt = currentConsultation.phase4_schritt || "";
+  const ideal = currentConsultation.phase4_idealzustand || "";
+  // Legacy-Migration: wenn beide neuen Felder leer sind aber phase4_notes
+  // Text enthält, zeige den alten Text als Schritt-Vorschlag zum Review.
+  const legacy = (!schritt && !ideal && (currentConsultation.phase4_notes || "").trim())
+    ? currentConsultation.phase4_notes
+    : schritt;
+  return `
+    <div class="scan-card" style="margin-top:16px">
+      <div class="form-group">
+        <label class="form-label" for="p4Schritt">Kleinster möglicher nächster Schritt</label>
+        <textarea class="form-input" id="p4Schritt" rows="3" placeholder="Was wäre der kleinste mögliche nächste Schritt?">${escHtml(legacy)}</textarea>
+      </div>
+    </div>
+    <div class="scan-card">
+      <div class="form-group">
+        <label class="form-label" for="p4Ideal">Idealzustand</label>
+        <div style="font-size:12px;color:var(--ink-dim);margin-bottom:6px">Was würde sich Ihr Gegenüber wünschen — wie sieht der Idealzustand aus?</div>
+        <textarea class="form-input" id="p4Ideal" rows="4" placeholder="Idealzustand aus Sicht des Gegenübers…">${escHtml(ideal)}</textarea>
+      </div>
+    </div>
+  `;
+}
+
 function renderKaskadenFlowchart() {
   return `
     <div class="kaskaden-flowchart">
@@ -5730,7 +5765,11 @@ async function generateHypothesen() {
         sync:      currentConsultation.phase1_notes || "",
         scan:      currentConsultation.phase2_notes || "",
         spiegeln:  currentConsultation.phase3_notes || "",
-        slice:     currentConsultation.phase4_notes || "",
+        slice:     [
+          currentConsultation.phase4_schritt ? "Schritt: " + currentConsultation.phase4_schritt : "",
+          currentConsultation.phase4_idealzustand ? "Idealzustand: " + currentConsultation.phase4_idealzustand : "",
+          !currentConsultation.phase4_schritt && !currentConsultation.phase4_idealzustand ? (currentConsultation.phase4_notes || "") : "",
+        ].filter(Boolean).join("\n\n"),
         abschluss: currentConsultation.phase5_notes || "",
       },
       signals: signalCounts,
