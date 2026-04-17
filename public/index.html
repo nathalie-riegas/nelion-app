@@ -286,16 +286,17 @@
   .notes-area::placeholder { color: var(--ink-mute); }
 
   /* ── PHASE SIDEBAR ────────────────────────────────────────────────────── */
-  /* gap: 32px erzeugt optisch sauberen Abstand zwischen Ablauf-Menü und Content
-     (Titel wie "Phase 3" und Buttons wie "Regime-Referenz" kleben sonst an der
-     Sidebar-Kante). Sticky-top beachtet den fixierten Header + Tab-Nav oben. */
+  /* gap: 32px = optischer Abstand zwischen Ablauf-Menü und Content.
+     sticky-top matched exakt das Main-Padding-Top (24px), damit die Sidebar
+     von Anfang an kleben bleibt — ohne den "Intro-Scroll"-Effekt wo sie in
+     den ersten ~8px noch mitrutscht. */
   .cockpit-layout { display: flex; gap: 32px; width: 100%; max-width: none; align-items: flex-start; }
   .phase-sidebar {
     width: 200px; min-width: 200px; background: var(--surface);
     border: 1px solid var(--border); border-radius: var(--r);
     padding: 16px 0; display: flex; flex-direction: column; gap: 2px; flex-shrink: 0;
-    position: sticky; top: calc(var(--sticky-top) + 16px); align-self: flex-start;
-    max-height: calc(100vh - var(--sticky-top) - 32px); overflow-y: auto;
+    position: sticky; top: calc(var(--sticky-top) + 24px); align-self: flex-start;
+    max-height: calc(100vh - var(--sticky-top) - 48px); overflow-y: auto;
   }
   .phase-sidebar::-webkit-scrollbar { width: 6px; }
   .phase-sidebar::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
@@ -749,6 +750,20 @@
   .landing-task-prio.p1 { background: var(--red); }
   .landing-task-prio.p2 { background: var(--yellow); }
   .landing-task-prio.p3 { background: #3498db; }
+  /* Checkbox zum Abhaken auf der Landing Page — gleicher Style wie im Drawer */
+  .landing-task-checkbox {
+    width: 16px; height: 16px; cursor: pointer;
+    accent-color: var(--ada-accent); flex-shrink: 0;
+  }
+  /* Erledigte Tasks: durchgestrichen + gedämpft */
+  .landing-task-item.done .landing-task-title {
+    text-decoration: line-through; color: var(--ink-mute);
+  }
+  .landing-task-item.done .landing-task-prio { opacity: 0.4; }
+  .landing-task-completed-date {
+    font-family: var(--mono); font-size: 10px; color: var(--ink-mute);
+    white-space: nowrap; flex-shrink: 0;
+  }
 
   /* ── GATES ────────────────────────────────────────────────────────── */
   .landing-gates {
@@ -1866,6 +1881,17 @@
     </div>
 
     <div class="landing-section">
+      <div class="landing-tasks-toggle" onclick="toggleLandingCompleted()">
+        <div>
+          <div class="landing-section-title" style="margin-bottom:0;">Erledigt</div>
+          <div class="landing-tasks-count" id="landingCompletedCount">—</div>
+        </div>
+        <div class="landing-tasks-arrow" id="landingCompletedArrow">&#9660;</div>
+      </div>
+      <div class="landing-tasks-list" id="landingCompletedList"></div>
+    </div>
+
+    <div class="landing-section">
       <div class="landing-section-title">Gates</div>
       <div class="landing-gates" id="landingGates"></div>
     </div>
@@ -2383,6 +2409,14 @@ function renderLandingTasks() {
     row.draggable = true;
     attachTaskDragHandlers(row, t.id);
 
+    // Checkbox zum Abhaken — markiert Task als erledigt (verschwindet aus Liste)
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.className = "landing-task-checkbox";
+    cb.title = "Erledigt markieren";
+    cb.addEventListener("click", (e) => e.stopPropagation());
+    cb.addEventListener("change", () => toggleTaskStatus(t.id));
+
     const dot = document.createElement("div");
     dot.className = `landing-task-prio p${t.prioritaet}`;
 
@@ -2409,7 +2443,7 @@ function renderLandingTasks() {
     delBtn.classList.add("del");
     actions.append(editBtn, delBtn);
 
-    row.append(dot, content, actions);
+    row.append(cb, dot, content, actions);
     listEl.appendChild(row);
   });
 }
@@ -2419,6 +2453,116 @@ function toggleLandingTasks() {
   const arrow = document.getElementById("landingTasksArrow");
   if (list) list.classList.toggle("open");
   if (arrow) arrow.classList.toggle("open");
+}
+
+// ── ERLEDIGTE TASKS (Landing Page History) ────────────────────────────────
+// Lazy-loaded: wird erst beim ersten Aufklappen der "Erledigt"-Sektion geholt.
+// completedTasks wird zusätzlich lokal gepflegt: wenn ein Task via Checkbox
+// abgehakt wird, schieben wir ihn direkt in completedTasks, damit er in der
+// History-Ansicht ohne Reload sichtbar ist.
+let completedTasks = [];
+let completedTasksLoaded = false;
+let landingCompletedOpen = false;
+
+async function loadCompletedTasksIfNeeded() {
+  if (completedTasksLoaded) return;
+  try {
+    const r = await fetch("/api/tasks?status=erledigt");
+    const data = await r.json();
+    completedTasks = Array.isArray(data) ? data : [];
+    // Neueste zuerst — updated_at falls vorhanden, sonst created_at
+    completedTasks.sort((a, b) => {
+      const ta = new Date(a.updated_at || a.created_at).getTime();
+      const tb = new Date(b.updated_at || b.created_at).getTime();
+      return tb - ta;
+    });
+  } catch { completedTasks = []; }
+  completedTasksLoaded = true;
+}
+
+async function toggleLandingCompleted() {
+  const list = document.getElementById("landingCompletedList");
+  const arrow = document.getElementById("landingCompletedArrow");
+  landingCompletedOpen = !landingCompletedOpen;
+  if (list) list.classList.toggle("open", landingCompletedOpen);
+  if (arrow) arrow.classList.toggle("open", landingCompletedOpen);
+  if (landingCompletedOpen) {
+    await loadCompletedTasksIfNeeded();
+    renderLandingCompletedTasks();
+  }
+}
+
+function renderLandingCompletedTasks() {
+  const countEl = document.getElementById("landingCompletedCount");
+  const listEl = document.getElementById("landingCompletedList");
+  if (countEl) countEl.textContent = completedTasks.length === 0
+    ? "Keine erledigten Tasks"
+    : `${completedTasks.length} erledigt`;
+  if (!listEl) return;
+  if (completedTasks.length === 0) {
+    listEl.innerHTML = `<div style="font-size:13px;color:var(--ink-mute);">Noch nichts abgehakt.</div>`;
+    return;
+  }
+  listEl.innerHTML = "";
+  completedTasks.forEach((t) => {
+    const row = document.createElement("div");
+    row.className = "landing-task-item done";
+    row.dataset.id = t.id;
+
+    // Checkbox bereits abgehakt — Klick öffnet Wiederherstellen
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.className = "landing-task-checkbox";
+    cb.checked = true;
+    cb.title = "Wiederherstellen (als offen markieren)";
+    cb.addEventListener("click", (e) => e.stopPropagation());
+    cb.addEventListener("change", () => restoreTask(t.id));
+
+    const dot = document.createElement("div");
+    dot.className = `landing-task-prio p${t.prioritaet}`;
+
+    const content = document.createElement("div");
+    content.className = "landing-task-content";
+    const title = document.createElement("span");
+    title.className = "landing-task-title";
+    title.textContent = t.titel;
+    content.appendChild(title);
+
+    // Datum der Erledigung (updated_at wenn vorhanden, sonst created_at)
+    const when = t.updated_at || t.created_at;
+    if (when) {
+      const dateEl = document.createElement("span");
+      dateEl.className = "landing-task-completed-date";
+      dateEl.textContent = new Date(when).toLocaleDateString("de-CH", {
+        day: "2-digit", month: "2-digit", year: "2-digit",
+      });
+      dateEl.title = new Date(when).toLocaleString("de-CH");
+      row.append(cb, dot, content, dateEl);
+    } else {
+      row.append(cb, dot, content);
+    }
+
+    listEl.appendChild(row);
+  });
+}
+
+async function restoreTask(id) {
+  try {
+    await fetch(`/api/tasks/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "offen" }),
+    });
+    // Aus completedTasks rausnehmen, zurück zu allTasks
+    const idx = completedTasks.findIndex(t => t.id === id);
+    if (idx >= 0) {
+      const task = completedTasks.splice(idx, 1)[0];
+      task.status = "offen";
+      allTasks.push(task);
+    }
+    renderLandingCompletedTasks();
+    refreshAllTaskViews();
+  } catch {}
 }
 
 // ── SWITCH TAB ────────────────────────────────────────────────────────────
@@ -4977,8 +5121,18 @@ async function toggleTaskStatus(id) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "erledigt" }),
     });
-    // Remove from open-tasks state (we only query status=offen)
-    allTasks = allTasks.filter(t => t.id !== id);
+    // Aus offenen Tasks rausnehmen und in History schieben
+    // (damit sie in der "Erledigt"-Sektion sofort auftaucht ohne Reload)
+    const idx = allTasks.findIndex(t => t.id === id);
+    if (idx >= 0) {
+      const task = allTasks.splice(idx, 1)[0];
+      task.status = "erledigt";
+      task.updated_at = new Date().toISOString();
+      if (completedTasksLoaded) {
+        completedTasks.unshift(task);
+        renderLandingCompletedTasks();
+      }
+    }
     refreshAllTaskViews();
   } catch {}
 }
