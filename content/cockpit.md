@@ -78,6 +78,7 @@ instruction: Klarer Abschluss. Kein offenes Ende. Ein konkreter nächster Schrit
 guide:
 - "Kannst du aus diesem Gespräch etwas mitnehmen? Ist dir dabei etwas bewusst geworden, was dir vorher vielleicht nicht klar war?"
 - "Was ist dein nächster konkreter Schritt?"
+- "Kennst du jemanden der Interesse an einem Scan hätte?"
 - Nächsten Termin anbieten (nicht aufdrängen). Wenn Interesse: Datum fixieren, nicht "melden Sie sich".
 
 ---

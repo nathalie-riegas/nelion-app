@@ -300,6 +300,21 @@
   }
   .guide-item:last-child { border-bottom: none; }
   .guide-item em { font-style: italic; color: var(--ink); }
+  /* Notiz-Textarea direkt unter einer Guide-Frage (Phase 4 + 5) */
+  .guide-note-wrap {
+    margin: 2px 0 10px; padding: 0 0 10px 14px;
+    border-left: 2px solid var(--ada-bg);
+    border-bottom: 1px solid var(--border);
+  }
+  .guide-item + .guide-note-wrap { margin-top: -4px; border-top: none; }
+  .guide-note-wrap:last-child { border-bottom: none; padding-bottom: 0; }
+  .guide-note-label {
+    font-size: 10px; margin: 6px 0 4px; display: block;
+  }
+  .guide-note-input {
+    width: 100%; font-size: 13px; line-height: 1.45;
+    min-height: auto; resize: vertical;
+  }
 
   .notes-area {
     width: 100%; background: var(--surface); border: 1px solid var(--border2);
@@ -691,6 +706,11 @@
     font-size: 13px; color: var(--ink-mid); line-height: 1.5; margin-bottom: 6px;
   }
   .kernfrage-num { font-family: var(--mono); font-size: 10px; color: var(--ink-mute); }
+  /* Notiz-Textarea direkt unter einer Scan-Kernfrage */
+  .kernfrage-note {
+    margin: 6px 0 12px 0; font-size: 13px; line-height: 1.45;
+    min-height: auto; resize: vertical;
+  }
 
   /* ── DENZIN TABLE ───────────────────────────────────────────────────── */
   .denzin-table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -2481,10 +2501,33 @@
     font-weight: 500; margin-bottom: 6px;
   }
   .kompass-signale-list {
-    margin: 0; padding-left: 18px; font-size: 12px;
-    color: var(--ink); line-height: 1.5;
+    margin: 0; padding: 0; font-size: 12px;
+    color: var(--ink); line-height: 1.5; list-style: none;
   }
-  .kompass-signale-list li { margin-bottom: 4px; }
+  .kompass-signale-item {
+    padding: 6px 0; border-bottom: 1px dashed var(--border);
+  }
+  .kompass-signale-item:last-child { border-bottom: none; }
+  .kompass-signale-text {
+    font-size: 12px; color: var(--ink); line-height: 1.45;
+  }
+  .kompass-mini-toggle {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: none; border: none; cursor: pointer; padding: 2px 0;
+    color: var(--ada-accent); font-family: var(--mono); font-size: 10px;
+    margin-top: 4px; transition: color .12s;
+  }
+  .kompass-mini-toggle:hover { color: var(--ada-accent-h); }
+  .kompass-mini-toggle .kompass-mini-arrow {
+    font-size: 8px; transition: transform .2s;
+  }
+  .kompass-mini-toggle.open .kompass-mini-arrow { transform: rotate(90deg); }
+  .kompass-mini-content {
+    margin-top: 4px; padding: 6px 8px 4px; border-left: 2px solid var(--ada-bg);
+    border-top: none !important;
+  }
+  .kompass-mini-content.disclosure-content { display: none; }
+  .kompass-mini-content.disclosure-content.open { display: block; }
 
   .kompass-vertief-section {
     border-left: 3px solid var(--ink-dim);
@@ -2517,7 +2560,60 @@
     font-weight: 500;
   }
 
-  /* Kaskaden-Flowchart (ASCII-Style mit Layout) */
+  /* Kaskaden-Simulation (interaktiver Stepper) */
+  .sim-wrap { display: flex; flex-direction: column; gap: 12px; }
+  .sim-step {
+    background: var(--surface2); border-radius: var(--rs);
+    padding: 12px 14px;
+  }
+  .sim-step-q {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.05em;
+    color: var(--ink-mute); margin-bottom: 8px;
+  }
+  .sim-step-options { display: flex; gap: 8px; flex-wrap: wrap; }
+  .sim-btn {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 20px; padding: 7px 14px; cursor: pointer;
+    font-family: var(--sans); font-size: 13px; font-weight: 500;
+    color: var(--ink); transition: all .15s;
+  }
+  .sim-btn:hover { border-color: var(--ink-dim); }
+  .sim-btn-r1.active { background: #eaf2f8; border-color: #3498db; color: #1d6fa5; }
+  .sim-btn-r2.active { background: var(--yellow-bg); border-color: var(--yellow); color: #8a6d0f; }
+  .sim-btn-r2b.active { background: #f5eef8; border-color: #8e44ad; color: #5d2e7a; }
+  .sim-btn-r3.active { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+  .sim-result {
+    border: 2px solid; border-radius: var(--r); padding: 14px 16px;
+  }
+  .sim-result-r1 { background: #eaf2f8; border-color: #3498db; }
+  .sim-result-r2 { background: var(--yellow-bg); border-color: var(--yellow); }
+  .sim-result-r2b { background: #f5eef8; border-color: #8e44ad; }
+  .sim-result-r3 { background: var(--red-bg); border-color: var(--red); }
+  .sim-result-label {
+    font-size: 20px; font-weight: 600; margin-bottom: 4px;
+  }
+  .sim-result-r1 .sim-result-label { color: #1d6fa5; }
+  .sim-result-r2 .sim-result-label { color: #8a6d0f; }
+  .sim-result-r2b .sim-result-label { color: #5d2e7a; }
+  .sim-result-r3 .sim-result-label { color: var(--red); }
+  .sim-result-expl {
+    font-size: 13px; color: var(--ink); margin-bottom: 10px;
+    line-height: 1.5;
+  }
+  .sim-result-mean-head {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-dim); margin-bottom: 4px;
+  }
+  .sim-result-mean {
+    margin: 0; padding-left: 20px; font-size: 13px;
+    color: var(--ink); line-height: 1.5;
+  }
+  .sim-result-mean li { margin-bottom: 3px; }
+  .sim-actions {
+    display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;
+  }
+
+  /* Kaskaden-Flowchart (ASCII-Style) — DEPRECATED, Simulation ersetzt dies */
   .kaskaden-flowchart {
     font-family: var(--mono); font-size: 12px; line-height: 1.4;
     background: var(--surface2); padding: 14px;
@@ -2561,6 +2657,29 @@
     border-radius: var(--r); padding: 16px 20px; margin: 12px 0;
   }
   .clt-panel.open { display: block; }
+  /* Inside disclosure block: always visible (no toggle logic) */
+  .clt-panel.clt-panel-inline { display: block; }
+  /* CLT-Beobachtungs-Checkboxen (neues Format) */
+  .clt-obs-row {
+    display: flex; align-items: flex-start; gap: 10px; padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .clt-obs-row:last-of-type { border-bottom: none; }
+  .clt-obs-row input[type="checkbox"] {
+    margin-top: 2px; width: 16px; height: 16px; cursor: pointer;
+    accent-color: var(--ada-accent); flex-shrink: 0;
+  }
+  .clt-obs-row label {
+    font-size: 13px; color: var(--ink); line-height: 1.45;
+    cursor: pointer; flex: 1;
+  }
+  .clt-obs-warn {
+    display: none; margin-top: 10px; padding: 10px 12px;
+    background: var(--yellow-bg); border-left: 3px solid var(--yellow);
+    border-radius: 0 var(--rs) var(--rs) 0;
+    font-size: 13px; color: #8a6d0f; line-height: 1.45;
+  }
+  .clt-obs-warn.show { display: block; }
   .clt-row {
     display: flex; align-items: center; gap: 12px; padding: 8px 0;
     border-bottom: 1px solid var(--border);
@@ -4019,10 +4138,10 @@ function renderPhase(num) {
   if (phase.instruction && phase.instruction.trim()) {
     html += `<div class="phase-instruction">${escHtml(phase.instruction)}</div>`;
   }
-  // 1. Gesprächsleitfaden (zuoberst)
-  html += `<div class="guide-block"><div class="guide-label">Gesprächsleitfaden</div>`;
-  for (const g of phase.guide) html += `<div class="guide-item">${g.text}</div>`;
-  html += `</div>`;
+  // 1. Gesprächsleitfaden (zuoberst) — mit optionalen Notiz-Textareas
+  //    unter bestimmten Fragen (Phase 4 Schritt, Phase 5 Mitnehmen /
+  //    Nächster Schritt / Multiplikator).
+  html += renderGuideWithNotes(num, phase);
   // 2. Signalradar (Signal-Tracker) — direkt unter Leitfaden
   html += renderSignalTracker();
   // Phase 2 extras: Signal-Radar-Button + Diagnostischer Kompass (neue
@@ -4074,6 +4193,20 @@ function renderPhase(num) {
       idealEl.addEventListener("blur", () => { if (notesDirty) saveCurrentNotes(); });
     }
   }
+  // Guide-Note-Textareas: Autosave via data-note-key (1s debounced).
+  document.querySelectorAll(".guide-note-input[data-note-key]").forEach(el => {
+    let saveTimer = null;
+    el.addEventListener("input", () => {
+      if (!currentConsultation) return;
+      currentConsultation[el.dataset.noteKey] = el.value;
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => saveGuideNote(el.dataset.noteKey, el.value), 1000);
+    });
+    el.addEventListener("blur", () => {
+      clearTimeout(saveTimer);
+      if (currentConsultation) saveGuideNote(el.dataset.noteKey, el.value);
+    });
+  });
   $phaseButtons.innerHTML = "";
   if (num > 1) { const b = document.createElement("button"); b.className = "btn btn-ghost"; b.textContent = "Zurück"; b.addEventListener("click", () => goToPhase(num - 1)); $phaseButtons.appendChild(b); }
   if (num < 5) { const b = document.createElement("button"); b.className = "btn btn-primary"; b.textContent = "Weiter"; b.addEventListener("click", () => goToPhase(num + 1)); $phaseButtons.appendChild(b); }
@@ -4082,6 +4215,18 @@ function renderPhase(num) {
 }
 
 async function goToPhase(num) { await saveCurrentNotes(); currentPhase = num; currentConsultation.current_phase = num; renderPhase(num); }
+
+// Speichert ein einzelnes Guide-Notes-Feld per PATCH. Nicht blockierend.
+async function saveGuideNote(key, value) {
+  if (!currentConsultation) return;
+  try {
+    await fetch(`/api/consultations/${currentConsultation.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ [key]: value }),
+    });
+  } catch (e) { console.warn("GuideNote save failed:", e.message); }
+}
 
 async function saveCurrentNotes() {
   if (!currentConsultation) return;
@@ -4571,9 +4716,13 @@ function renderPhase2() {
     <div class="scan-card">
       <div class="scan-card-title">Kernfragen (während Interview anzeigen)</div>
       <div class="kernfrage"><span class="kernfrage-num">Frage 1</span><br>"Was ist das teuerste ungelöste Problem gerade — in Zeit, Energie oder Geld?"</div>
+      <textarea class="form-input kernfrage-note" data-kernfrage-key="interview_f1_notiz" rows="2" placeholder="Notizen…">${escHtml(currentScan.interview_f1_notiz || "")}</textarea>
       <div class="kernfrage"><span class="kernfrage-num">Frage 2</span><br>"Was habt ihr in 12–18 Monaten versucht — und was ist geblieben?"</div>
+      <textarea class="form-input kernfrage-note" data-kernfrage-key="interview_f2_notiz" rows="2" placeholder="Notizen…">${escHtml(currentScan.interview_f2_notiz || "")}</textarea>
       <div class="kernfrage"><span class="kernfrage-num">Frage 3</span><br>"Wenn ich deinen Kollegen frage wie er unter Druck reagiert — was würde er sagen?"</div>
+      <textarea class="form-input kernfrage-note" data-kernfrage-key="interview_f3_notiz" rows="2" placeholder="Notizen…">${escHtml(currentScan.interview_f3_notiz || "")}</textarea>
       <div class="kernfrage" style="border-left-color:var(--green)"><span class="kernfrage-num">Abschluss</span><br>"Was würde sich ändern wenn das Problem morgen weg wäre?"</div>
+      <textarea class="form-input kernfrage-note" data-kernfrage-key="interview_abschluss_notiz" rows="2" placeholder="Notizen…">${escHtml(currentScan.interview_abschluss_notiz || "")}</textarea>
     </div>
     ${renderInterviewSlot(1)}
     ${renderInterviewSlot(2)}
@@ -4935,6 +5084,17 @@ function autoSaveScanPhase() {
           current_phase: Math.max(currentScan.current_phase || 0, 1),
         });
       } else if (scanPhase === 2) {
+        // Kernfragen-Notizen (4 Felder) mit-speichern
+        const kernfragenPatch = {};
+        document.querySelectorAll(".kernfrage-note[data-kernfrage-key]").forEach(el => {
+          const key = el.dataset.kernfrageKey;
+          const val = el.value || "";
+          kernfragenPatch[key] = val;
+          currentScan[key] = val;
+        });
+        if (Object.keys(kernfragenPatch).length > 0) {
+          await patchScan(kernfragenPatch);
+        }
         await saveAllInterviews();
       } else if (scanPhase === 3) {
         await saveAmpeln("interview");
@@ -5284,32 +5444,42 @@ function renderCltBlock() {
   `;
 }
 
+// CLT-Check (Cognitive Load Theory — Sweller 1988).
+// Drei Beobachtungs-Checkboxen während des Gesprächs. Bei ≥ 2 angekreuzt
+// erscheint ein gelber Hinweis: vor L3-Interventionen L1/L2 prüfen.
 function renderCltPanel() {
   return `
     <div class="clt-panel clt-panel-inline" id="cltPanel">
-      <div class="scan-card-title">CLT-Audit Lite — L1 Energie-Status</div>
-      <div class="clt-row">
-        <div class="clt-label">F1: Längster Fokusblock heute? (Minuten)</div>
-        <input type="number" class="clt-input" id="cltFokus" placeholder="Min" oninput="updateClt()">
-        <div class="clt-ampel" id="cltA1"></div>
+      <div class="scan-card-title">CLT-Check — Cognitive Load (Sweller ★★★)</div>
+      <div style="font-size:12px;color:var(--ink-dim);line-height:1.5;margin-bottom:12px">
+        Prüft ob das Team kognitiv überlastet ist — bevor du L3-Interventionen empfiehlst.
       </div>
-      <div class="clt-row">
-        <div class="clt-label">F2: Parallele Projekte pro Person?</div>
-        <input type="number" class="clt-input" id="cltProjekte" placeholder="Anz" oninput="updateClt()">
-        <div class="clt-ampel" id="cltA2"></div>
+      <div class="clt-obs-row">
+        <input type="checkbox" class="clt-obs-cb" id="cltObs1" onchange="updateCltObs()">
+        <label for="cltObs1">Werden im Gespräch viele parallele Probleme gleichzeitig genannt?</label>
       </div>
-      <div class="clt-row">
-        <div class="clt-label">F3: Meetings pro Tag?</div>
-        <input type="number" class="clt-input" id="cltMeetings" placeholder="Anz" oninput="updateClt()">
-        <div class="clt-ampel" id="cltA3"></div>
+      <div class="clt-obs-row">
+        <input type="checkbox" class="clt-obs-cb" id="cltObs2" onchange="updateCltObs()">
+        <label for="cltObs2">Wirkt die Person überfordert wenn sie Entscheidungsprozesse beschreibt?</label>
       </div>
-      <div class="clt-result">
-        <span>L1 Energie-Status:</span>
-        <div class="clt-ampel" id="cltGesamt"></div>
-        <span id="cltGesamtLabel">—</span>
+      <div class="clt-obs-row">
+        <input type="checkbox" class="clt-obs-cb" id="cltObs3" onchange="updateCltObs()">
+        <label for="cltObs3">Gibt es Hinweise auf WIP &gt; 3 (zu viele offene Projekte gleichzeitig)?</label>
+      </div>
+      <div class="clt-obs-warn" id="cltObsWarn">
+        ⚠️ Cognitive Load Indiz — L1/L2 vor L3 prüfen.
       </div>
     </div>
   `;
+}
+
+// Toggle-Hinweis bei ≥ 2 angekreuzten Checkboxen
+function updateCltObs() {
+  const cbs = document.querySelectorAll(".clt-obs-cb");
+  let count = 0;
+  cbs.forEach(cb => { if (cb.checked) count++; });
+  const warn = document.getElementById("cltObsWarn");
+  if (warn) warn.classList.toggle("show", count >= 2);
 }
 
 function toggleCltPanel() {
@@ -5374,6 +5544,9 @@ function updateClt() {
 // Zwei separate Toggle-Blöcke unter einem gemeinsamen Titel:
 //   1. Layer-Signale — 4 Spalten (L1/L2/L3/Cross-Layer) mit je 5 Signalen
 //   2. Vertiefungsfragen — je Signal eine Exploration + Präzisionsfrage
+// Diagnostischer Kompass V2 — Layer-Signale + integrierte Vertiefungsfragen.
+// Nur noch EIN Toggle ("Layer-Signale"). Unter jedem Signal ein Mini-Toggle
+// mit Exploration + Präzision. Der separate Vertiefungsfragen-Block ist weg.
 function renderDiagnostischerKompassV2() {
   return `
     <div class="kompass-v2-wrap">
@@ -5387,148 +5560,120 @@ function renderDiagnostischerKompassV2() {
           ${renderKompassLayerSignale()}
         </div>
       </div>
-      <div class="disclosure-block">
-        <button class="disclosure-toggle" type="button" onclick="toggleDisclosure('kompassVertiefungDisclosure', this)">
-          <span class="disclosure-title">Vertiefungsfragen</span>
-          <span class="disclosure-arrow">&#9660;</span>
-        </button>
-        <div class="disclosure-content" id="kompassVertiefungDisclosure">
-          ${renderKompassVertiefungsfragen()}
-        </div>
-      </div>
     </div>
   `;
 }
 
+// Kombinierte Signal- + Vertiefungs-Daten. Pro Signal: Text + Exploration +
+// Präzision. Die Vertiefungsfragen werden direkt unter dem Signal via
+// Mini-Toggle angezeigt (Standard: zugeklappt).
+const KOMPASS_SIGNALS = {
+  L1: [
+    { signal: '"Wir sind alle am Limit"',
+      exploration: '"Erzähl mir mehr — wie äussert sich das konkret?"',
+      praezision: '"Wann hat das angefangen — gab es einen Moment wo es gekippt ist?"' },
+    { signal: '"Nach dem Wochenende gleich wieder leer"',
+      exploration: '"Wie ist das für dich persönlich — oder hörst du das auch von anderen?"',
+      praezision: '"Wie viele im Team würden das so beschreiben?"' },
+    { signal: '"Ich schlafe schlecht seit Monaten"',
+      exploration: '"Magst du das etwas ausführen?"',
+      praezision: '"Ist das bei dir allein so — oder hörst du das auch von anderen?"' },
+    { signal: '"Das Team funktioniert, aber irgendwie auf Reserve"',
+      exploration: '"Was meinst du mit Reserve — was fehlt?"',
+      praezision: '"Was würde sich ändern wenn diese Reserve wieder da wäre?"' },
+    { signal: '"Krankenstand ist gestiegen"',
+      exploration: '"Was glaubst du, was dahintersteckt?"',
+      praezision: '"Seit wann — und in welchen Teams zuerst?"' },
+  ],
+  L2: [
+    { signal: '"Das traut sich niemand anzusprechen"',
+      exploration: '"Erzähl mir mehr — was passiert wenn jemand es doch anspricht?"',
+      praezision: '"Wann ist das zuletzt konkret passiert — was war die Situation?"' },
+    { signal: '"Wir haben das schon versucht — hat nichts gebracht"',
+      exploration: '"Was habt ihr versucht — was genau?"',
+      praezision: '"Was ist danach passiert — warum hat es nicht gehalten?"' },
+    { signal: '"Eigentlich weiss jeder was falsch läuft, aber..."',
+      exploration: '"Aber — was kommt nach diesem Aber?"',
+      praezision: '"Wer weiss es — und wer tut so als ob nicht?"' },
+    { signal: '"Die Stimmung ist gereizt, ohne dass man weiss warum"',
+      exploration: '"Wie zeigt sich das — kannst du ein Beispiel nennen?"',
+      praezision: '"In welchen Situationen ist es am stärksten spürbar?"' },
+    { signal: '"Feedback kommt nicht an — oder man kriegt keines"',
+      exploration: '"In welche Richtung — von oben nach unten, oder umgekehrt, oder beides?"',
+      praezision: '"Was passiert konkret wenn Feedback gegeben wird?"' },
+  ],
+  L3: [
+    { signal: '"Keiner weiss wer wirklich entscheidet"',
+      exploration: '"Wie läuft das bei euch ab — wer entscheidet was formal, was informell?"',
+      praezision: '"Nenn mir eine Entscheidung der letzten Wochen — wer hat sie getroffen?"' },
+    { signal: '"Die rechte Hand weiss nicht was die linke tut"',
+      exploration: '"Zwischen welchen Bereichen passiert das am häufigsten?"',
+      praezision: '"Was kostet euch das — in Zeit, Energie, Geld?"' },
+    { signal: '"Wir haben Prozesse — aber niemand hält sie ein"',
+      exploration: '"Welche Prozesse meinst du — gibt es Beispiele?"',
+      praezision: '"Warum hält niemand sie ein — was ist die Erklärung die du hörst?"' },
+    { signal: '"Meetings ohne Ergebnis, immer wieder"',
+      exploration: '"Was passiert in diesen Meetings — wie laufen sie ab?"',
+      praezision: '"Was müsste anders sein damit ein Meeting für dich ein Ergebnis hat?"' },
+    { signal: '"Verantwortung ist unklar — alle zuständig, keiner verantwortlich"',
+      exploration: '"Wo ist das am stärksten spürbar?"',
+      praezision: '"Gab es mal einen Moment wo das konkret zu einem Problem geführt hat?"' },
+  ],
+  "Cross-Layer": [
+    { signal: '"Der Chef spricht über Prozesse — die Mitarbeitenden sprechen über Erschöpfung. Beide haben recht, reden aber aneinander vorbei."',
+      exploration: '"Wenn du deine Leute fragst was gerade am schwierigsten ist — was sagen die?"',
+      praezision: '"Und was sagst du selbst — ist das dasselbe?"' },
+    { signal: '"Alle wissen was nicht stimmt. Trotzdem ändert sich nichts."',
+      exploration: '"Was hindert euch — was steht im Weg?"',
+      praezision: '"Was habt ihr konkret versucht um das zu ändern?"' },
+    { signal: '"Leute gehen, Stimmung ist mies, niemand weiss genau wofür er zuständig ist — alles gleichzeitig."',
+      exploration: '"Was glaubst du, was zuerst da war — oder hängt das alles zusammen?"',
+      praezision: '"Wenn du einen Hebel hättest — wo würdest du anfangen?"' },
+    { signal: '"Im Meeting einig, danach passiert nichts. Schon mehrfach."',
+      exploration: '"Was passiert zwischen Beschluss und Umsetzung — wo geht es verloren?"',
+      praezision: '"Ist das bei allen Massnahmen so — oder bei bestimmten Themen?"' },
+    { signal: '"Das Organigramm wurde neu gezeichnet. Das Verhalten ist exakt gleich geblieben."',
+      exploration: '"Was hat sich verändert seit der neuen Struktur — und was nicht?"',
+      praezision: '"Was müsste sich verändern damit das neue System wirklich greift?"' },
+  ],
+};
+
 function renderKompassLayerSignale() {
-  const signals = {
-    L1: [
-      '"Wir sind alle am Limit"',
-      '"Nach dem Wochenende gleich wieder leer"',
-      '"Ich schlafe schlecht seit Monaten"',
-      '"Das Team funktioniert, aber irgendwie auf Reserve"',
-      '"Krankenstand ist gestiegen"',
-    ],
-    L2: [
-      '"Das traut sich niemand ansprechen"',
-      '"Wir haben das schon versucht — hat nichts gebracht"',
-      '"Eigentlich weiss jeder was falsch läuft, aber..."',
-      '"Die Stimmung ist gereizt, ohne dass man weiss warum"',
-      '"Feedback kommt nicht an oder wird nicht gegeben"',
-    ],
-    L3: [
-      '"Keiner weiss wer wirklich entscheidet"',
-      '"Die rechte Hand weiss nicht was die linke tut"',
-      '"Wir haben Prozesse — aber niemand hält sie ein"',
-      '"Meetings ohne Ergebnis, immer wieder"',
-      '"Verantwortung ist unklar — alle zuständig, keiner verantwortlich"',
-    ],
-    "Cross-Layer": [
-      "CEO beschreibt Strukturproblem (L3), Operative beschreiben Erschöpfung (L1) → Attraktor über alle Layer",
-      '"Wir wissen was falsch ist aber können es nicht ändern" → L2 blockiert L3-Fix',
-      "Hohe Fluktuation + schlechte Stimmung + unklare Prozesse gleichzeitig → Systemische Friction, Regime 3",
-      "Massnahmen werden beschlossen aber nicht umgesetzt → L2 Immunity to Change",
-      "Neue Struktur eingeführt, altes Verhalten bleibt → L1/L2 nicht adressiert vor L3",
-    ],
-  };
   const COL_CLASS = { "L1": "l1", "L2": "l2", "L3": "l3", "Cross-Layer": "cross" };
   let html = `<div class="kompass-signale-grid">`;
-  for (const [layer, items] of Object.entries(signals)) {
+  let toggleIdx = 0;
+  for (const [layer, items] of Object.entries(KOMPASS_SIGNALS)) {
     html += `<div class="kompass-signale-col ${COL_CLASS[layer]}">
       <div class="kompass-signale-head">${escHtml(layer)} — Signale</div>
-      <ol class="kompass-signale-list">`;
-    for (const s of items) html += `<li>${escHtml(s)}</li>`;
-    html += `</ol></div>`;
+      <div class="kompass-signale-list">`;
+    for (const it of items) {
+      const toggleId = `kompass-vertief-${toggleIdx++}`;
+      html += `<div class="kompass-signale-item">
+        <div class="kompass-signale-text">${escHtml(it.signal)}</div>
+        <button class="kompass-mini-toggle" type="button" onclick="toggleDisclosure('${toggleId}', this)">
+          <span class="kompass-mini-arrow">&#9654;</span>
+          <span>Vertiefungsfragen</span>
+        </button>
+        <div class="kompass-mini-content disclosure-content" id="${toggleId}">
+          <div class="kompass-vertief-q"><span class="kompass-vertief-label">→ Exploration:</span> ${escHtml(it.exploration)}</div>
+          <div class="kompass-vertief-q"><span class="kompass-vertief-label">→ Präzision:</span> ${escHtml(it.praezision)}</div>
+        </div>
+      </div>`;
+    }
+    html += `</div></div>`;
   }
   html += `</div>`;
   return html;
 }
 
+// Platzhalter: die alte Funktion wird durch renderKompassLayerSignale mit
+// integrierten Mini-Toggles ersetzt. Dead code bleibt nicht stehen — diese
+// Stub wird nie mehr aufgerufen (renderDiagnostischerKompassV2 ruft nur noch
+// renderKompassLayerSignale).
 function renderKompassVertiefungsfragen() {
-  // Struktur: pro Signal { layer, signal, exploration, praezision }
-  const data = {
-    L1: [
-      { signal: '"Wir sind alle am Limit"',
-        exploration: '"Erzähl mir mehr — wie äussert sich das konkret?"',
-        praezision: '"Wann hat das angefangen — gab es einen Moment wo es gekippt ist?"' },
-      { signal: '"Nach dem Wochenende gleich wieder leer"',
-        exploration: '"Wie ist das für dich persönlich — oder hörst du das auch von anderen?"',
-        praezision: '"Wie viele im Team würden das so beschreiben?"' },
-      { signal: '"Krankenstand ist gestiegen"',
-        exploration: '"Was glaubst du, was dahintersteckt?"',
-        praezision: '"Seit wann — und in welchen Teams zuerst?"' },
-      { signal: '"Das Team funktioniert, aber irgendwie auf Reserve"',
-        exploration: '"Was meinst du mit Reserve — was fehlt?"',
-        praezision: '"Was würde sich ändern wenn diese Reserve wieder da wäre?"' },
-      { signal: '"Ich schlafe schlecht seit Monaten"',
-        exploration: '"Magst du das etwas ausführen?"',
-        praezision: '"Ist das bei dir allein so — oder hörst du das auch von anderen?"' },
-    ],
-    L2: [
-      { signal: '"Das traut sich niemand ansprechen"',
-        exploration: '"Erzähl mir mehr — was passiert wenn jemand es doch anspricht?"',
-        praezision: '"Wann ist das zuletzt konkret passiert — was war die Situation?"' },
-      { signal: '"Wir haben das schon versucht — hat nichts gebracht"',
-        exploration: '"Was habt ihr versucht — was genau?"',
-        praezision: '"Was ist danach passiert — warum hat es nicht gehalten?"' },
-      { signal: '"Eigentlich weiss jeder was falsch läuft, aber..."',
-        exploration: '"Aber — was kommt nach diesem Aber?"',
-        praezision: '"Wer weiss es — und wer tut so als ob nicht?"' },
-      { signal: '"Die Stimmung ist gereizt"',
-        exploration: '"Wie zeigt sich das — kannst du ein Beispiel nennen?"',
-        praezision: '"In welchen Situationen ist es am stärksten spürbar?"' },
-      { signal: '"Feedback kommt nicht an"',
-        exploration: '"In welche Richtung — von oben nach unten, oder umgekehrt, oder beides?"',
-        praezision: '"Was passiert konkret wenn Feedback gegeben wird?"' },
-    ],
-    L3: [
-      { signal: '"Keiner weiss wer wirklich entscheidet"',
-        exploration: '"Wie läuft das bei euch ab — wer entscheidet was formal, was informell?"',
-        praezision: '"Nenn mir eine Entscheidung der letzten Wochen — wer hat sie getroffen?"' },
-      { signal: '"Meetings ohne Ergebnis"',
-        exploration: '"Was passiert in diesen Meetings — wie laufen sie ab?"',
-        praezision: '"Was müsste anders sein damit ein Meeting für dich ein Ergebnis hat?"' },
-      { signal: '"Prozesse die niemand einhält"',
-        exploration: '"Welche Prozesse meinst du — gibt es Beispiele?"',
-        praezision: '"Warum hält niemand sie ein — was ist die Erklärung die du hörst?"' },
-      { signal: '"Verantwortung unklar"',
-        exploration: '"Wo ist das am stärksten spürbar?"',
-        praezision: '"Gab es mal einen Moment wo das konkret zu einem Problem geführt hat?"' },
-      { signal: '"Rechte Hand weiss nicht was linke tut"',
-        exploration: '"Zwischen welchen Bereichen passiert das am häufigsten?"',
-        praezision: '"Was kostet euch das — in Zeit, Energie, Geld?"' },
-    ],
-    "Cross-Layer": [
-      { signal: "CEO sieht L3, Operative erleben L1",
-        exploration: '"Wenn du deine Leute fragst was gerade am schwierigsten ist — was sagen die?"',
-        praezision: '"Und was sagst du selbst — ist das dasselbe?"' },
-      { signal: '"Wir wissen es aber können es nicht ändern"',
-        exploration: '"Was hindert euch — was steht im Weg?"',
-        praezision: '"Was habt ihr konkret versucht um das zu ändern?"' },
-      { signal: "Hohe Fluktuation + schlechte Stimmung + unklare Prozesse",
-        exploration: '"Was glaubst du, was zuerst da war — oder hängt das alles zusammen?"',
-        praezision: '"Wenn du einen Hebel hättest — wo würdest du anfangen?"' },
-      { signal: "Massnahmen beschlossen, nicht umgesetzt",
-        exploration: '"Was passiert zwischen Beschluss und Umsetzung — wo geht es verloren?"',
-        praezision: '"Ist das bei allen Massnahmen so — oder bei bestimmten Themen?"' },
-      { signal: "Neue Struktur, altes Verhalten",
-        exploration: '"Was hat sich verändert seit der neuen Struktur — und was nicht?"',
-        praezision: '"Was müsste sich verändern damit das neue System wirklich greift?"' },
-    ],
-  };
-  const COL_CLASS = { "L1": "l1", "L2": "l2", "L3": "l3", "Cross-Layer": "cross" };
   let html = "";
-  for (const [layer, items] of Object.entries(data)) {
-    html += `<div class="kompass-vertief-section ${COL_CLASS[layer]}">
-      <div class="kompass-vertief-head">${escHtml(layer)} — Vertiefungsfragen</div>`;
-    for (const it of items) {
-      html += `<div class="kompass-vertief-item">
-        <div class="kompass-vertief-signal"><em>Signal:</em> ${escHtml(it.signal)}</div>
-        <div class="kompass-vertief-q"><span class="kompass-vertief-label">→ Exploration:</span> ${escHtml(it.exploration)}</div>
-        <div class="kompass-vertief-q"><span class="kompass-vertief-label">→ Präzision:</span> ${escHtml(it.praezision)}</div>
-      </div>`;
-    }
-    html += `</div>`;
+  for (const layer of []) {
+    html += "";
   }
   return html;
 }
@@ -5590,15 +5735,6 @@ function renderMrb02Tools() {
 // ── HYPOTHESEN-ZUSAMMENFASSUNG (Modul 1 Phase 5) ──
 function renderHypothesenZusammenfassung() {
   const saved = (currentConsultation && currentConsultation.hyp_generated) || "";
-  const regime = (currentConsultation && currentConsultation.hyp_regime) || "";
-  const regimeRadio = (v, label, sub) => `
-    <label class="regime-radio${regime === v ? ' checked' : ''}">
-      <input type="radio" name="hypRegime" value="${v}" ${regime === v ? 'checked' : ''} onchange="saveHypRegime(this.value)">
-      <div class="regime-radio-text">
-        <div class="regime-radio-label">${label}</div>
-        <div class="regime-radio-sub">${sub}</div>
-      </div>
-    </label>`;
   return `
     <div class="scan-card" style="margin-top:16px">
       <div class="scan-card-title">Hypothesen</div>
@@ -5613,27 +5749,18 @@ function renderHypothesenZusammenfassung() {
     </div>
 
     <div class="disclosure-block" style="margin-top:12px">
-      <button class="disclosure-toggle" type="button" onclick="toggleDisclosure('kaskadenRoutingDisclosure', this)">
-        <span class="disclosure-title">Kaskaden-Routing anzeigen</span>
+      <button class="disclosure-toggle" type="button" onclick="toggleDisclosure('kaskadenRoutingDisclosure', this); setTimeout(initKaskadenSimulation, 50);">
+        <span class="disclosure-title">Kaskaden-Routing Simulation</span>
         <span class="disclosure-arrow">&#9660;</span>
       </button>
       <div class="disclosure-content" id="kaskadenRoutingDisclosure">
-        ${renderKaskadenFlowchart()}
-        <div style="margin-top:16px">
-          <div style="font-weight:500;font-size:13px;margin-bottom:8px">Regime auswählen</div>
-          <div class="regime-radio-group">
-            ${regimeRadio("1", "Regime 1", "Strukturoptimierung — L3 dominant")}
-            ${regimeRadio("2", "Regime 2", "L2 vor L3 adressieren")}
-            ${regimeRadio("2b", "Regime 2b", "L2 benennen, dann L3 formalisieren")}
-            ${regimeRadio("3", "Regime 3", "Erst stabilisieren — L1 rot, keine L3-Intervention")}
-          </div>
-        </div>
+        <div id="kaskadenSimulationRoot"></div>
       </div>
     </div>
 
     <div class="disclosure-block">
       <button class="disclosure-toggle" type="button" onclick="toggleDisclosure('theorieBasisDisclosure', this)">
-        <span class="disclosure-title">Theoretische Basis</span>
+        <span class="disclosure-title">Kaskaden &amp; Regime: Theoretische Basis</span>
         <span class="disclosure-arrow">&#9660;</span>
       </button>
       <div class="disclosure-content" id="theorieBasisDisclosure">
@@ -5654,8 +5781,41 @@ function renderHypothesenZusammenfassung() {
   `;
 }
 
-// SVG-Flowchart für die Kaskaden-Routing-Logik.
-// Keine externe Library — reines inline-SVG.
+// Gesprächsleitfaden mit optionalen Notiz-Textareas unter einzelnen
+// Fragen. Map pro Phase + Guide-Index → { key, rows, label? }.
+// Autosave via data-note-key Attribut, wird bei input-Event persistiert.
+const GUIDE_NOTES_MAP = {
+  4: {
+    0: { key: "phase4_schritt_notizen", rows: 3 },
+  },
+  5: {
+    0: { key: "phase5_mitnehmen_notizen", rows: 3 },
+    1: { key: "phase5_naechster_schritt_notizen", rows: 3 },
+    2: { key: "phase5_multiplikator", rows: 2, label: "Multiplikator-Notiz" },
+  },
+};
+
+function renderGuideWithNotes(num, phase) {
+  const noteMap = GUIDE_NOTES_MAP[num] || {};
+  let html = `<div class="guide-block"><div class="guide-label">Gesprächsleitfaden</div>`;
+  phase.guide.forEach((g, idx) => {
+    html += `<div class="guide-item">${g.text}</div>`;
+    const n = noteMap[idx];
+    if (n && currentConsultation) {
+      const val = currentConsultation[n.key] || "";
+      const labelHtml = n.label
+        ? `<label class="form-label guide-note-label">${escHtml(n.label)}</label>`
+        : "";
+      html += `<div class="guide-note-wrap">
+        ${labelHtml}
+        <textarea class="form-input guide-note-input" data-note-key="${escHtml(n.key)}" rows="${n.rows}" placeholder="Notizen…">${escHtml(val)}</textarea>
+      </div>`;
+    }
+  });
+  html += `</div>`;
+  return html;
+}
+
 // Phase 4 (Slice + Idealzustand) — zwei separate Felder, Autosave separat.
 // Fallback: falls phase4_schritt/idealzustand leer sind, den alten
 // phase4_notes Inhalt als Initial-Wert ins "Schritt"-Feld laden
@@ -5686,42 +5846,176 @@ function renderPhase4SplitFields() {
   `;
 }
 
-function renderKaskadenFlowchart() {
-  return `
-    <div class="kaskaden-flowchart">
-      <div class="kflow-node kflow-start">L1-Status?</div>
-      <div class="kflow-branches">
-        <div class="kflow-branch">
-          <div class="kflow-arrow">├─ ROT</div>
-          <div class="kflow-node kflow-r3">Regime 3<br><span class="kflow-sub">Erst stabilisieren.<br>Keine L3-Intervention.</span></div>
-        </div>
-        <div class="kflow-branch">
-          <div class="kflow-arrow">├─ GELB + L2 hoch</div>
-          <div class="kflow-node kflow-r2">Regime 2<br><span class="kflow-sub">L2 vor L3 adressieren.</span></div>
-        </div>
-        <div class="kflow-branch">
-          <div class="kflow-arrow">├─ GELB + L2 ok</div>
-          <div class="kflow-sub-branch">
-            <div class="kflow-node kflow-check">Regime 2b prüfen<br><span class="kflow-sub">L3 rot + L2 Immunity?</span></div>
-            <div class="kflow-sub-branches">
-              <div class="kflow-sub-item">
-                <span class="kflow-arrow-sm">├─ JA</span>
-                <div class="kflow-node kflow-r2b">Regime 2b<br><span class="kflow-sub">L2 benennen, dann L3.</span></div>
-              </div>
-              <div class="kflow-sub-item">
-                <span class="kflow-arrow-sm">└─ NEIN</span>
-                <div class="kflow-node kflow-r1">Regime 1</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="kflow-branch">
-          <div class="kflow-arrow">└─ GRÜN + L3 dominant</div>
-          <div class="kflow-node kflow-r1">Regime 1<br><span class="kflow-sub">Strukturoptimierung.</span></div>
-        </div>
-      </div>
-    </div>
-  `;
+// ── KASKADEN-SIMULATION (interaktiver Stepper) ─────────────────────────
+// State: L1-Status → L2-Status → (ggf. Immunity) → Regime-Ergebnis.
+// Reset clear, "Regime speichern" persistiert in consultations.hyp_regime.
+
+let simulationState = { l1: null, l2: null, immunity: null };
+
+const KASKADEN_REGIMES = {
+  "1": {
+    label: "Regime 1", color: "r1",
+    erklaerung: "Strukturoptimierung — L3 ist der primäre Hebel.",
+    bedeutet: [
+      "Entscheidungsarchitektur, Rollen und Incentives adressieren.",
+      "L1/L2 stabil genug, um strukturelle Veränderung zu tragen.",
+      "Klassische Organisationsentwicklung — sauber sequenzierbar.",
+    ],
+  },
+  "2": {
+    label: "Regime 2", color: "r2",
+    erklaerung: "L2 vor L3 adressieren — psychologische Dynamik zuerst.",
+    bedeutet: [
+      "Psychological Safety, Attribution, Immunity-Muster explizit benennen.",
+      "L3-Interventionen würden ohne L2-Vorarbeit vom System absorbiert.",
+      "Coaching-nahe Arbeit vor Struktur-Redesign.",
+    ],
+  },
+  "2b": {
+    label: "Regime 2b", color: "r2b",
+    erklaerung: "L2 benennen, dann L3 formalisieren — integrierte Sequenz.",
+    bedeutet: [
+      "L3 rot + L2 Immunity: Struktur muss anders werden, blockiert aber durch Muster.",
+      "Erst Muster benennen (Immunity-Map), dann L3-Veränderung mit Begleitung.",
+      "Einzelner Interventionspfad, kein L3-Alleingang.",
+    ],
+  },
+  "3": {
+    label: "Regime 3", color: "r3",
+    erklaerung: "Erst stabilisieren — L1 rot, keine L3-Intervention.",
+    bedeutet: [
+      "Biologische Kapazität ist erschöpft — Regeneration hat Vorrang.",
+      "Workload-Reduktion, Recovery, Schlaf/Energie-Monitoring.",
+      "Jede L3-Intervention würde Erschöpfung verstärken.",
+    ],
+  },
+};
+
+function determineKaskadenRegime(s) {
+  if (s.l1 === "rot") return "3";
+  if (s.l1 === "gelb") {
+    if (s.l2 === "hoch") return "2";
+    if (s.l2 === "ok") {
+      if (s.immunity === "ja") return "2b";
+      if (s.immunity === "nein") return "1";
+    }
+  }
+  if (s.l1 === "gruen") {
+    if (s.l2 === "dominant") return "2";
+    if (s.l2 === "l3-dominant") return "1";
+    if (s.l2 === "beide") return "2b";
+  }
+  return null;
+}
+
+function initKaskadenSimulation() {
+  const root = document.getElementById("kaskadenSimulationRoot");
+  if (!root) return;
+  if (root.dataset.initialized !== "1") {
+    simulationState = { l1: null, l2: null, immunity: null };
+    root.dataset.initialized = "1";
+    renderKaskadenSimulation();
+  }
+}
+
+function resetKaskadenSimulation() {
+  simulationState = { l1: null, l2: null, immunity: null };
+  renderKaskadenSimulation();
+}
+
+function setKaskadenStep(field, value) {
+  simulationState[field] = value;
+  if (field === "l1") { simulationState.l2 = null; simulationState.immunity = null; }
+  if (field === "l2") { simulationState.immunity = null; }
+  renderKaskadenSimulation();
+}
+
+function buildSimStep(question, selected, options, onclickBuilder) {
+  let html = `<div class="sim-step">
+    <div class="sim-step-q">${escHtml(question)}</div>
+    <div class="sim-step-options">`;
+  for (const o of options) {
+    const activeCls = selected === o.v ? " active" : "";
+    html += `<button class="sim-btn sim-btn-${o.cls}${activeCls}" type="button" onclick="${onclickBuilder(o.v)}">${escHtml(o.label)}</button>`;
+  }
+  html += `</div></div>`;
+  return html;
+}
+
+function renderKaskadenSimulation() {
+  const root = document.getElementById("kaskadenSimulationRoot");
+  if (!root) return;
+  const s = simulationState;
+  let html = `<div class="sim-wrap">`;
+
+  html += buildSimStep("1. L1-Status?", s.l1,
+    [
+      { v: "rot", label: "Rot", cls: "r3" },
+      { v: "gelb", label: "Gelb", cls: "r2" },
+      { v: "gruen", label: "Grün", cls: "r1" },
+    ],
+    (v) => `setKaskadenStep('l1', '${v}')`);
+
+  if (s.l1 === "gelb") {
+    html += buildSimStep("2. L2-Status?", s.l2,
+      [
+        { v: "hoch", label: "Hoch", cls: "r2" },
+        { v: "ok", label: "Ok", cls: "r1" },
+      ],
+      (v) => `setKaskadenStep('l2', '${v}')`);
+  } else if (s.l1 === "gruen") {
+    html += buildSimStep("2. Welche Layer sind auffällig?", s.l2,
+      [
+        { v: "dominant", label: "L2 dominant", cls: "r2" },
+        { v: "l3-dominant", label: "L3 dominant", cls: "r1" },
+        { v: "beide", label: "L2 + L3 beide", cls: "r2b" },
+      ],
+      (v) => `setKaskadenStep('l2', '${v}')`);
+  }
+
+  if (s.l1 === "gelb" && s.l2 === "ok") {
+    html += buildSimStep("3. L3 rot + L2 Immunity?", s.immunity,
+      [
+        { v: "ja", label: "Ja", cls: "r2b" },
+        { v: "nein", label: "Nein", cls: "r1" },
+      ],
+      (v) => `setKaskadenStep('immunity', '${v}')`);
+  }
+
+  const regimeKey = determineKaskadenRegime(s);
+  if (regimeKey) {
+    const r = KASKADEN_REGIMES[regimeKey];
+    html += `<div class="sim-result sim-result-${r.color}">
+      <div class="sim-result-label">${escHtml(r.label)}</div>
+      <div class="sim-result-expl">${escHtml(r.erklaerung)}</div>
+      <div class="sim-result-mean-head">Was das bedeutet:</div>
+      <ul class="sim-result-mean">`;
+    for (const p of r.bedeutet) html += `<li>${escHtml(p)}</li>`;
+    html += `</ul></div>`;
+  }
+
+  html += `<div class="sim-actions">
+    <button class="btn btn-ghost" type="button" onclick="resetKaskadenSimulation()">Simulation zurücksetzen</button>`;
+  if (regimeKey) {
+    const currentSaved = (currentConsultation && currentConsultation.hyp_regime) || "";
+    const savedLabel = currentSaved === regimeKey ? "✓ Gespeichert" : "Regime speichern";
+    html += `<button class="btn btn-primary" type="button" onclick="saveKaskadenRegime('${regimeKey}')">${savedLabel}</button>`;
+  }
+  html += `</div></div>`;
+  root.innerHTML = html;
+}
+
+async function saveKaskadenRegime(regimeKey) {
+  if (!currentConsultation) return;
+  currentConsultation.hyp_regime = regimeKey;
+  renderKaskadenSimulation();
+  try {
+    await fetch(`/api/consultations/${currentConsultation.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ hyp_regime: regimeKey }),
+    });
+  } catch (e) { console.warn("Save regime failed:", e.message); }
 }
 
 // Minimal Markdown → HTML (bold, italic, lists, paragraphs) für Claude-Output.
@@ -5803,22 +6097,8 @@ async function generateHypothesen() {
   if (btn) { btn.disabled = false; btn.textContent = "Hypothesen neu generieren"; }
 }
 
-async function saveHypRegime(value) {
-  if (!currentConsultation) return;
-  currentConsultation.hyp_regime = value;
-  // Radio-Styling aktualisieren
-  document.querySelectorAll("label.regime-radio").forEach(l => {
-    const input = l.querySelector('input[type="radio"]');
-    l.classList.toggle("checked", input && input.checked);
-  });
-  try {
-    await fetch(`/api/consultations/${currentConsultation.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ hyp_regime: value }),
-    });
-  } catch {}
-}
+// saveHypRegime ersetzt durch saveKaskadenRegime (Simulation-basiert).
+// Die Legacy-Regime-Radio-Cards sind entfernt.
 
 // ── TRANSKRIPT-ANALYSE (ADA-gestützt, Modul 2 Phase 2) ──
 const TRANSKRIPT_ANALYSE_PROMPT = `Du bist NELION Friction Diagnostics.

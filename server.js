@@ -492,7 +492,11 @@ app.patch("/api/consultations/:id", async (req, res) => {
     "phase4_notes",
     "phase4_schritt",
     "phase4_idealzustand",
+    "phase4_schritt_notizen",
     "phase5_notes",
+    "phase5_mitnehmen_notizen",
+    "phase5_naechster_schritt_notizen",
+    "phase5_multiplikator",
     "completed",
     "hyp_generated",
     "hyp_regime",
@@ -507,14 +511,18 @@ app.patch("/api/consultations/:id", async (req, res) => {
   // Graceful fallback falls optional-Spalten noch nicht migriert sind.
   let { data, error } = await supabase
     .from("consultations").update(updates).eq("id", req.params.id).select().single();
-  if (error && /hyp_generated|hyp_regime|phase4_schritt|phase4_idealzustand/.test(error.message || "")) {
+  if (error && /hyp_generated|hyp_regime|phase4_schritt|phase4_idealzustand|phase4_schritt_notizen|phase5_mitnehmen_notizen|phase5_naechster_schritt_notizen|phase5_multiplikator/.test(error.message || "")) {
     // Fehlende optionale Spalten entfernen und erneut versuchen
     delete updates.hyp_generated;
     delete updates.hyp_regime;
     delete updates.phase4_schritt;
     delete updates.phase4_idealzustand;
+    delete updates.phase4_schritt_notizen;
+    delete updates.phase5_mitnehmen_notizen;
+    delete updates.phase5_naechster_schritt_notizen;
+    delete updates.phase5_multiplikator;
     if (Object.keys(updates).length === 0) {
-      return res.status(500).json({ error: "Migrationen nötig: 013_consultations_hyp.sql + 014_consultations_phase4_split.sql" });
+      return res.status(500).json({ error: "Migrationen nötig: 013_consultations_hyp.sql + 014_consultations_phase4_split.sql + 015_consultations_guide_notes.sql" });
     }
     const r2 = await supabase.from("consultations").update(updates).eq("id", req.params.id).select().single();
     if (r2.error) return res.status(500).json({ error: r2.error.message });
@@ -567,6 +575,9 @@ app.patch("/api/scans/:id", async (req, res) => {
     "hypothesen_spiegel_done", "hypothesen_spiegel_notizen",
     "mandatscheck_budget", "mandatscheck_personen", "mandatscheck_kein_krise",
     "current_phase", "completed",
+    // Interview Kernfragen-Notizen (Migration 015)
+    "interview_f1_notiz", "interview_f2_notiz",
+    "interview_f3_notiz", "interview_abschluss_notiz",
   ];
   const updates = {};
   for (const key of allowed) {
@@ -575,8 +586,21 @@ app.patch("/api/scans/:id", async (req, res) => {
   if (Object.keys(updates).length === 0) {
     return res.status(400).json({ error: "Keine Felder zum Update" });
   }
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from("scans").update(updates).eq("id", req.params.id).select().single();
+  // Graceful fallback: wenn Interview-Notiz-Spalten fehlen, retry ohne sie
+  if (error && /interview_f1_notiz|interview_f2_notiz|interview_f3_notiz|interview_abschluss_notiz/.test(error.message || "")) {
+    delete updates.interview_f1_notiz;
+    delete updates.interview_f2_notiz;
+    delete updates.interview_f3_notiz;
+    delete updates.interview_abschluss_notiz;
+    if (Object.keys(updates).length === 0) {
+      return res.status(500).json({ error: "Migration 015 nötig (scans Interview-Notizen)" });
+    }
+    const r2 = await supabase.from("scans").update(updates).eq("id", req.params.id).select().single();
+    if (r2.error) return res.status(500).json({ error: r2.error.message });
+    return res.json(r2.data);
+  }
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
 });
