@@ -3652,11 +3652,11 @@ function renderPhase0() {
     </div>
     <div class="scan-card" style="margin-top:12px">
       <div class="scan-card-title">Kein akuter Überlebensmodus — 3 Unterfragen${helpIcon("Akuter Überlebensmodus")}</div>
-      <div class="check-row"><input type="checkbox" id="mc3a" onchange="updateMc3()"><label for="mc3a" class="pflicht">Runway > 3 Monate?</label></div>
+      <div class="check-row"><input type="checkbox" id="mc3a" ${s.mandatscheck_kein_krise ? "checked" : ""} onchange="updateMc3()"><label for="mc3a" class="pflicht">Runway > 3 Monate?</label></div>
       <div style="font-size:11px;color:var(--ink-mute);margin-left:26px;margin-bottom:8px">Falls ✗: Liquiditätskrise — Scan nach Stabilisierung</div>
-      <div class="check-row"><input type="checkbox" id="mc3b" onchange="updateMc3()"><label for="mc3b" class="pflicht">Keine laufenden/angekündigten Entlassungen?</label></div>
+      <div class="check-row"><input type="checkbox" id="mc3b" ${s.mandatscheck_kein_krise ? "checked" : ""} onchange="updateMc3()"><label for="mc3b" class="pflicht">Keine laufenden/angekündigten Entlassungen?</label></div>
       <div style="font-size:11px;color:var(--ink-mute);margin-left:26px;margin-bottom:8px">Falls ✗: Akute Restrukturierung — Scan nach Abschluss</div>
-      <div class="check-row"><input type="checkbox" id="mc3c" onchange="updateMc3()"><label for="mc3c" class="pflicht">Stabiler Entscheider vorhanden?</label></div>
+      <div class="check-row"><input type="checkbox" id="mc3c" ${s.mandatscheck_kein_krise ? "checked" : ""} onchange="updateMc3()"><label for="mc3c" class="pflicht">Stabiler Entscheider vorhanden?</label></div>
       <div style="font-size:11px;color:var(--ink-mute);margin-left:26px;margin-bottom:8px">Falls ✗: Kein Mandat — Entscheider definieren</div>
       <input type="hidden" id="mc3" ${s.mandatscheck_kein_krise ? "checked" : ""}>
       <div id="mc3Status" style="margin-top:8px;font-size:12px;font-weight:500"></div>
@@ -4144,6 +4144,8 @@ function bindScanPhaseEvents(num) {
       }
     };
     checks.forEach(id => document.getElementById(id)?.addEventListener("change", updateGate));
+    // Initial-Render: mc3-Status-Text synchron zu den (ggf. vorbefüllten) Sub-Checkboxen
+    if (typeof updateMc3 === "function") updateMc3();
     updateGate();
   }
   if (num === 5) calculateRegime();
