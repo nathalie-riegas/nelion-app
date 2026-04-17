@@ -1807,6 +1807,15 @@
     letter-spacing: 0.05em; display: block; margin-bottom: 2px;
     color: var(--ink-dim); text-transform: uppercase;
   }
+  .aus-routing-badge-hint {
+    display: block; margin-top: 4px; font-size: 11px;
+    color: var(--ink-mute); font-weight: 400;
+  }
+  .aus-routing-badge-empty { border-left-color: var(--border); color: var(--ink-mute); }
+  .aus-routing-badge-r1 { border-left-color: var(--green); }
+  .aus-routing-badge-r2 { border-left-color: var(--yellow); }
+  .aus-routing-badge-r2b { border-left-color: #c96; }
+  .aus-routing-badge-r3 { border-left-color: var(--red); }
   .aus-befund-field { margin-bottom: 14px; }
   .aus-befund-field label {
     display: block; font-size: 11px; color: var(--ink-mute);
@@ -2832,11 +2841,11 @@
 <nav class="tab-nav" id="appTabNav">
   <button class="tab-btn" data-tab="modul1" onclick="switchTab('modul1')">Erstgespräch</button>
   <button class="tab-btn" data-tab="modul2" onclick="switchTab('modul2')">Friction Scan</button>
+  <button class="tab-btn" data-tab="auswertung" onclick="switchTab('auswertung')">Auswertung</button>
+  <button class="tab-btn" data-tab="interventionen" onclick="switchTab('interventionen')">Interventionen</button>
   <button class="tab-btn" data-tab="modul3" onclick="switchTab('modul3')">PAI</button>
   <!-- PAI Self-Assessment deaktiviert (2026-04-17) — Tab zusammengeführt mit PAI Interview. Code bleibt erhalten. -->
   <!-- <button class="tab-btn" data-tab="modul4" onclick="switchTab('modul4')">PAI Self-Assessment</button> -->
-  <button class="tab-btn" data-tab="auswertung" onclick="switchTab('auswertung')">Auswertung</button>
-  <button class="tab-btn" data-tab="interventionen" onclick="switchTab('interventionen')">Interventionen</button>
   <button class="tab-btn" data-tab="ada" onclick="switchTab('ada')">ADA<span class="tab-badge" id="adaTabBadge" style="display:none;">🎓 <span id="adaTabBadgeCount">0</span></span></button>
 </nav>
 
@@ -2910,10 +2919,10 @@
     <div class="landing-buttons">
       <button class="landing-btn" onclick="switchTab('modul1')">Erstgespräch starten</button>
       <button class="landing-btn" onclick="switchTab('modul2')">Friction Scan</button>
+      <button class="landing-btn" onclick="switchTab('auswertung')">Auswertung</button>
       <button class="landing-btn" onclick="switchTab('modul3')">PAI</button>
       <!-- PAI Self-Assessment Landing-Button deaktiviert (2026-04-17) — Tab zusammengeführt. Code bleibt erhalten. -->
       <!-- <button class="landing-btn" onclick="switchTab('modul4')">PAI Self-Assessment</button> -->
-      <button class="landing-btn" onclick="switchTab('auswertung')">Auswertung</button>
       <button class="landing-btn ada" onclick="switchTab('ada')">ADA öffnen</button>
     </div>
 
@@ -4758,10 +4767,6 @@ async function goToScanPhase(num) {
   if (typeof updateAdaContextText === "function") updateAdaContextText();
   if (typeof evaluateAdaErrorBanners === "function") evaluateAdaErrorBanners();
 
-  // ── Lernmodus-Trigger: Phase 4 öffnen ──
-  if (num === 4 && typeof maybeFireLernmodusPhase4 === "function") {
-    maybeFireLernmodusPhase4();
-  }
 }
 
 async function saveScanState() {
@@ -5188,820 +5193,6 @@ async function autoFillFrictionProfilFromTally() {
   if (statusEl) statusEl.textContent = "Profil automatisch befüllt aus 3 Submissions (Gate-Logik: schwächster Wert dominiert).";
 }
 
-// ══════════════════════════════════════════════════════════════════════════
-// LEGACY — Friction Scan Phasen 0–5 (deaktiviert 2026-04-17)
-// Code bleibt erhalten als Referenz. Dispatcher ruft diese Funktionen nicht
-// mehr auf. Helper-Funktionen (renderAmpelGrid, setAmpel, saveAmpeln,
-// ensureInterviewSlots etc.) werden weiterhin von den neuen Phasen genutzt.
-// ══════════════════════════════════════════════════════════════════════════
-
-// ── PHASE 0: MANDATS-CHECK ──
-function renderPhase0() {
-  const s = currentScan;
-  return `
-    <div class="phase-header"><span class="phase-number">Phase 0</span><span class="phase-title">Mandats-Check</span></div>
-    <div class="phase-instruction">Drei Gate-Fragen — alle müssen erfüllt sein, bevor der Scan startet.</div>
-    <div class="scan-card">
-      <div class="scan-card-title">Voraussetzungen</div>
-      <div class="check-row"><input type="checkbox" id="mc1" ${s.mandatscheck_budget ? "checked" : ""}><label for="mc1" class="pflicht">Entscheider hat Budgetmandat?</label>${helpIcon("Entscheider hat Budgetmandat")}</div>
-      <div class="check-row"><input type="checkbox" id="mc2" ${s.mandatscheck_personen ? "checked" : ""}><label for="mc2" class="pflicht">Organisation >5 Personen?</label>${helpIcon("Organisation >5 Personen")}</div>
-    </div>
-    <div class="scan-card" style="margin-top:12px">
-      <div class="scan-card-title">Kein akuter Überlebensmodus — 3 Unterfragen${helpIcon("Akuter Überlebensmodus")}</div>
-      <div class="check-row"><input type="checkbox" id="mc3a" ${s.mandatscheck_kein_krise ? "checked" : ""} onchange="updateMc3()"><label for="mc3a" class="pflicht">Runway > 3 Monate?</label></div>
-      <div style="font-size:11px;color:var(--ink-mute);margin-left:26px;margin-bottom:8px">Falls ✗: Liquiditätskrise — Scan nach Stabilisierung</div>
-      <div class="check-row"><input type="checkbox" id="mc3b" ${s.mandatscheck_kein_krise ? "checked" : ""} onchange="updateMc3()"><label for="mc3b" class="pflicht">Keine laufenden/angekündigten Entlassungen?</label></div>
-      <div style="font-size:11px;color:var(--ink-mute);margin-left:26px;margin-bottom:8px">Falls ✗: Akute Restrukturierung — Scan nach Abschluss</div>
-      <div class="check-row"><input type="checkbox" id="mc3c" ${s.mandatscheck_kein_krise ? "checked" : ""} onchange="updateMc3()"><label for="mc3c" class="pflicht">Stabiler Entscheider vorhanden?</label></div>
-      <div style="font-size:11px;color:var(--ink-mute);margin-left:26px;margin-bottom:8px">Falls ✗: Kein Mandat — Entscheider definieren</div>
-      <input type="hidden" id="mc3" ${s.mandatscheck_kein_krise ? "checked" : ""}>
-      <div id="mc3Status" style="margin-top:8px;font-size:12px;font-weight:500"></div>
-    </div>
-    <div id="gateResult"></div>
-    <div class="btn-row" id="scanPhaseButtons"></div>
-  `;
-}
-
-function updateMc3() {
-  const a = document.getElementById("mc3a")?.checked;
-  const b = document.getElementById("mc3b")?.checked;
-  const c = document.getElementById("mc3c")?.checked;
-  const allOk = a && b && c;
-  const mc3 = document.getElementById("mc3");
-  if (mc3) {
-    mc3.checked = allOk;
-    // Programmatisches Setzen von .checked löst kein change-Event aus —
-    // manuell dispatchen damit der Gate-Listener (siehe bindScanPhaseEvents)
-    // den Ergebnis-Balken neu rendert.
-    mc3.dispatchEvent(new Event("change", { bubbles: true }));
-  }
-  const status = document.getElementById("mc3Status");
-  if (status) {
-    if (allOk) {
-      status.textContent = "✅ Kein Überlebensmodus — Scan freigegeben";
-      status.style.color = "var(--green)";
-    } else {
-      status.textContent = "⚠ Scan nicht geeignet — Voraussetzungen prüfen";
-      status.style.color = "var(--red)";
-    }
-  }
-}
-
-// ── PHASE 1: SETUP & SURVEY ──
-function renderPhase1() {
-  const s = currentScan;
-  return `
-    <div class="phase-header"><span class="phase-number">Phase 1</span><span class="phase-title">Setup & Survey</span><span class="phase-time">Tag 1</span></div>
-    <div class="phase-instruction">Kundeninformationen erfassen, Survey verschicken, erste Einschätzung vornehmen.</div>
-    <div class="scan-card">
-      <div class="scan-card-title">Grunddaten</div>
-      <div class="form-group"><label class="form-label pflicht">Anzahl Personen Organisation</label><input class="form-input" type="number" id="scanAnzahl" value="${s.anzahl_personen || ""}"></div>
-      <div class="form-group" style="margin-top:10px"><label class="form-label">Erste Beobachtungen</label><textarea class="form-input" id="scanNotizen" rows="3" placeholder="Erste Eindrücke, Kontext…">${escHtml(s.notizen)}</textarea></div>
-    </div>
-    <div class="scan-card" style="margin-top:12px">
-      <div class="scan-card-title">Survey</div>
-      <div class="btn-row"><button class="btn btn-ghost btn-sm" onclick="window.open('https://tally.so','_blank')">Tally-Survey senden ↗</button></div>
-      <div class="check-row" style="margin-top:8px"><input type="checkbox" id="surveyDone" ${s.survey_verschickt ? "checked" : ""}><label for="surveyDone" class="pflicht">Survey verschickt</label></div>
-      <div class="form-group" style="margin-top:8px"><label class="form-label">Survey-Beobachtungen</label><textarea class="form-input" id="surveyNotizen" rows="2" placeholder="Rücklaufquote, auffällige Antworten…">${escHtml(s.survey_notizen)}</textarea></div>
-    </div>
-    <div class="scan-card" style="margin-top:12px">
-      <div class="scan-card-title">Friction Profil — erste Einschätzung</div>
-      ${renderAmpelGrid("survey")}
-    </div>
-    <div class="btn-row" style="margin-top:12px">
-      <button class="btn btn-ghost" onclick="goToScanPhase(0)">Zurück</button>
-      <button class="btn btn-primary" onclick="savePhase1AndNext()">Weiter</button>
-    </div>
-  `;
-}
-
-// ── PHASE 2: INTERVIEWS ──
-function renderPhase2() {
-  return `
-    <div class="phase-header"><span class="phase-number">Phase 2</span><span class="phase-title">Interviews</span><span class="phase-time">Tag 2</span></div>
-    <div class="phase-instruction">3 strukturierte Interviews durchführen. Kernfragen stellen, Omission Bias prüfen.</div>
-    <div class="feature-btn-row">
-      <button class="feature-btn" onclick="document.getElementById('signalRadarOverlay').classList.add('open')">Signal-Radar</button>
-      <button class="feature-btn" onclick="document.getElementById('kaskadenOverlay').classList.add('open')">Kaskaden-Referenz</button>
-    </div>
-    <div class="scan-card">
-      <div class="scan-card-title">Kernfragen (während Interview anzeigen)</div>
-      <div class="kernfrage"><span class="kernfrage-num">Frage 1</span><br>"Was ist das teuerste ungelöste Problem gerade — in Zeit, Energie oder Geld?"</div>
-      <textarea class="form-input kernfrage-note" data-kernfrage-key="interview_f1_notiz" rows="2" placeholder="Notizen…">${escHtml(currentScan.interview_f1_notiz || "")}</textarea>
-      <div class="kernfrage"><span class="kernfrage-num">Frage 2</span><br>"Was habt ihr in 12–18 Monaten versucht — und was ist geblieben?"</div>
-      <textarea class="form-input kernfrage-note" data-kernfrage-key="interview_f2_notiz" rows="2" placeholder="Notizen…">${escHtml(currentScan.interview_f2_notiz || "")}</textarea>
-      <div class="kernfrage"><span class="kernfrage-num">Frage 3</span><br>"Wenn ich deinen Kollegen frage wie er unter Druck reagiert — was würde er sagen?"</div>
-      <textarea class="form-input kernfrage-note" data-kernfrage-key="interview_f3_notiz" rows="2" placeholder="Notizen…">${escHtml(currentScan.interview_f3_notiz || "")}</textarea>
-      <div class="kernfrage" style="border-left-color:var(--green)"><span class="kernfrage-num">Abschluss</span><br>"Was würde sich ändern wenn das Problem morgen weg wäre?"</div>
-      <textarea class="form-input kernfrage-note" data-kernfrage-key="interview_abschluss_notiz" rows="2" placeholder="Notizen…">${escHtml(currentScan.interview_abschluss_notiz || "")}</textarea>
-    </div>
-    ${renderInterviewSlot(1)}
-    ${renderInterviewSlot(2)}
-    ${renderInterviewSlot(3)}
-    <div class="btn-row" style="margin-top:12px">
-      <button class="btn btn-ghost" onclick="goToScanPhase(1)">Zurück</button>
-      <button class="btn btn-primary" onclick="savePhase2AndNext()">Weiter</button>
-    </div>
-  `;
-}
-
-function renderInterviewSlot(num) {
-  const iv = scanInterviews[num - 1] || {};
-  return `
-    <div class="interview-card" id="interview${num}">
-      <div class="interview-header"><span class="interview-num">${num}</span><span class="interview-title">Interview ${num}</span></div>
-      <div class="interview-fields">
-        <div class="form-group"><label class="form-label pflicht">Rolle</label>
-          <select class="form-input" id="iv${num}Rolle"><option value="">— wählen —</option><option value="entscheider" ${iv.rolle==="entscheider"?"selected":""}>Entscheider</option><option value="fuehrungskraft" ${iv.rolle==="fuehrungskraft"?"selected":""}>Führungskraft</option><option value="operativ" ${iv.rolle==="operativ"?"selected":""}>Operative Person</option></select>
-        </div>
-        <div class="form-group"><label class="form-label">Datum + Uhrzeit</label><input class="form-input" type="datetime-local" id="iv${num}Datum" value="${iv.datum ? iv.datum.slice(0,16) : ""}"></div>
-      </div>
-      <div class="scan-card-title" style="margin-top:8px">Aufnahme-Status</div>
-      <div class="check-row"><input type="checkbox" id="iv${num}Remote" ${iv.audio_typ==="remote"?"checked":""}><label>Remote (Zoom)</label>
-        <input type="checkbox" id="iv${num}Physisch" ${iv.audio_typ==="physisch"?"checked":""}><label>Physisch</label></div>
-      <div class="check-row"><input type="checkbox" id="iv${num}Primaer" ${iv.primaer_aufnahme?"checked":""}><label>Primär-Aufnahme gestartet</label></div>
-      <div class="check-row"><input type="checkbox" id="iv${num}Backup" ${iv.backup_aufnahme?"checked":""}><label>Backup-Aufnahme gestartet</label></div>
-      <div class="check-row"><input type="checkbox" id="iv${num}Einwilligung" ${iv.einwilligung?"checked":""}><label>Einwilligung bestätigt</label></div>
-      <div class="form-group" style="margin-top:10px"><label class="form-label">Live-Notizen</label><textarea class="form-input" id="iv${num}Notizen" rows="3" placeholder="Beobachtungen während Interview…">${escHtml(iv.notizen)}</textarea></div>
-      <div class="scan-card-title" style="margin-top:12px">Omission Bias Check</div>
-      ${renderOmissionBias(num, iv)}
-      <div class="scan-card-title" style="margin-top:12px">Transkription</div>
-      <div class="check-row"><input type="checkbox" id="iv${num}Audio" ${iv.audio_gesichert?"checked":""}><label>Audio gesichert</label></div>
-      <div class="check-row"><input type="checkbox" id="iv${num}Whisper" ${iv.whisper_laeuft?"checked":""}><label>Whisper-Transkription läuft</label></div>
-      <div class="check-row"><input type="checkbox" id="iv${num}Vault" ${iv.transkript_vault?"checked":""}><label>Transkript im Vault</label></div>
-      ${renderTranskriptUpload(num)}
-      <div style="margin-top:10px"><button class="btn btn-red btn-sm" onclick="togglePlanB(${num})">Kein Audio — Plan B aktivieren</button></div>
-      <div class="plan-b-panel ${iv.plan_b_aktiv?"open":""}" id="planB${num}">
-        <div class="plan-b-title">Plan B — Kein Audio</div>
-        <div class="form-group"><label class="form-label">Was war die wichtigste Aussage?</label><textarea class="form-input" id="pb${num}Aussage" rows="2">${escHtml(iv.plan_b_wichtigste_aussage)}</textarea></div>
-        <div class="form-group" style="margin-top:8px"><label class="form-label">Welcher Ton-Wechsel ist aufgefallen?</label><textarea class="form-input" id="pb${num}Ton" rows="2">${escHtml(iv.plan_b_ton_wechsel)}</textarea></div>
-        <div class="form-group" style="margin-top:8px"><label class="form-label">Was wurde NICHT gesagt?</label><textarea class="form-input" id="pb${num}Nicht" rows="2">${escHtml(iv.plan_b_nicht_gesagt)}</textarea></div>
-        <div class="form-group" style="margin-top:8px"><label class="form-label">Layer-Einschätzung (L1/L2/L3)</label><input class="form-input" id="pb${num}Layer" value="${escHtml(iv.plan_b_layer)}"></div>
-      </div>
-    </div>
-  `;
-}
-
-function renderOmissionBias(num, iv) {
-  const bias = (iv.omission_bias_checks && iv.omission_bias_checks[0]) || {};
-  return `
-    <div style="margin-bottom:10px">
-      <div class="check-row"><input type="checkbox" id="ob${num}Bio" ${bias.biologische_last?"checked":""}><label><strong>F1 — Biologische Last externalisiert?</strong></label></div>
-      <div style="font-size:11px;color:var(--ink-mute);margin-left:26px">Systemsprache statt L1? z.B. "Team ist zu langsam" statt "Ich bin erschöpft"</div>
-      <div class="form-group" style="margin-left:26px;margin-top:4px"><textarea class="form-input" id="ob${num}BioText" rows="1" placeholder="Finding notieren..." style="font-size:12px"></textarea></div>
-    </div>
-    <div style="margin-bottom:10px">
-      <div class="check-row"><input type="checkbox" id="ob${num}Passiert" ${bias.systemsprache?"checked":""}><label><strong>F2 — Passiv-Rhetorik?</strong></label></div>
-      <div style="font-size:11px;color:var(--ink-mute);margin-left:26px">Entscheidungen ohne Akteur? "Es passiert" statt "Ich habe entschieden"</div>
-      <div class="form-group" style="margin-left:26px;margin-top:4px"><textarea class="form-input" id="ob${num}PassiertText" rows="1" placeholder="Timestamps + Finding..." style="font-size:12px"></textarea></div>
-    </div>
-    <div style="margin-bottom:10px">
-      <div class="check-row"><input type="checkbox" id="ob${num}Geschuetzt" ${bias.geschuetzte_kollegen?"checked":""}><label><strong>F3 — Geschützte Kollegen?</strong></label></div>
-      <div style="font-size:11px;color:var(--ink-mute);margin-left:26px">Wer wird nie kritisiert? Tonwechsel wenn Name fällt?</div>
-      <div class="form-group" style="margin-left:26px;margin-top:4px"><textarea class="form-input" id="ob${num}GeschuetztText" rows="1" placeholder="Name + Beobachtung..." style="font-size:12px"></textarea></div>
-    </div>
-    <div style="margin-bottom:10px">
-      <div class="check-row"><input type="checkbox" id="ob${num}Antrieb" ${bias.antrieb_gefragt?"checked":""}><label><strong>F4 — Antrieb unklar?</strong></label></div>
-      <div style="font-size:11px;color:var(--ink-mute);margin-left:26px">Was treibt Person an? Nie gefragt / nicht freiwillig genannt?</div>
-      <div class="form-group" style="margin-left:26px;margin-top:4px"><textarea class="form-input" id="ob${num}AntriebText" rows="1" placeholder="Hypothese..." style="font-size:12px"></textarea></div>
-    </div>
-    <div style="margin-bottom:10px">
-      <div class="check-row"><input type="checkbox" id="ob${num}Ton" ${bias.ton_wechsel?"checked":""}><label><strong>F5 — Ton-Wechsel?</strong></label></div>
-      <div style="font-size:11px;color:var(--ink-mute);margin-left:26px">Sachlich → emotional. Welche Themen lösen es aus?</div>
-      <div class="form-group" style="margin-left:26px;margin-top:4px"><textarea class="form-input" id="ob${num}TonText" rows="1" placeholder="Timestamps + Thema..." style="font-size:12px"></textarea></div>
-    </div>
-    <div style="margin-bottom:10px">
-      <div class="check-row"><input type="checkbox" id="ob${num}Fehlt" ${bias.wer_fehlt?"checked":""}><label><strong>F6 — Wer fehlt? (Organigramm-Abgleich)</strong></label></div>
-      <div style="font-size:11px;color:var(--ink-mute);margin-left:26px">Person im Chart nicht erwaehnt = irrelevant ODER tabu. Person nicht im Chart, aber dreifach erwaehnt = informale Macht-Asymmetrie.</div>
-      <div class="form-group" style="margin-left:26px;margin-top:4px"><textarea class="form-input" id="ob${num}FehltText" rows="1" placeholder="OB-F6: [Name/Rolle] — erwartet/nicht erwartet..." style="font-size:12px"></textarea></div>
-    </div>
-  `;
-}
-
-function togglePlanB(num) {
-  const panel = document.getElementById(`planB${num}`);
-  panel.classList.toggle("open");
-}
-
-// ── PHASE 3: TRIANGULATION ──
-function renderPhase3() {
-  return `
-    <div class="phase-header"><span class="phase-number">Phase 3</span><span class="phase-title">Triangulation & Analyse</span><span class="phase-time">zwischen Tag 2 und 3</span></div>
-    <div class="phase-instruction">Friction Profil aktualisieren, Denzin-Konvergenz prüfen, Hypothesen formulieren.</div>
-    <div class="feature-btn-row">
-      <button class="feature-btn" onclick="document.getElementById('regimeRefOverlay').classList.add('open')">Regime-Referenz</button>
-    </div>
-    <div class="scan-card">
-      <div class="scan-card-title">Friction Profil — nach Interviews + Survey</div>
-      ${renderAmpelGrid("interview")}
-    </div>
-    <div class="scan-card" style="margin-top:12px">
-      <div class="scan-card-title">Denzin-Konvergenz-Check</div>
-      <table class="denzin-table">
-        <tr><th>Layer</th><th>Survey</th><th>Interview</th><th>Konvergenz</th></tr>
-        ${renderDenzinRow("L1")}
-        ${renderDenzinRow("L2")}
-        ${renderDenzinRow("L3")}
-      </table>
-    </div>
-    <div class="scan-card" style="margin-top:12px">
-      <div class="scan-card-title">Hypothesen</div>
-      ${renderHypotheseSlot(1)}
-      ${renderHypotheseSlot(2)}
-      ${renderHypotheseSlot(3)}
-    </div>
-    <div class="btn-row" style="margin-top:12px">
-      <button class="btn btn-ghost" onclick="goToScanPhase(2)">Zurück</button>
-      <button class="btn btn-primary" onclick="savePhase3AndNext()">Weiter</button>
-    </div>
-  `;
-}
-
-function renderDenzinRow(layer) {
-  return `<tr><td style="font-weight:500">${layer}</td>
-    <td>${renderStarSelect(`denzin_${layer}_survey`)}</td>
-    <td>${renderStarSelect(`denzin_${layer}_interview`)}</td>
-    <td>${renderStarSelect(`denzin_${layer}_konvergenz`)}</td></tr>`;
-}
-
-function renderStarSelect(id) {
-  return `<div class="star-select" data-stars="${id}" onclick="toggleStar(event, '${id}')">
-    <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span></div>`;
-}
-
-function toggleStar(e, id) {
-  const val = parseInt(e.target.dataset.v);
-  if (!val) return;
-  const container = document.querySelector(`[data-stars="${id}"]`);
-  // Check if clicking same star that's the current max → deselect all
-  const currentMax = parseInt(container.dataset.currentVal || "0");
-  if (currentMax === val) {
-    container.dataset.currentVal = "0";
-    container.querySelectorAll("span").forEach(s => s.classList.remove("filled"));
-  } else {
-    container.dataset.currentVal = String(val);
-    container.querySelectorAll("span").forEach(s => {
-      s.classList.toggle("filled", parseInt(s.dataset.v) <= val);
-    });
-  }
-}
-
-function renderHypotheseSlot(num) {
-  const h = scanHypothesen[num - 1] || {};
-  return `
-    <div class="hyp-card">
-      <div style="font-weight:500;margin-bottom:8px">Hypothese ${num}${num === 1 ? helpIcon("Hypothese (Layer + Mechanismus + Evidenz + Testfrage)") : ""}</div>
-      <div class="hyp-fields">
-        <div class="form-group"><label class="form-label${num === 1 ? ' pflicht' : ''}">Layer + Mechanismus</label><input class="form-input" id="hyp${num}Layer" value="${escHtml(h.layer)}" placeholder="z.B. L2 Immunity"></div>
-        <div class="form-group"><label class="form-label">Evidenz (direktes Zitat)</label><input class="form-input" id="hyp${num}Evidenz" value="${escHtml(h.evidenz_zitat)}" placeholder="Zitat aus Interview"></div>
-      </div>
-      <div class="form-group" style="margin-top:8px"><label class="form-label">Testfrage für Hypothesen-Spiegel</label><input class="form-input" id="hyp${num}Testfrage" value="${escHtml(h.testfrage)}" placeholder="Frage die die Hypothese testet"></div>
-    </div>
-  `;
-}
-
-// ── PHASE 4: HYPOTHESEN-SPIEGEL ──
-function renderPhase4() {
-  const s = currentScan;
-  return `
-    <div class="phase-header"><span class="phase-number">Phase 4</span><span class="phase-title">Hypothesen-Spiegel</span><span class="phase-time">Tag 3 Morgen, 30 Min</span></div>
-    <div class="phase-instruction">3 vorläufige Hypothesen präsentieren. Je 2 Sätze, Frage, schweigen, notieren.</div>
-    <div class="scan-card">
-      <div class="scan-card-title">Gesprächsstruktur</div>
-      <div class="guide-item"><em>"Ich habe drei vorläufige Hypothesen — bevor ich schreibe."</em></div>
-      <div class="guide-item">Je Hypothese: 2 Sätze → Frage → schweigen → notieren</div>
-      <div class="guide-item"><em>"Danke. Befund kommt in [X Stunden]."</em></div>
-    </div>
-    <div class="scan-card" style="margin-top:12px">
-      <div class="scan-card-title">Kunden-Reaktionen + Korrekturen</div>
-      <textarea class="form-input" id="spiegelNotizen" rows="6" placeholder="Reaktionen auf Hypothesen, Korrekturen, Ergaenzungen…">${escHtml(s.hypothesen_spiegel_notizen)}</textarea>
-    </div>
-    <div class="check-row" style="margin-top:12px"><input type="checkbox" id="spiegelDone" ${s.hypothesen_spiegel_done?"checked":""}><label for="spiegelDone" class="pflicht">Hypothesen-Spiegel abgeschlossen</label></div>
-    <div class="btn-row" style="margin-top:12px">
-      <button class="btn btn-ghost" onclick="goToScanPhase(3)">Zurück</button>
-      <button class="btn btn-primary" onclick="savePhase4AndNext()">Weiter</button>
-    </div>
-  `;
-}
-
-// ── PHASE 5: BEFUND ──
-function renderPhase5() {
-  const s = currentScan;
-  return `
-    <div class="phase-header"><span class="phase-number">Phase 5</span><span class="phase-title">Befund</span><span class="phase-time">Tag 3 Nachmittag</span></div>
-    <div class="phase-instruction">Finale Ampeln setzen, Friction-Vektor bestimmen, Regime-Routing und Sofort-Massnahmen definieren.</div>
-    <div class="feature-btn-row">
-      <button class="feature-btn" onclick="document.getElementById('regimeRefOverlay').classList.add('open')">Regime-Referenz</button>
-    </div>
-    <div class="scan-card">
-      <div class="scan-card-title">Friction Profil — Final</div>
-      ${renderAmpelGrid("final")}
-    </div>
-    <div class="scan-card" style="margin-top:12px">
-      <div class="scan-card-title pflicht">Primärer Friction-Vektor${helpIcon("Primärer Friction-Vektor")}</div>
-      <textarea class="form-input" id="frictionVektor" rows="2" placeholder="Layer + Kurzbeschreibung">${escHtml(s.friction_vektor)}</textarea>
-    </div>
-    <div class="scan-card" style="margin-top:12px">
-      <div class="scan-card-title">Regime-Routing${helpIcon("Regime-Routing")}</div>
-      <div style="font-size:13px;color:var(--ink-mid);margin-bottom:8px">Automatischer Vorschlag basierend auf Ampeln:</div>
-      <div id="regimeRouting"><span class="regime-badge">— wird berechnet —</span></div>
-      <div style="font-size:11px;color:var(--ink-mute);margin-top:8px">
-        L1 rot → Regime 3 · L1 gelb + L2 hoch → Regime 2 · L3 dominant → Regime 1 · L3 rot + L2 Immunity → Regime 2b
-      </div>
-    </div>
-    ${renderMrb02Tools()}
-    <div class="scan-card" style="margin-top:12px">
-      <div class="scan-card-title">3 Sofort-Massnahmen</div>
-      ${renderMassnahmeSlot(1)}
-      ${renderMassnahmeSlot(2)}
-      ${renderMassnahmeSlot(3)}
-    </div>
-    ${renderFuenfKernCheck()}
-    <div class="btn-row" style="margin-top:12px">
-      <button class="btn btn-ghost" onclick="goToScanPhase(4)">Zurück</button>
-      <button class="btn btn-ghost" onclick="zwischenspeichernBefund()">Zwischenspeichern</button>
-      <button class="btn btn-primary" id="btnFinishScan" onclick="finishScan()">Befund abschliessen</button>
-      <button class="btn btn-ghost" disabled title="Kommt in Phase 2">Export → PowerPoint</button>
-    </div>
-  `;
-}
-
-function renderMassnahmeSlot(num) {
-  const m = scanMassnahmen[num - 1] || {};
-  return `
-    <div class="hyp-card">
-      <div style="font-weight:500;margin-bottom:8px">Massnahme ${num}</div>
-      <div class="hyp-fields">
-        <div class="form-group"><label class="form-label">Layer</label><input class="form-input" id="mn${num}Layer" value="${escHtml(m.layer)}" placeholder="L1 / L2 / L3"></div>
-        <div class="form-group"><label class="form-label">Zeitrahmen</label><input class="form-input" id="mn${num}Zeit" value="${escHtml(m.zeitrahmen)}" placeholder="z.B. 2 Wochen"></div>
-      </div>
-      <div class="form-group" style="margin-top:8px"><label class="form-label">Massnahme</label><textarea class="form-input" id="mn${num}Text" rows="2" placeholder="Konkrete Massnahme…">${escHtml(m.massnahme)}</textarea></div>
-    </div>
-  `;
-}
-
-// ── AMPEL GRID RENDERER ──
-function renderAmpelGrid(phase) {
-  let html = '<div class="ampel-grid">';
-  for (const [layer, axes] of Object.entries(AMPEL_AXES)) {
-    html += `<div class="layer-label">${escHtml(layerLabel(layer))}</div>`;
-    for (const achse of axes) {
-      const key = `${layer}_${achse}_${phase}`;
-      const current = scanAmpeln[key] || "grau";
-      const label = axisLabel(achse);
-      html += `<div class="ampel-row"><span class="ampel-label">${escHtml(label)}${helpIcon(label)}</span><div class="ampel-dots">`;
-      for (const farbe of ["gruen", "gelb", "rot"]) {
-        html += `<div class="ampel-dot ${current === farbe ? farbe : ""}" data-key="${key}" data-farbe="${farbe}" onclick="setAmpel(this)"></div>`;
-      }
-      html += `</div></div>`;
-    }
-  }
-  html += '</div>';
-  return html;
-}
-
-function setAmpel(dot) {
-  const key = dot.dataset.key;
-  const farbe = dot.dataset.farbe;
-  // Toggle: if same value clicked again, reset to grau
-  if (scanAmpeln[key] === farbe) {
-    scanAmpeln[key] = "grau";
-    dot.parentElement.querySelectorAll(".ampel-dot").forEach(d => d.className = "ampel-dot");
-  } else {
-    scanAmpeln[key] = farbe;
-    dot.parentElement.querySelectorAll(".ampel-dot").forEach(d => {
-      d.className = "ampel-dot" + (d.dataset.farbe === farbe ? " " + farbe : "");
-    });
-  }
-  if (scanPhase === 5) calculateRegime();
-
-  // ── Lernmodus-Trigger (nur bei aktivem Setzen, nicht beim Zurücksetzen) ──
-  if (typeof triggerLernmodus === "function" && scanAmpeln[key] !== "grau") {
-    const parsed = parseAmpelKey(key);
-    if (parsed) {
-      const farbeDe = parsed && (scanAmpeln[key] === "gruen" ? "grün" : scanAmpeln[key] === "gelb" ? "gelb" : "rot");
-      triggerLernmodus(
-        "Ampel gesetzt",
-        `Ampel: ${axisLabel(parsed.achse)}`,
-        `Achse ${axisLabel(parsed.achse)} (Layer ${layerLabel(parsed.layer)}, Phase ${parsed.phase}) auf ${farbeDe} gesetzt.`
-      );
-      // Letzte Aktion für Float-Overlay & Quickfragen
-      if (typeof setAdaLastAction === "function") {
-        setAdaLastAction(`Ampel ${layerLabel(parsed.layer)} ${axisLabel(parsed.achse)} auf ${farbeDe} gesetzt`);
-      }
-    }
-  }
-  // Fehler-Banner neu auswerten (L1-rot Trigger)
-  if (typeof evaluateAdaErrorBanners === "function") evaluateAdaErrorBanners();
-}
-
-function calculateRegime() {
-  const el = document.getElementById("regimeRouting");
-  if (!el) return;
-
-  const getVal = (layer, achse) => scanAmpeln[`${layer}_${achse}_final`] || "grau";
-  // L1-Check berücksichtigt L1a (intern "L1") + L1b als biologische Gesamtschicht
-  const l1Vals = [
-    ...AMPEL_AXES.L1.map(a => getVal("L1", a)),
-    ...(AMPEL_AXES.L1b || []).map(a => getVal("L1b", a)),
-  ];
-  const l2Vals = AMPEL_AXES.L2.map(a => getVal("L2", a));
-  const l3Vals = AMPEL_AXES.L3.map(a => getVal("L3", a));
-
-  const hasRot = arr => arr.includes("rot");
-  const countRot = arr => arr.filter(v => v === "rot").length;
-  const hasGelb = arr => arr.includes("gelb");
-
-  let regime = "";
-  if (hasRot(l1Vals)) regime = "Regime 3 — Biologisch zuerst";
-  else if (hasGelb(l1Vals) && countRot(l2Vals) >= 2) regime = "Regime 2 — Psychologisch + Biologisch";
-  else if (hasRot(l3Vals) && l2Vals[1] === "rot") regime = "Regime 2b — Immunity durchbrechen";
-  else if (countRot(l3Vals) >= 2 || (countRot(l3Vals) >= 1 && !hasRot(l1Vals) && !hasRot(l2Vals))) regime = "Regime 1 — Strukturell";
-  else regime = "— Noch nicht bestimmbar —";
-
-  el.innerHTML = `<span class="regime-badge">${escHtml(regime)}</span>`;
-}
-
-// ── PHASE SAVE HELPERS ──
-// ── AUTO-SAVE UTILITY ──
-let _autoSaveTimer = null;
-let _autoSaveIndicator = null;
-
-function showSaveIndicator() {
-  if (_autoSaveIndicator) clearTimeout(_autoSaveIndicator);
-  let el = document.getElementById("autoSaveMsg");
-  if (!el) {
-    el = document.createElement("div");
-    el.id = "autoSaveMsg";
-    el.style.cssText = "position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:6px 14px;border-radius:6px;font-size:12px;font-family:var(--mono);z-index:600;opacity:0;transition:opacity .3s;";
-    document.body.appendChild(el);
-  }
-  el.textContent = "Gespeichert ✓";
-  el.style.opacity = "1";
-  _autoSaveIndicator = setTimeout(() => { el.style.opacity = "0"; }, 2000);
-}
-
-function autoSaveScanPhase() {
-  if (_autoSaveTimer) clearTimeout(_autoSaveTimer);
-  _autoSaveTimer = setTimeout(async () => {
-    if (!currentScan) return;
-    try {
-      // 2026-04-17 Umbau: Auto-Save für neue 4-Phasen-Struktur.
-      if (scanPhase === 0) {
-        const updates = {
-          kunde_name:   document.getElementById("setupKundeName")?.value?.trim() || currentScan.kunde_name,
-          organisation: document.getElementById("setupOrganisation")?.value?.trim() || null,
-          datum_start:  document.getElementById("setupDatum")?.value || null,
-          notizen:      document.getElementById("setupNotiz")?.value || "",
-          mandatscheck_budget:     document.getElementById("setupMc1")?.checked || false,
-          mandatscheck_personen:   document.getElementById("setupMc2")?.checked || false,
-          mandatscheck_kein_krise: document.getElementById("setupMc3")?.checked || false,
-        };
-        Object.assign(currentScan, updates);
-        await patchScan(updates);
-      } else if (scanPhase === 1) {
-        const patch = {};
-        document.querySelectorAll("[data-resp-field]").forEach(el => {
-          const field = el.dataset.respField; // e.g. "ceo_status"
-          const col = `respondent_${field}`;
-          const val = el.type === "date"
-            ? (el.value || null)
-            : (el.value || "");
-          patch[col] = val;
-          currentScan[col] = val;
-        });
-        if (Object.keys(patch).length > 0) await patchScan(patch);
-      } else if (scanPhase === 3) {
-        const updates = {
-          arbeitshypothese: document.getElementById("arbeitshypothese")?.value || "",
-        };
-        currentScan.arbeitshypothese = updates.arbeitshypothese;
-        await patchScan(updates);
-        if (currentScan.friction_profil_manual_override) {
-          await saveAmpeln("final");
-        }
-      }
-      showSaveIndicator();
-    } catch (e) { console.warn("Auto-save:", e.message); }
-  }, 1500);
-}
-
-function wireAutoSave() {
-  document.querySelectorAll("#scanContent textarea, #scanContent input[type=text], #scanContent input[type=number], #scanContent input[type=datetime-local]").forEach(el => {
-    el.addEventListener("input", autoSaveScanPhase);
-  });
-  document.querySelectorAll("#scanContent input[type=checkbox], #scanContent select").forEach(el => {
-    el.addEventListener("change", autoSaveScanPhase);
-  });
-}
-
-function bindScanPhaseEvents(num) {
-  // 2026-04-17 Umbau: Events für neue 4-Phasen-Struktur.
-  if (num === 0) {
-    updateSetupMandatGate();
-    loadSetupConsultations();
-  } else if (num === 1) {
-    loadScanSurveySubmissions();
-  } else if (num === 3) {
-    autoFillFrictionProfilFromTally();
-    // Arbeitshypothese aus verknüpftem Erstgespräch vorschlagen,
-    // wenn Feld leer ist und Consultation verlinkt.
-    prefillArbeitshypotheseFromConsultation();
-  }
-}
-
-async function prefillArbeitshypotheseFromConsultation() {
-  if (!currentScan || !currentScan.linked_consultation_id) return;
-  const ta = document.getElementById("arbeitshypothese");
-  if (!ta || ta.value.trim()) return;
-  if (currentScan.arbeitshypothese && String(currentScan.arbeitshypothese).trim()) return;
-  try {
-    const r = await fetch(`/api/consultations/${currentScan.linked_consultation_id}`);
-    if (!r.ok) return;
-    const c = await r.json();
-    // hyp_generated = generierte Hypothesen aus Erstgespräch (Markdown).
-    // Wir nehmen nur die erste sinnvolle Zeile als Vorschlag.
-    const raw = (c && c.hyp_generated) ? String(c.hyp_generated) : "";
-    if (!raw.trim()) return;
-    const firstLine = raw.split(/\n/).map(l => l.replace(/^[#\-*\s]+/, "").trim()).filter(Boolean)[0] || "";
-    if (!firstLine || ta.value.trim()) return;
-    ta.value = firstLine.slice(0, 500);
-    currentScan.arbeitshypothese = ta.value;
-    try { await patchScan({ arbeitshypothese: ta.value }); } catch {}
-  } catch {}
-}
-
-async function savePhase0AndNext() {
-  currentScan.mandatscheck_budget = document.getElementById("mc1").checked;
-  currentScan.mandatscheck_personen = document.getElementById("mc2").checked;
-  currentScan.mandatscheck_kein_krise = document.getElementById("mc3").checked;
-  currentScan.status = "setup";
-  await patchScan({ mandatscheck_budget: currentScan.mandatscheck_budget, mandatscheck_personen: currentScan.mandatscheck_personen, mandatscheck_kein_krise: currentScan.mandatscheck_kein_krise, status: "setup", current_phase: 1 });
-  goToScanPhase(1);
-  if (typeof evaluateAdaErrorBanners === "function") evaluateAdaErrorBanners();
-}
-
-async function savePhase1AndNext() {
-  const anzahl = document.getElementById("scanAnzahl")?.value;
-  currentScan.anzahl_personen = anzahl ? parseInt(anzahl) : null;
-  currentScan.notizen = document.getElementById("scanNotizen")?.value || "";
-  currentScan.survey_verschickt = document.getElementById("surveyDone")?.checked || false;
-  currentScan.survey_notizen = document.getElementById("surveyNotizen")?.value || "";
-  currentScan.status = "interviews";
-  await patchScan({ anzahl_personen: currentScan.anzahl_personen, notizen: currentScan.notizen, survey_verschickt: currentScan.survey_verschickt, survey_notizen: currentScan.survey_notizen, status: "interviews", current_phase: 2 });
-  await saveAmpeln("survey");
-  // Create interview slots if needed
-  await ensureInterviewSlots();
-  goToScanPhase(2);
-}
-
-async function savePhase2AndNext() {
-  await saveAllInterviews();
-  currentScan.status = "triangulation";
-  await patchScan({ status: "triangulation", current_phase: 3 });
-  // Ensure hypotheses slots
-  await ensureHypothesenSlots();
-  goToScanPhase(3);
-}
-
-async function savePhase3AndNext() {
-  await saveAmpeln("interview");
-  await saveAllHypothesen();
-  currentScan.status = "spiegel";
-  await patchScan({ status: "spiegel", current_phase: 4 });
-  goToScanPhase(4);
-}
-
-// Lernmodus-Trigger: Hypothesen-Spiegel geöffnet (einmal pro Scan).
-// Wird aus renderPhase4() aufgerufen, damit es auf jeden Weg in Phase 4 reagiert.
-function maybeFireLernmodusPhase4() {
-  if (typeof triggerLernmodus !== "function" || !currentScan) return;
-  const fireKey = `phase4_${currentScan.id}`;
-  if (_lernmodusAlreadyFired.has(fireKey)) return;
-  _lernmodusAlreadyFired.add(fireKey);
-  const hypSummary = (scanHypothesen || [])
-    .filter(h => h && (h.layer || h.mechanismus))
-    .map((h, i) => `H${i + 1}: ${h.layer || "?"} — ${h.mechanismus || "(ohne Mechanismus)"}`)
-    .join(" | ") || "(noch keine Hypothesen formuliert)";
-  triggerLernmodus(
-    "Hypothesen-Spiegel geöffnet",
-    "Phase 4 — Hypothesen-Spiegel",
-    `Aktuelle Hypothesen: ${hypSummary}`
-  );
-}
-
-async function savePhase4AndNext() {
-  currentScan.hypothesen_spiegel_notizen = document.getElementById("spiegelNotizen")?.value || "";
-  currentScan.hypothesen_spiegel_done = document.getElementById("spiegelDone")?.checked || false;
-  currentScan.status = "befund";
-  await patchScan({ hypothesen_spiegel_notizen: currentScan.hypothesen_spiegel_notizen, hypothesen_spiegel_done: currentScan.hypothesen_spiegel_done, status: "befund", current_phase: 5 });
-  // Ensure massnahmen slots
-  await ensureMassnahmenSlots();
-  goToScanPhase(5);
-}
-
-async function zwischenspeichernBefund() {
-  try {
-    await saveAmpeln("final");
-    currentScan.friction_vektor = document.getElementById("frictionVektor")?.value || "";
-    await patchScan({ friction_vektor: currentScan.friction_vektor, current_phase: 5 });
-    await saveAllMassnahmen();
-    showSaveIndicator();
-  } catch (e) { alert("Speichern fehlgeschlagen: " + e.message); }
-}
-
-async function finishScan() {
-  await saveAmpeln("final");
-  currentScan.friction_vektor = document.getElementById("frictionVektor")?.value || "";
-  await saveAllMassnahmen();
-  currentScan.completed = true;
-  currentScan.status = "abgeschlossen";
-  await patchScan({ friction_vektor: currentScan.friction_vektor, completed: true, status: "abgeschlossen", current_phase: 5 });
-  alert("Befund abgeschlossen und gespeichert.");
-  renderScanList();
-}
-
-// ── API HELPERS ──
-async function patchScan(updates) {
-  if (!currentScan) return;
-  try { await fetch(`/api/scans/${currentScan.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updates) }); }
-  catch (e) { console.warn("Scan patch failed:", e.message); }
-}
-
-async function saveAmpeln(phase) {
-  const ampeln = [];
-  for (const [layer, axes] of Object.entries(AMPEL_AXES)) {
-    for (const achse of axes) {
-      const key = `${layer}_${achse}_${phase}`;
-      const wert = scanAmpeln[key] || "grau";
-      if (wert !== "grau") ampeln.push({ layer, achse, wert, phase });
-    }
-  }
-  if (ampeln.length === 0) return;
-  try { await fetch(`/api/scans/${currentScan.id}/ampeln`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ampeln }) }); }
-  catch (e) { console.warn("Ampeln save failed:", e.message); }
-}
-
-async function ensureInterviewSlots() {
-  try {
-    const r = await fetch(`/api/scans/${currentScan.id}/interviews`);
-    const existing = await r.json();
-    scanInterviews = [null, null, null];
-    for (const iv of existing) { if (iv.slot_nr >= 1 && iv.slot_nr <= 3) scanInterviews[iv.slot_nr - 1] = iv; }
-    for (let i = 1; i <= 3; i++) {
-      if (!scanInterviews[i - 1]) {
-        const r2 = await fetch(`/api/scans/${currentScan.id}/interviews`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slot_nr: i }) });
-        scanInterviews[i - 1] = await r2.json();
-      }
-    }
-  } catch (e) { console.warn("Interview slots:", e.message); }
-}
-
-async function saveAllInterviews() {
-  for (let i = 1; i <= 3; i++) {
-    const iv = scanInterviews[i - 1];
-    if (!iv) continue;
-    const remote = document.getElementById(`iv${i}Remote`)?.checked;
-    const physisch = document.getElementById(`iv${i}Physisch`)?.checked;
-    const updates = {
-      rolle: document.getElementById(`iv${i}Rolle`)?.value || "",
-      datum: document.getElementById(`iv${i}Datum`)?.value || null,
-      audio_typ: remote ? "remote" : physisch ? "physisch" : "",
-      primaer_aufnahme: document.getElementById(`iv${i}Primaer`)?.checked || false,
-      backup_aufnahme: document.getElementById(`iv${i}Backup`)?.checked || false,
-      einwilligung: document.getElementById(`iv${i}Einwilligung`)?.checked || false,
-      audio_gesichert: document.getElementById(`iv${i}Audio`)?.checked || false,
-      whisper_laeuft: document.getElementById(`iv${i}Whisper`)?.checked || false,
-      transkript_vault: document.getElementById(`iv${i}Vault`)?.checked || false,
-      notizen: document.getElementById(`iv${i}Notizen`)?.value || "",
-      plan_b_aktiv: document.getElementById(`planB${i}`)?.classList.contains("open") || false,
-      plan_b_wichtigste_aussage: document.getElementById(`pb${i}Aussage`)?.value || "",
-      plan_b_ton_wechsel: document.getElementById(`pb${i}Ton`)?.value || "",
-      plan_b_nicht_gesagt: document.getElementById(`pb${i}Nicht`)?.value || "",
-      plan_b_layer: document.getElementById(`pb${i}Layer`)?.value || "",
-    };
-    try { await fetch(`/api/scans/${currentScan.id}/interviews/${iv.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updates) }); }
-    catch (e) { console.warn(`Interview ${i} save:`, e.message); }
-    // Bias check
-    const bias = {
-      biologische_last: document.getElementById(`ob${i}Bio`)?.checked || false,
-      systemsprache: document.getElementById(`ob${i}Passiert`)?.checked || false,
-      geschuetzte_kollegen: document.getElementById(`ob${i}Geschuetzt`)?.checked || false,
-      antrieb_gefragt: document.getElementById(`ob${i}Antrieb`)?.checked || false,
-      ton_wechsel: document.getElementById(`ob${i}Ton`)?.checked || false,
-    };
-    try { await fetch(`/api/scans/${currentScan.id}/interviews/${iv.id}/bias`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(bias) }); }
-    catch (e) { console.warn(`Bias ${i} save:`, e.message); }
-
-    // ── ADA-Kontext: letzte Aktion ──
-    if (typeof setAdaLastAction === "function" && updates.rolle) {
-      setAdaLastAction(`Interview ${i} (${updates.rolle}) gespeichert`);
-    }
-    // ── Lernmodus-Trigger (Diff-Debounce: nur wenn Notizen sich um >150 Zeichen geändert haben) ──
-    if (typeof triggerLernmodus === "function" && updates.notizen && updates.rolle) {
-      const last = _lernmodusLastInterviewNotes[i] || "";
-      if (updates.notizen.length > 80 && Math.abs(updates.notizen.length - last.length) > 150) {
-        _lernmodusLastInterviewNotes[i] = updates.notizen;
-        const rolleLabel = updates.rolle === "entscheider" ? "Entscheider"
-                         : updates.rolle === "fuehrungskraft" ? "Führungskraft"
-                         : updates.rolle === "operativ" ? "Operative Person"
-                         : updates.rolle;
-        triggerLernmodus(
-          "Interview-Notiz gespeichert",
-          `Interview ${i} · ${rolleLabel}`,
-          `Rolle: ${rolleLabel}. Notiz-Auszug: "${updates.notizen.slice(0, 500)}"`
-        );
-      }
-    }
-  }
-}
-
-async function ensureHypothesenSlots() {
-  try {
-    const r = await fetch(`/api/scans/${currentScan.id}/hypothesen`);
-    const existing = await r.json();
-    scanHypothesen = [null, null, null];
-    for (const h of existing) { if (h.slot_nr >= 1 && h.slot_nr <= 3) scanHypothesen[h.slot_nr - 1] = h; }
-    for (let i = 1; i <= 3; i++) {
-      if (!scanHypothesen[i - 1]) {
-        const r2 = await fetch(`/api/scans/${currentScan.id}/hypothesen`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slot_nr: i }) });
-        scanHypothesen[i - 1] = await r2.json();
-      }
-    }
-  } catch (e) { console.warn("Hypothesen slots:", e.message); }
-}
-
-async function saveAllHypothesen() {
-  for (let i = 1; i <= 3; i++) {
-    const h = scanHypothesen[i - 1];
-    if (!h) continue;
-    const updates = {
-      layer: document.getElementById(`hyp${i}Layer`)?.value || "",
-      evidenz_zitat: document.getElementById(`hyp${i}Evidenz`)?.value || "",
-      testfrage: document.getElementById(`hyp${i}Testfrage`)?.value || "",
-    };
-    // In-Memory aktualisieren, damit evaluateAdaErrorBanners die richtigen Werte sieht
-    scanHypothesen[i - 1] = { ...h, ...updates };
-    try { await fetch(`/api/scans/${currentScan.id}/hypothesen/${h.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updates) }); }
-    catch (e) { console.warn(`Hypothese ${i} save:`, e.message); }
-  }
-  if (typeof evaluateAdaErrorBanners === "function") evaluateAdaErrorBanners();
-}
-
-async function ensureMassnahmenSlots() {
-  try {
-    const r = await fetch(`/api/scans/${currentScan.id}/massnahmen`);
-    const existing = await r.json();
-    scanMassnahmen = [null, null, null];
-    for (const m of existing) { if (m.slot_nr >= 1 && m.slot_nr <= 3) scanMassnahmen[m.slot_nr - 1] = m; }
-    for (let i = 1; i <= 3; i++) {
-      if (!scanMassnahmen[i - 1]) {
-        const r2 = await fetch(`/api/scans/${currentScan.id}/massnahmen`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slot_nr: i }) });
-        scanMassnahmen[i - 1] = await r2.json();
-      }
-    }
-  } catch (e) { console.warn("Massnahmen slots:", e.message); }
-}
-
-async function saveAllMassnahmen() {
-  for (let i = 1; i <= 3; i++) {
-    const m = scanMassnahmen[i - 1];
-    if (!m) continue;
-    const updates = {
-      layer: document.getElementById(`mn${i}Layer`)?.value || "",
-      massnahme: document.getElementById(`mn${i}Text`)?.value || "",
-      zeitrahmen: document.getElementById(`mn${i}Zeit`)?.value || "",
-    };
-    try { await fetch(`/api/scans/${currentScan.id}/massnahmen/${m.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updates) }); }
-    catch (e) { console.warn(`Massnahme ${i} save:`, e.message); }
-  }
-}
-
-async function loadScanData(scanId) {
-  // Load ampeln
-  try {
-    const r = await fetch(`/api/scans/${scanId}/ampeln`);
-    const data = await r.json();
-    scanAmpeln = {};
-    for (const a of data) scanAmpeln[`${a.layer}_${a.achse}_${a.phase}`] = a.wert;
-  } catch {}
-  // Load interviews
-  await ensureInterviewSlots();
-  // Load hypothesen
-  try {
-    const r = await fetch(`/api/scans/${scanId}/hypothesen`);
-    const data = await r.json();
-    scanHypothesen = [null, null, null];
-    for (const h of data) { if (h.slot_nr >= 1 && h.slot_nr <= 3) scanHypothesen[h.slot_nr - 1] = h; }
-  } catch {}
-  // Load massnahmen
-  try {
-    const r = await fetch(`/api/scans/${scanId}/massnahmen`);
-    const data = await r.json();
-    scanMassnahmen = [null, null, null];
-    for (const m of data) { if (m.slot_nr >= 1 && m.slot_nr <= 3) scanMassnahmen[m.slot_nr - 1] = m; }
-  } catch {}
-}
 
 // ══════════════════════════════════════════════════════════════════════════
 // PRIO-1 FEATURES — Render Helpers
@@ -10395,6 +9586,39 @@ function setKaskadenStepAus(field, value) {
   if (field === "l1") { simulationStateAus.l2 = null; simulationStateAus.immunity = null; }
   if (field === "l2") { simulationStateAus.immunity = null; }
   renderKaskadenSimulationAus();
+  updateBefundKaskadenBadge();
+}
+
+// Ersetzt nur den Badge im Befund-Header (nicht den ganzen Befund-Block) —
+// damit Eingaben in den Befund-Textareas nicht verloren gehen.
+function updateBefundKaskadenBadge() {
+  const section = document.getElementById("ausSection3");
+  if (!section) return;
+  const old = section.querySelector(".aus-routing-badge");
+  if (!old) return;
+  const wrap = document.createElement("div");
+  wrap.innerHTML = renderBefundKaskadenBadge();
+  const next = wrap.firstElementChild;
+  if (next) old.replaceWith(next);
+}
+
+// Kleiner Badge im Befund-Header — spiegelt das aktuelle Ergebnis der
+// Kaskaden-Simulation. Leer (kein Fehler) solange kein Regime bestimmt ist.
+function renderBefundKaskadenBadge() {
+  const regimeKey = determineKaskadenRegime(simulationStateAus || {});
+  if (!regimeKey) {
+    return `<div class="aus-routing-badge aus-routing-badge-empty">
+      <span>Regime — noch nicht bestimmt</span>
+      <span class="aus-routing-badge-hint">↑ Kaskaden-Simulation oben anpassen</span>
+    </div>`;
+  }
+  const r = KASKADEN_REGIMES[regimeKey];
+  if (!r) return "";
+  return `<div class="aus-routing-badge aus-routing-badge-${r.color}">
+    <strong>${escHtml(r.label)}</strong>
+    <span>— aus Kaskaden-Simulation</span>
+    <span class="aus-routing-badge-hint">↑ Kaskaden-Simulation oben anpassen</span>
+  </div>`;
 }
 
 function resetKaskadenSimulationAus() {
@@ -10562,16 +9786,12 @@ function renderAuswertungFrictionPoints() {
 
 // ── SEKTION 3: BEFUND-ENTWURF (Minto) ─────────────────────────────────────
 function renderAuswertungBefund() {
-  const routing = computeRoutingEmpfehlung();
   const b = auswertungBefund;
   return `
     <div class="aus-section" id="ausSection3">
       <div class="aus-section-title">3 · Befund-Entwurf</div>
       <div class="aus-section-sub">Minto-Pyramide: Schlussfolgerung oben, Begründung darunter, Massnahmen zuletzt.</div>
-      <div class="aus-routing-badge">
-        <strong>Routing-Empfehlung</strong>
-        ${escHtml(routing.regime)} — ${escHtml(routing.text)}
-      </div>
+      ${renderBefundKaskadenBadge()}
       <div class="aus-befund-field">
         <label>Schlussfolgerung (1 Satz)${helpIcon("Schlussfolgerung (Minto-Pyramide)")}</label>
         <textarea class="form-input" id="ausBefSchluss" rows="2"
@@ -11568,14 +10788,8 @@ function evaluateAdaErrorBanners() {
   if (l1Rot) setAdaBanner("l1-rot", "⚠️ L1 rot — Regime 3. Kein L3-Schritt bis L1 stabil.");
   else clearAdaBanner("l1-rot");
 
-  // 2. Befund ohne 3 Hypothesen (nur wenn aktuell in Phase 5)
-  if (currentScan && typeof scanPhase !== "undefined" && scanPhase === 5) {
-    const hypCount = (scanHypothesen || []).filter(h => h && ((h.mechanismus && h.mechanismus.trim()) || (h.layer && h.layer.trim()))).length;
-    if (hypCount < 3) setAdaBanner("hyp-missing", "⚠️ Hypothesen fehlen — Befund ohne Triangulation ist nicht valide.");
-    else clearAdaBanner("hyp-missing");
-  } else {
-    clearAdaBanner("hyp-missing");
-  }
+  // Hypothesen-Banner aus alter Phase 5 entfernt (Legacy-Cleanup 2026-04-17).
+  clearAdaBanner("hyp-missing");
 
   // (Mandats-Check-Banner entfernt — Check wird bereits im Scan selbst angezeigt.)
 }
