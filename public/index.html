@@ -224,6 +224,21 @@
   .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
 
   /* ── COCKPIT ─────────────────────────────────────────────────────────── */
+  /* Einheitlicher Zurück-Pfeil oben links im cockpit-contact Header.
+     Erscheint in Modul 1 (Erstgespräch), 2 (Friction Scan), 3 (PAI),
+     4 (Self-Assessment) jeweils wenn ein Kunden-Scan / eine Session aktiv ist. */
+  .cockpit-back-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; padding: 0;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 50%; color: var(--ink-dim); cursor: pointer;
+    font-size: 16px; line-height: 1; flex-shrink: 0;
+    transition: all .15s;
+  }
+  .cockpit-back-btn:hover {
+    background: var(--surface2); color: var(--ink);
+    border-color: var(--ink-dim);
+  }
   .cockpit-contact {
     display: flex; align-items: center; gap: 10px;
     font-family: var(--mono); font-size: 12px; color: var(--ink-dim);
@@ -1159,6 +1174,9 @@
     text-anchor: middle;
   }
   .tl-task-dot { fill: var(--surface); stroke: var(--ink-mid); stroke-width: 1.5; }
+  .tl-task-dot.p1 { fill: var(--red); stroke: var(--red); }
+  .tl-task-dot.p2 { fill: var(--yellow); stroke: var(--yellow); }
+  .tl-task-dot.p3 { fill: #3498db; stroke: #3498db; }
   .tl-empty {
     font-size: 12px; color: var(--ink-mute); font-style: italic;
     text-align: center; padding: 20px 0;
@@ -2759,14 +2777,17 @@ function renderTimeline() {
     </g>`;
   }).join("");
 
+  // Alle offenen Tasks mit Deadline im Zeitplan anzeigen — nicht nur P1.
+  // Farbe via CSS-Klasse nach Priorität (p1/p2/p3) für visuelle Unterscheidung.
   const taskSvg = allTasks
-    .filter(t => t.prioritaet === 1 && t.deadline)
+    .filter(t => t.deadline)
     .map(t => {
       const d = new Date(t.deadline);
       if (isNaN(d.getTime()) || d < today || d > endDate) return "";
       const x = pxFor(d);
-      const tooltip = `${t.titel || ""} — ${d.toLocaleDateString("de-CH")}`;
-      return `<circle class="tl-task-dot" cx="${x}" cy="${axisY}" r="4">
+      const prioCls = `p${t.prioritaet || 2}`;
+      const tooltip = `${t.titel || ""} — ${d.toLocaleDateString("de-CH")} (P${t.prioritaet || 2})`;
+      return `<circle class="tl-task-dot ${prioCls}" cx="${x}" cy="${axisY}" r="4">
         <title>${escapeXmlAttr(tooltip)}</title>
       </circle>`;
     }).join("");
@@ -2884,12 +2905,13 @@ function renderLandingTasks() {
     title.addEventListener("dblclick", () => startEditTask(t, title));
     content.appendChild(title);
 
-    if (t.deadline) {
-      const deadlineWrap = document.createElement("div");
-      deadlineWrap.className = "task-deadline-wrap";
-      renderTaskDeadline(deadlineWrap, t, { editable: false });
-      content.appendChild(deadlineWrap);
-    }
+    // Deadline: immer rendern (auch wenn kein Datum gesetzt ist, dann
+    // erscheint der "+ Datum" Button). editable: true erlaubt Klick auf
+    // den Chip zum Ändern und zeigt den Add-Button für Tasks ohne Datum.
+    const deadlineWrap = document.createElement("div");
+    deadlineWrap.className = "task-deadline-wrap";
+    renderTaskDeadline(deadlineWrap, t, { editable: true });
+    content.appendChild(deadlineWrap);
 
     const actions = document.createElement("div");
     actions.className = "task-actions";
@@ -3080,14 +3102,10 @@ function switchTab(tab) {
     initInterventionenTab();
   }
 
-  // Anker visible in cockpit screens
-  const showAnker = (tab === "modul1" && document.getElementById("screenCockpit").classList.contains("active"))
-    || (tab === "modul2" && currentScan)
-    || (tab === "modul3" && currentPaiSession)
-    || (tab === "modul4" && currentPaiAuditSession)
-    || (tab === "auswertung" && currentAuswertungScan)
-    || (tab === "interventionen" && currentIntervScan);
-  document.getElementById("btnAnker").style.display = showAnker ? "flex" : "none";
+  // Anker auf allen NELION-Seiten sichtbar (Regulations-Werkzeug immer
+  // verfügbar). Nur auf ADA ausblenden, weil ADA eine eigene Fullscreen-UI
+  // mit z-index 1000 hat und der Anker dort unter der UI verschwinden würde.
+  document.getElementById("btnAnker").style.display = tab === "ada" ? "none" : "flex";
 }
 
 function escHtml(s) { return (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
@@ -3212,7 +3230,9 @@ const $ankerOverlay   = document.getElementById("ankerOverlay");
 function showScreen(id) {
   document.querySelectorAll("#moduleModul1 .screen").forEach(s => s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
-  $btnAnker.style.display = (id === "screenCockpit" && activeTab === "modul1") ? "flex" : "none";
+  // Anker-Sichtbarkeit wird jetzt zentral in switchTab() gesteuert — hier
+  // nichts mehr überschreiben, damit Anker auch auf screenStart sichtbar
+  // bleibt.
 }
 
 // Logo navigation
@@ -3350,13 +3370,25 @@ function renderCockpitHeader() {
   const dateStr = currentConsultation && currentConsultation.consultation_date
     ? new Date(currentConsultation.consultation_date).toLocaleDateString("de-CH", { day: "2-digit", month: "long", year: "numeric" }) : "";
   $cockpitContact.innerHTML = "";
+  // Zurück zur Kontaktliste (screenStart)
+  const backBtn = document.createElement("button");
+  backBtn.className = "cockpit-back-btn";
+  backBtn.title = "Zurück zur Kontaktliste";
+  backBtn.setAttribute("aria-label", "Zurück zur Kontaktliste");
+  backBtn.innerHTML = "&larr;";
+  backBtn.addEventListener("click", () => {
+    loadContacts();
+    showScreen("screenStart");
+  });
   const nameEl = document.createElement("span");
   nameEl.className = "cockpit-contact-name"; nameEl.textContent = currentContact.name;
   nameEl.title = "Klick zum Bearbeiten";
   nameEl.addEventListener("click", () => editCockpitName(nameEl));
   const dateEl = document.createElement("span");
   dateEl.className = "cockpit-contact-date"; dateEl.textContent = dateStr ? `— ${dateStr}` : "";
-  $cockpitContact.appendChild(nameEl); $cockpitContact.appendChild(dateEl);
+  $cockpitContact.appendChild(backBtn);
+  $cockpitContact.appendChild(nameEl);
+  $cockpitContact.appendChild(dateEl);
 }
 
 function editCockpitName(nameEl) {
@@ -3587,7 +3619,7 @@ function renderScanList() {
     <div class="contact-list" id="scanList"><div style="font-size:12px;color:var(--ink-mute);text-align:center;padding:12px;">Lade…</div></div>
   `;
   document.getElementById("btnStartScan").addEventListener("click", startNewScan);
-  $btnAnker.style.display = "none";
+  // Anker bleibt sichtbar auf Scan-Liste (zentral in switchTab gesteuert)
   loadScans();
 }
 
@@ -3695,7 +3727,7 @@ async function deleteScan(scan, itemEl) {
 async function openScan(scan) {
   currentScan = scan;
   scanPhase = scan.current_phase || 0;
-  $btnAnker.style.display = "flex";
+  // Anker-Sichtbarkeit zentral in switchTab() — hier kein display-Override
   renderScanPhase(scanPhase);
 
   // ADA-Kontext: wenn noch kein Scan im Dropdown gewählt, nimm diesen als Default
@@ -3762,7 +3794,11 @@ function renderScanPhase(num) {
   }
 
   $el.innerHTML = `
-    <div class="cockpit-contact"><span class="cockpit-contact-name">${escHtml(currentScan.kunde_name)}</span><span class="cockpit-contact-date">— Friction Scan</span></div>
+    <div class="cockpit-contact">
+      <button class="cockpit-back-btn" onclick="returnToScanList()" title="Zurück zur Scan-Liste" aria-label="Zurück zur Scan-Liste">&larr;</button>
+      <span class="cockpit-contact-name">${escHtml(currentScan.kunde_name)}</span>
+      <span class="cockpit-contact-date">— Friction Scan</span>
+    </div>
     <div class="cockpit-layout">
       <nav class="phase-sidebar">${renderScanPhaseSidebar(num)}</nav>
       <div class="cockpit-content">${content}</div>
@@ -3772,6 +3808,14 @@ function renderScanPhase(num) {
   bindScanPhaseEvents(num);
   wireAutoSave();
   window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+async function returnToScanList() {
+  // State sichern bevor wir raus gehen — renderScanList setzt currentScan = null
+  if (currentScan) {
+    try { await saveScanState(); } catch {}
+  }
+  renderScanList();
 }
 
 async function goToScanPhase(num) {
@@ -6027,9 +6071,9 @@ function renderPaiPhase(num) {
   }
   $el.innerHTML = `
     <div class="cockpit-contact">
+      <button class="cockpit-back-btn" onclick="renderPaiList()" title="Zurück zur Session-Liste" aria-label="Zurück zur Session-Liste">&larr;</button>
       <span class="cockpit-contact-name">${escHtml(currentPaiSession.person_name)}</span>
       <span class="cockpit-contact-date">— PAI${currentPaiSession.person_rolle ? " · " + escHtml(currentPaiSession.person_rolle) : ""}</span>
-      <button class="btn btn-ghost btn-sm" style="margin-left:auto;font-size:11px" onclick="renderPaiList()">← Alle Sessions</button>
     </div>
     <div class="cockpit-layout">
       <nav class="phase-sidebar">${renderPaiPhaseSidebar(num)}</nav>
@@ -6848,9 +6892,9 @@ function renderPaiAuditPhase(num) {
   }
   $el.innerHTML = `
     <div class="cockpit-contact">
+      <button class="cockpit-back-btn" onclick="renderPaiAuditList()" title="Zurück zur Self-Assessment-Liste" aria-label="Zurück zur Self-Assessment-Liste">&larr;</button>
       <span class="cockpit-contact-name">${escHtml(currentPaiAuditSession.person_name)}</span>
       <span class="cockpit-contact-date">— PAI Self-Assessment${currentPaiAuditSession.person_rolle ? " · " + escHtml(currentPaiAuditSession.person_rolle) : ""}</span>
-      <button class="btn btn-ghost btn-sm" style="margin-left:auto;font-size:11px" onclick="renderPaiAuditList()">← Alle Self-Assessments</button>
     </div>
     <div class="cockpit-layout">
       <nav class="phase-sidebar">${renderPaiAuditPhaseSidebar(num)}</nav>
