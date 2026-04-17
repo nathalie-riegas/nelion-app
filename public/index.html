@@ -1684,6 +1684,9 @@
     display: flex; justify-content: space-between; align-items: flex-start;
     gap: 12px; margin-bottom: 18px;
   }
+  .surv-tab-header-actions {
+    display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+  }
   .surv-info-btn {
     background: none; border: 1px solid var(--border);
     border-radius: 50%; width: 26px; height: 26px;
@@ -1693,6 +1696,162 @@
   }
   .surv-info-btn:hover { color: var(--ada-accent); border-color: var(--ada-accent); }
   .surv-info-btn svg { width: 14px; height: 14px; }
+  .surv-print-btn {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--rs); padding: 6px 12px;
+    font-size: 12px; font-family: var(--sans); color: var(--ink-mid);
+    cursor: pointer; transition: all 0.15s;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .surv-print-btn:hover {
+    background: var(--surface); border-color: var(--ada-accent);
+    color: var(--ada-accent);
+  }
+
+  /* ── SUBMISSION DETAIL-ROW (Aufklapper F1–F12) ───────────────────── */
+  .surv-sub-toggle {
+    background: none; border: none; cursor: pointer;
+    color: var(--ink-mute); font-size: 11px; font-family: var(--mono);
+    padding: 2px 6px; border-radius: 3px;
+    transition: color 0.12s, background 0.12s;
+  }
+  .surv-sub-toggle:hover { color: var(--ada-accent); background: var(--surface2); }
+  .surv-sub-toggle .caret {
+    display: inline-block; transition: transform 0.18s;
+    margin-right: 3px;
+  }
+  .surv-sub-toggle.open .caret { transform: rotate(90deg); }
+  .surv-sub-detail-row > td {
+    padding: 0 !important; background: var(--surface2);
+    border-top: 1px dashed var(--border2);
+  }
+  .surv-sub-detail-wrap {
+    padding: 14px 18px; display: none;
+  }
+  .surv-sub-detail-row.open .surv-sub-detail-wrap { display: block; }
+  .surv-detail-table {
+    width: 100%; border-collapse: collapse; font-size: 12px;
+  }
+  .surv-detail-table th {
+    font-family: var(--mono); font-size: 10px; font-weight: 500;
+    letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--ink-mute); padding: 6px 8px; text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .surv-detail-table td {
+    padding: 5px 8px; border-bottom: 1px solid var(--border);
+    color: var(--ink-mid); vertical-align: middle;
+  }
+  .surv-detail-table tr:last-child td { border-bottom: none; }
+  .surv-detail-table td.surv-detail-empty { background: rgba(0,0,0,0.04); color: var(--ink-mute); font-style: italic; }
+  .surv-detail-fnum {
+    font-family: var(--mono); font-size: 11px; color: var(--ink-dim);
+    font-weight: 500; width: 40px;
+  }
+  .surv-detail-axis { color: var(--ink); }
+  .surv-detail-layer { font-family: var(--mono); font-size: 10px; color: var(--ink-mute); width: 50px; }
+  .surv-detail-ampel-cell { text-align: center; width: 60px; }
+  .surv-detail-dot {
+    display: inline-block; width: 12px; height: 12px; border-radius: 50%;
+    border: 1px solid var(--border2); vertical-align: middle;
+  }
+  .surv-detail-dot.gruen { background: var(--green); border-color: var(--green); }
+  .surv-detail-dot.gelb  { background: var(--yellow); border-color: var(--yellow); }
+  .surv-detail-dot.rot   { background: var(--red); border-color: var(--red); }
+  .surv-detail-dot.grau  { background: transparent; }
+
+  /* ── PRINT-ONLY TRIANGULATIONSMATRIX ─────────────────────────────── */
+  #printMatrix { display: none; }
+  @media print {
+    /* Alles auf der Seite ausblenden ausser die Druck-Matrix */
+    body * { visibility: hidden !important; }
+    #printMatrix, #printMatrix * { visibility: visible !important; }
+    #printMatrix {
+      display: block !important;
+      position: absolute !important; top: 0; left: 0; right: 0;
+      width: 100%; background: #fff !important; color: #000 !important;
+      padding: 16mm 14mm;
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 10pt; line-height: 1.35;
+    }
+    #printMatrix h1 {
+      font-size: 16pt; font-weight: 700;
+      margin: 0 0 4pt; letter-spacing: 0.02em;
+    }
+    #printMatrix .pm-meta {
+      font-size: 9pt; color: #000; margin-bottom: 12pt;
+      padding-bottom: 8pt; border-bottom: 2pt solid #000;
+    }
+    #printMatrix .pm-meta strong { display: inline-block; min-width: 90pt; }
+    #printMatrix table.pm-main {
+      width: 100%; border-collapse: collapse; margin-bottom: 12pt;
+    }
+    #printMatrix table.pm-main th {
+      font-size: 8pt; font-weight: 700; text-align: left;
+      padding: 5pt 4pt; border-bottom: 1.5pt solid #000;
+      letter-spacing: 0.03em;
+    }
+    #printMatrix table.pm-main td {
+      padding: 4pt; border-bottom: 0.5pt solid #999;
+      vertical-align: top;
+    }
+    #printMatrix table.pm-main .pm-fnum {
+      font-weight: 700; width: 28pt;
+    }
+    #printMatrix table.pm-main .pm-axis { width: auto; }
+    #printMatrix table.pm-main .pm-layer-col { width: 30pt; font-family: monospace; }
+    #printMatrix table.pm-main .pm-role { width: 44pt; text-align: center; }
+    #printMatrix table.pm-main .pm-avg  { width: 50pt; text-align: center; font-weight: 700; }
+    #printMatrix table.pm-main .pm-konf { width: 44pt; text-align: center; letter-spacing: -0.5pt; }
+    #printMatrix table.pm-main .pm-div  { width: 84pt; font-size: 8.5pt; font-style: italic; }
+    #printMatrix .pm-layer-sep td {
+      background: #000 !important; color: #fff !important;
+      font-weight: 700; padding: 5pt 6pt !important;
+      text-transform: uppercase; letter-spacing: 0.05em; font-size: 9pt;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    /* Text-Label + optionaler Farbpunkt (Drucker freundlich) */
+    #printMatrix .pm-ampel-label { font-variant: small-caps; }
+    #printMatrix .pm-ampel-label::before {
+      content: "●"; margin-right: 3pt;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    #printMatrix .pm-ampel-label.gruen::before { color: #2d7a3d; }
+    #printMatrix .pm-ampel-label.gelb::before  { color: #b58900; }
+    #printMatrix .pm-ampel-label.rot::before   { color: #a02121; }
+    #printMatrix .pm-ampel-label.grau::before  { content: "○"; color: #999; }
+    /* Layer-Summary */
+    #printMatrix .pm-summary {
+      margin: 12pt 0; padding: 10pt 12pt;
+      border: 1.5pt solid #000; background: #f4f4f4 !important;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    #printMatrix .pm-summary h2 {
+      font-size: 11pt; margin: 0 0 6pt; font-weight: 700;
+    }
+    #printMatrix .pm-summary-row {
+      display: flex; gap: 18pt; margin-bottom: 4pt;
+      font-size: 10pt;
+    }
+    #printMatrix .pm-summary-row strong { min-width: 60pt; display: inline-block; }
+    #printMatrix .pm-routing { margin: 6pt 0; font-weight: 500; }
+    #printMatrix .pm-konfidenz { font-size: 9pt; color: #333; margin-top: 4pt; }
+    /* Legende */
+    #printMatrix .pm-legend {
+      font-size: 8pt; color: #333; margin-top: 10pt;
+      padding-top: 6pt; border-top: 0.5pt solid #999;
+      line-height: 1.5;
+    }
+    #printMatrix .pm-legend-row { margin-bottom: 2pt; }
+    #printMatrix .pm-legend-row strong { display: inline-block; min-width: 110pt; }
+    /* Fusszeile */
+    #printMatrix .pm-footer {
+      position: fixed; bottom: 6mm; left: 14mm; right: 14mm;
+      font-size: 8pt; color: #555; text-align: center;
+      padding-top: 4pt; border-top: 0.5pt solid #999;
+    }
+    @page { size: A4 portrait; margin: 14mm 12mm 18mm; }
+  }
 
   .meth-modal-overlay {
     position: fixed; inset: 0;
@@ -2385,6 +2544,10 @@
     <button class="anker-close" id="btnAnkerClose">Zurück</button>
   </div>
 </div>
+
+<!-- ── PRINT-ONLY TRIANGULATIONSMATRIX (A4 Druckansicht) ─────────────────── -->
+<!-- Wird von printTriangulationMatrix() befüllt, Screen: display:none, Print: block -->
+<div id="printMatrix" aria-hidden="true"></div>
 
 <!-- ── METHODOLOGIE-MODAL (Auswertungslogik) ────────────────────────────── -->
 <div class="meth-modal-overlay" id="methModalOverlay" onclick="if(event.target===this)closeMethModal()">
@@ -7145,9 +7308,14 @@ async function initAuswertungTab() {
         <div class="start-title" style="margin-bottom:4px;">Auswertung</div>
         <div class="start-desc">Interne Arbeitsansicht. Survey-Daten, Heatmap, Friction-Points und Befund-Entwurf pro Scan.</div>
       </div>
-      <button class="surv-info-btn" onclick="openMethModal()" title="Auswertungslogik" aria-label="Methodologie öffnen">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M8 7.2 v4.3" stroke-width="1.6"/><circle cx="8" cy="4.7" r="0.75" fill="currentColor" stroke="none"/></svg>
-      </button>
+      <div class="surv-tab-header-actions">
+        <button class="surv-print-btn" onclick="printTriangulationMatrix()" title="Triangulationsmatrix als A4-PDF drucken">
+          <span>📄</span><span>Matrix drucken</span>
+        </button>
+        <button class="surv-info-btn" onclick="openMethModal()" title="Auswertungslogik" aria-label="Methodologie öffnen">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M8 7.2 v4.3" stroke-width="1.6"/><circle cx="8" cy="4.7" r="0.75" fill="currentColor" stroke="none"/></svg>
+        </button>
+      </div>
     </div>
     <div class="aus-scan-picker">
       <label class="form-label" style="margin:0;white-space:nowrap;">Scan:</label>
@@ -7424,10 +7592,11 @@ function renderSurveyDataInput() {
   if (subs.length > 0) {
     body += `<table class="surv-sub-table">
       <thead><tr>
-        <th style="width:30%;">Rolle</th>
-        <th style="width:30%;">Eingegangen</th>
-        <th style="width:20%;">Status</th>
-        <th style="width:20%;">Aktion</th>
+        <th style="width:26%;">Rolle</th>
+        <th style="width:24%;">Eingegangen</th>
+        <th style="width:16%;">Status</th>
+        <th style="width:16%;">Aktion</th>
+        <th style="width:18%;">Details</th>
       </tr></thead>
       <tbody>`;
     for (const s of subs) {
@@ -7445,6 +7614,16 @@ function renderSurveyDataInput() {
         <td>${escHtml(dt)}</td>
         <td><span class="surv-sub-status assigned">zugeordnet</span></td>
         <td><button class="btn btn-ghost btn-sm" onclick="onSurveySubmissionUnassign('${escHtml(s.id)}')">Lösen</button></td>
+        <td>
+          <button class="surv-sub-toggle" data-sub-id="${escHtml(s.id)}" onclick="toggleSubmissionDetail('${escHtml(s.id)}', this)">
+            <span class="caret">▶</span>Details
+          </button>
+        </td>
+      </tr>
+      <tr class="surv-sub-detail-row" data-detail-for="${escHtml(s.id)}">
+        <td colspan="5">
+          <div class="surv-sub-detail-wrap">${renderSubmissionDetailTable(s)}</div>
+        </td>
       </tr>`;
     }
     body += `</tbody></table>`;
@@ -7510,6 +7689,67 @@ async function onSurveySubmissionUnassign(id) {
     });
     if (r.ok) await reloadSurveyData();
   } catch (e) { console.warn("Submission unassign:", e.message); }
+}
+
+// ── SUBMISSIONS-DETAIL (Aufklapper F1–F12) ────────────────────────────────
+// Pro Submission: Tabelle mit Frage | Achse | Layer | Rohwert | Score | Ampel.
+// Datenquelle: s.scores + s.ampeln (beide JSONB) aus tally_submissions.
+// s.rohdaten (falls vorhanden) enthält optional den originalen Antwort-Text.
+function renderSubmissionDetailTable(s) {
+  const scores   = s && s.scores   ? s.scores   : {};
+  const ampeln   = s && s.ampeln   ? s.ampeln   : {};
+  const rohdaten = s && s.rohdaten ? s.rohdaten : {};
+
+  let html = `<table class="surv-detail-table">
+    <thead><tr>
+      <th class="surv-detail-fnum">F</th>
+      <th class="surv-detail-axis">Achse</th>
+      <th class="surv-detail-layer">Layer</th>
+      <th>Rohwert</th>
+      <th style="width:60px;">Score</th>
+      <th class="surv-detail-ampel-cell">Ampel</th>
+    </tr></thead><tbody>`;
+
+  for (let i = 1; i <= 12; i++) {
+    const fKey = "F" + i;
+    const axis = TALLY_F_TO_AXIS[fKey];
+    if (!axis) continue;
+    const hasData = (scores && fKey in scores) || (ampeln && fKey in ampeln);
+    const score  = scores[fKey];
+    const ampel  = ampeln[fKey] || "grau";
+    const raw    = rohdaten && rohdaten[fKey] != null ? String(rohdaten[fKey]) : "";
+    const label  = axisLabel(axis.achse);
+    const layerText = axis.layer === "L1" ? "L1a" : axis.layer;
+
+    if (!hasData) {
+      html += `<tr>
+        <td class="surv-detail-fnum">${fKey}</td>
+        <td class="surv-detail-axis">${escHtml(label)}</td>
+        <td class="surv-detail-layer">${escHtml(layerText)}</td>
+        <td class="surv-detail-empty" colspan="3">— kein Wert —</td>
+      </tr>`;
+    } else {
+      html += `<tr>
+        <td class="surv-detail-fnum">${fKey}</td>
+        <td class="surv-detail-axis">${escHtml(label)}</td>
+        <td class="surv-detail-layer">${escHtml(layerText)}</td>
+        <td>${escHtml(raw || "—")}</td>
+        <td>${score != null ? escHtml(String(score)) : "—"}</td>
+        <td class="surv-detail-ampel-cell">
+          <span class="surv-detail-dot ${escHtml(ampel)}" title="${escHtml(ampel)}"></span>
+        </td>
+      </tr>`;
+    }
+  }
+  html += `</tbody></table>`;
+  return html;
+}
+
+function toggleSubmissionDetail(subId, btnEl) {
+  const row = document.querySelector(`tr.surv-sub-detail-row[data-detail-for="${CSS.escape(subId)}"]`);
+  if (!row) return;
+  const open = row.classList.toggle("open");
+  if (btnEl) btnEl.classList.toggle("open", open);
 }
 
 // ── BEREICH B: FRICTION HEATMAP (Achse × Rolle) ───────────────────────────
@@ -7738,6 +7978,225 @@ function rerenderSurveySections() {
   if ($b) $b.outerHTML = renderSurveyHeatmap();
   if ($c) $c.outerHTML = renderSurveyDivergenz();
   if ($d) $d.outerHTML = renderSurveyRouting();
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// TRIANGULATIONSMATRIX — Druckansicht (A4 Portrait)
+// ══════════════════════════════════════════════════════════════════════════
+// Füllt #printMatrix mit:
+//   1. Kopfzeile (Titel + Auswertung + Datum + Respondenten)
+//   2. Haupttabelle F1–F12 mit Layer-Separatoren (CEO / FK / Op / Ø / Konfidenz / Divergenz)
+//   3. Layer-Zusammenfassung (L1 / L2 / L3 Gate-Ampel + Routing + Gesamt-Konfidenz)
+//   4. Legende (Evidenzstufen + Divergenz-Typen)
+//   5. Fusszeile (Copyright / Vertraulichkeit)
+// Dann: window.print(). Screen-UI unberuehrt.
+
+// Divergenz-Typ für die Matrix (kompatibel mit renderSurveyDivergenz).
+// Gibt "Perception Gap" | "Ambiguity Confirmed" | "Social Desirability" | "—"
+function pmDivergenzType(ceo, fk, op) {
+  const provided = [ceo, fk, op].filter(v => v && v !== "grau");
+  if (provided.length < 2) return "—";
+  const distinct = new Set(provided);
+  if (distinct.size <= 1) return "—";
+  if (ceo === "gruen" && op === "rot") return "Perception Gap";
+  if (distinct.size >= 3) return "Ambiguity Confirmed";
+  // Social Desirability heuristisch: CEO/FK besser als Operativ
+  const order = { rot: 0, gelb: 1, gruen: 2, grau: 3 };
+  const opVal  = order[op]  != null ? order[op]  : 3;
+  const ceoVal = order[ceo] != null ? order[ceo] : 3;
+  const fkVal  = order[fk]  != null ? order[fk]  : 3;
+  if ((ceoVal > opVal) || (fkVal > opVal)) return "Social Desirability";
+  return "—";
+}
+
+// Deutsches Label für Ampeln (Text für Drucker + Klasse für optionalen Farbpunkt)
+function pmAmpelLabel(ampel) {
+  const a = ampel || "grau";
+  const text = a === "gruen" ? "grün"
+             : a === "gelb"  ? "gelb"
+             : a === "rot"   ? "rot"
+             : "—";
+  return `<span class="pm-ampel-label ${a}">${text}</span>`;
+}
+
+// Respondenten-Zeile fürs Kopfzeilen-Feld: CEO-Name / FK-Name / Op-Name falls vorhanden,
+// sonst fallback "—" oder Rolle.
+function pmRespondentenLine() {
+  const byRolle = {};
+  for (const s of (currentTallySubmissions || [])) {
+    byRolle[s.respondent_rolle] = byRolle[s.respondent_rolle] || [];
+    byRolle[s.respondent_rolle].push(s);
+  }
+  const label = (rolle) => {
+    const list = byRolle[rolle] || [];
+    if (list.length === 0) return `${rolle}: —`;
+    // Name in rohdaten suchen (falls Tally-Form ein Name-Feld hatte)
+    const s = list[0];
+    const r = s.rohdaten || {};
+    const name = r.respondent_name || r.name || r.fullName || r.respondent || null;
+    return name ? `${rolle}: ${name}` : `${rolle}: ${list.length}× Submission${list.length > 1 ? "en" : ""}`;
+  };
+  return [label("CEO"), label("FK"), label("Operativ")].join("  ·  ");
+}
+
+function printTriangulationMatrix() {
+  const target = document.getElementById("printMatrix");
+  if (!target) return;
+
+  // ── Kopfdaten ──
+  const scanName = (currentAuswertungScan && currentAuswertungScan.kunde_name) || "—";
+  const today    = new Date().toLocaleDateString("de-CH",
+    { day: "2-digit", month: "2-digit", year: "numeric" });
+
+  // ── axisAmpeln für Layer-Summary ──
+  const axisLookup = {};
+  for (const layer of Object.keys(AMPEL_AXES)) {
+    for (const achse of (AMPEL_AXES[layer] || [])) {
+      axisLookup[`${layer}_${achse}`] = survAmpelAverage(layer, achse);
+    }
+  }
+  const l1Combined = survComputeL1Combined(axisLookup);
+  const l2Combined = survComputeLayerAmpel("L2", axisLookup);
+  const l3Combined = survComputeLayerAmpel("L3", axisLookup);
+  const l2ImmunityRot = axisLookup["L2_Immunity-Muster"] === "rot";
+
+  // Routing-Text (plain, keine HTML tags — wie Survey-Routing-Logik)
+  let routingText;
+  if (l1Combined === "rot") {
+    routingText = "Regime 3 — L1 stabilisieren, keine L3-Intervention.";
+  } else if (l3Combined === "rot" && l2ImmunityRot) {
+    routingText = "Regime 2b — Immunity durchbrechen, dann L3 formalisieren.";
+  } else if (l1Combined === "gelb" && l2Combined === "rot") {
+    routingText = "Regime 2 — L2 vor L3 adressieren.";
+  } else if (l3Combined === "rot") {
+    routingText = "Regime 1 — Strukturoptimierung priorisieren.";
+  } else if (l2Combined === "rot") {
+    routingText = "Regime 2 — L2 priorisieren.";
+  } else {
+    routingText = "Noch nicht genug rote Ampeln für eindeutiges Routing.";
+  }
+
+  // Gesamt-Konfidenz: Mittelwert über alle nicht-grauen Achsen
+  const konfVals = [];
+  for (const layer of Object.keys(AMPEL_AXES)) {
+    for (const achse of (AMPEL_AXES[layer] || [])) {
+      const k = survKonfidenzFor(layer, achse);
+      if (k > 0) konfVals.push(k);
+    }
+  }
+  const avgKonf = konfVals.length > 0
+    ? Math.round(konfVals.reduce((a, b) => a + b, 0) / konfVals.length)
+    : 0;
+  const konfStars = avgKonf >= 3 ? "★★★"
+                   : avgKonf >= 2 ? "★★☆"
+                   : avgKonf >= 1 ? "★☆☆"
+                   : "—";
+  const konfDesc  = avgKonf >= 3 ? "3 Quellen konvergieren — Befund"
+                   : avgKonf >= 2 ? "2 Quellen — starke Hypothese"
+                   : avgKonf >= 1 ? "1 Quelle (Survey) — schwache Hypothese"
+                   : "keine Konfidenz berechenbar";
+
+  // ── Haupttabelle: F1–F12 mit Layer-Separatoren ──
+  const LAYER_ORDER = ["L1", "L1b", "L2", "L3"];
+  let tableRows = "";
+  const allFKeys = Object.keys(TALLY_F_TO_AXIS).sort((a, b) => {
+    return parseInt(a.slice(1), 10) - parseInt(b.slice(1), 10);
+  });
+  // Für Layer-Separatoren gruppieren wir die F-Keys nach ihrem Layer
+  const byLayer = {};
+  for (const fKey of allFKeys) {
+    const axis = TALLY_F_TO_AXIS[fKey];
+    (byLayer[axis.layer] = byLayer[axis.layer] || []).push(fKey);
+  }
+
+  for (const layer of LAYER_ORDER) {
+    const fKeysInLayer = byLayer[layer] || [];
+    if (fKeysInLayer.length === 0) continue;
+    // Layer-Trennzeile (fett, schwarz hinterlegt im CSS)
+    const layerTitle = layer === "L1"  ? "L1a — Individuelle Biologische Kapazität"
+                     : layer === "L1b" ? "L1b — Strukturell verursachte Erschöpfung"
+                     : layer === "L2"  ? "L2 — Psychologische Dynamik"
+                     : layer === "L3"  ? "L3 — Strukturelle Reibung"
+                     : layer;
+    tableRows += `<tr class="pm-layer-sep"><td colspan="8">${escHtml(layerTitle)}</td></tr>`;
+    for (const fKey of fKeysInLayer) {
+      const axis = TALLY_F_TO_AXIS[fKey];
+      const label = axisLabel(axis.achse);
+      const ceo = survAmpelByRolle("CEO", axis.layer, axis.achse);
+      const fk  = survAmpelByRolle("FK",  axis.layer, axis.achse);
+      const op  = survAmpelByRolle("Operativ", axis.layer, axis.achse);
+      const avg = survAmpelAverage(axis.layer, axis.achse);
+      const konf = survKonfidenzFor(axis.layer, axis.achse);
+      const divergenz = pmDivergenzType(ceo, fk, op);
+      const layerDisplay = axis.layer === "L1" ? "L1a" : axis.layer;
+      tableRows += `<tr>
+        <td class="pm-fnum">${escHtml(fKey)}</td>
+        <td class="pm-axis">${escHtml(label)}</td>
+        <td class="pm-layer-col">${escHtml(layerDisplay)}</td>
+        <td class="pm-role">${pmAmpelLabel(ceo)}</td>
+        <td class="pm-role">${pmAmpelLabel(fk)}</td>
+        <td class="pm-role">${pmAmpelLabel(op)}</td>
+        <td class="pm-avg">${pmAmpelLabel(avg)}</td>
+        <td class="pm-konf">${escHtml(survKonfidenzStars(konf))}</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td class="pm-div" colspan="7"><em>${escHtml(divergenz !== "—" ? "Divergenz: " + divergenz : "Konvergenz")}</em></td>
+      </tr>`;
+    }
+  }
+
+  // ── Zusammenbau ──
+  const html = `
+    <h1>NELION Friction Scan — Triangulationsmatrix</h1>
+    <div class="pm-meta">
+      <div><strong>Auswertung:</strong> ${escHtml(scanName)}</div>
+      <div><strong>Datum:</strong> ${escHtml(today)}</div>
+      <div><strong>Respondenten:</strong> ${escHtml(pmRespondentenLine())}</div>
+    </div>
+
+    <table class="pm-main">
+      <thead>
+        <tr>
+          <th class="pm-fnum">F</th>
+          <th class="pm-axis">Achse</th>
+          <th class="pm-layer-col">Layer</th>
+          <th class="pm-role">CEO</th>
+          <th class="pm-role">FK</th>
+          <th class="pm-role">Operativ</th>
+          <th class="pm-avg">Ø-Ampel</th>
+          <th class="pm-konf">Konfidenz</th>
+        </tr>
+      </thead>
+      <tbody>${tableRows}</tbody>
+    </table>
+
+    <div class="pm-summary">
+      <h2>Layer-Zusammenfassung (Gate-Logik: schwächster Wert dominiert)</h2>
+      <div class="pm-summary-row"><strong>L1 (Biologie):</strong> ${pmAmpelLabel(l1Combined)}</div>
+      <div class="pm-summary-row"><strong>L2 (Psyche):</strong> ${pmAmpelLabel(l2Combined)}</div>
+      <div class="pm-summary-row"><strong>L3 (Struktur):</strong> ${pmAmpelLabel(l3Combined)}</div>
+      <div class="pm-routing"><strong>Routing:</strong> ${escHtml(routingText)}</div>
+      <div class="pm-konfidenz"><strong>Gesamt-Konfidenz:</strong> ${escHtml(konfStars)} — ${escHtml(konfDesc)}</div>
+    </div>
+
+    <div class="pm-legend">
+      <div class="pm-legend-row"><strong>Evidenzstufen:</strong> ★☆☆ = 1 Quelle (Survey, schwache Hypothese) · ★★☆ = 2 Quellen (starke Hypothese) · ★★★ = 3+ Quellen konvergieren (Befund)</div>
+      <div class="pm-legend-row"><strong>Divergenz-Typen:</strong>
+        <em>Perception Gap</em> = CEO grün + Operativ rot (kein geteiltes Realitätsmodell).
+        <em>Ambiguity Confirmed</em> = alle drei Rollen unterschiedlich (L3 Strukturelle Ambiguität).
+        <em>Social Desirability</em> = CEO/FK-Werte besser als Operativ (Survey beschönigt).
+      </div>
+      <div class="pm-legend-row"><strong>Ampel-Schwellen:</strong> grün = 7–10 · gelb = 4–6 · rot = 1–3 (Tally Score 1–10).</div>
+    </div>
+
+    <div class="pm-footer">NELION — Organizational Friction Diagnostics · Vertraulich — nur für interne Nutzung</div>
+  `;
+
+  target.innerHTML = html;
+
+  // Kurze Verzoegerung damit Browser das DOM einhaengt, dann drucken
+  setTimeout(() => window.print(), 60);
 }
 
 // ── METHODOLOGIE-MODAL ────────────────────────────────────────────────────
