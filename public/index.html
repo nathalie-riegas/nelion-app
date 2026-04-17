@@ -423,6 +423,128 @@
     font-family: var(--mono); font-size: 12px; color: var(--ink-mid); width: 20px; text-align: right;
   }
 
+  /* ── FREIE NOTIZEN (Floating-Panel auf allen NELION-Seiten) ─────────── */
+  .notes-fab {
+    position: fixed; bottom: 24px; left: 24px;
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--ada-accent); border: none; color: #fff;
+    font-size: 18px; line-height: 1; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; box-shadow: 0 4px 16px rgba(75,0,130,0.25);
+    transition: background .15s, transform .15s, box-shadow .15s;
+    z-index: 1100; opacity: 0.9;
+  }
+  .notes-fab:hover {
+    background: var(--ada-accent-h); transform: scale(1.06);
+    box-shadow: 0 6px 28px rgba(75,0,130,0.4); opacity: 1;
+  }
+  .notes-fab.active { background: var(--ada-accent-h); opacity: 1; }
+  .notes-panel {
+    position: fixed; bottom: 80px; left: 24px;
+    width: 400px; max-height: calc(100vh - 120px);
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--r); box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+    display: none; flex-direction: column; overflow: hidden;
+    z-index: 1099;
+  }
+  .notes-panel.open { display: flex; }
+  .notes-header {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 14px; border-bottom: 1px solid var(--border);
+    background: var(--ada-bg); flex-shrink: 0;
+  }
+  .notes-title {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ada-accent);
+    font-weight: 500; flex: 1;
+  }
+  .notes-btn-new {
+    background: var(--ada-accent); color: #fff; border: none;
+    border-radius: var(--rs); padding: 5px 10px; font-size: 12px;
+    font-weight: 500; cursor: pointer; transition: background .12s;
+  }
+  .notes-btn-new:hover { background: var(--ada-accent-h); }
+  .notes-btn-close {
+    background: none; border: none; color: var(--ink-mute);
+    font-size: 18px; cursor: pointer; padding: 2px 6px;
+    line-height: 1; border-radius: var(--rs);
+  }
+  .notes-btn-close:hover { background: var(--surface2); color: var(--ink); }
+  .notes-list {
+    flex: 1; overflow-y: auto; padding: 10px 12px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .notes-empty {
+    text-align: center; color: var(--ink-mute);
+    font-size: 13px; padding: 30px 10px;
+  }
+  .note-item {
+    border: 1px solid var(--border); border-radius: var(--rs);
+    background: var(--surface); display: flex; flex-direction: column;
+    transition: border-color .12s;
+  }
+  .note-item:hover { border-color: var(--border2); }
+  .note-item-header {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 8px 4px; border-bottom: 1px solid var(--border);
+  }
+  .note-title-input {
+    flex: 1; border: none; outline: none; background: transparent;
+    font-family: var(--sans); font-size: 13px; font-weight: 500;
+    color: var(--ink); padding: 2px 4px;
+  }
+  .note-title-input::placeholder { color: var(--ink-mute); font-weight: 400; }
+  .note-delete-btn {
+    background: none; border: none; color: var(--ink-mute);
+    cursor: pointer; padding: 2px 6px; font-size: 14px;
+    line-height: 1; border-radius: 3px;
+  }
+  .note-delete-btn:hover { color: var(--red); background: var(--red-bg); }
+  .note-toolbar {
+    display: flex; gap: 2px; padding: 4px 6px;
+    border-bottom: 1px solid var(--border); background: var(--surface2);
+  }
+  .note-tool-btn {
+    background: none; border: 1px solid transparent; padding: 2px 8px;
+    font-family: var(--mono); font-size: 12px; cursor: pointer;
+    border-radius: 3px; color: var(--ink-dim); min-width: 26px;
+    line-height: 1.3; transition: all .1s;
+  }
+  .note-tool-btn:hover { background: var(--surface); color: var(--ink); }
+  .note-tool-btn.active {
+    background: var(--ada-bg); color: var(--ada-accent);
+    border-color: rgba(75,0,130,0.2);
+  }
+  .note-editor {
+    padding: 8px 10px; min-height: 60px; max-height: 240px;
+    overflow-y: auto; outline: none; font-size: 13px;
+    line-height: 1.5; color: var(--ink);
+  }
+  .note-editor:focus { background: var(--bg); }
+  .note-editor:empty::before {
+    content: attr(data-placeholder); color: var(--ink-mute);
+    pointer-events: none;
+  }
+  .note-editor b, .note-editor strong { font-weight: 600; }
+  .note-editor i, .note-editor em { font-style: italic; }
+  .note-editor ul, .note-editor ol { margin: 4px 0 4px 20px; padding: 0; }
+  .note-editor li { margin-bottom: 2px; }
+  .note-editor p { margin: 0 0 6px 0; }
+  .note-editor p:last-child { margin-bottom: 0; }
+  .note-save-indicator {
+    font-family: var(--mono); font-size: 9px; color: var(--ada-accent);
+    padding: 2px 4px; opacity: 0; transition: opacity .2s;
+  }
+  .note-save-indicator.show { opacity: 1; }
+
+  @media (max-width: 600px) {
+    .notes-panel {
+      left: 8px; right: 8px; bottom: 72px; width: auto;
+      max-height: calc(100vh - 90px);
+    }
+    .notes-fab { bottom: 16px; left: 16px; width: 40px; height: 40px; }
+  }
+
   /* ── ANKER ───────────────────────────────────────────────────────────── */
   .btn-anker {
     position: fixed; bottom: 24px; right: 24px; width: 44px; height: 44px;
@@ -2637,6 +2759,20 @@
   </div>
 </div>
 
+<!-- ── NOTIZEN-PANEL (freie Notizen, überall sichtbar) ──────────────────── -->
+<button class="notes-fab" id="notesFab" title="Notizen öffnen" aria-label="Notizen öffnen" onclick="toggleNotesPanel()">✎</button>
+<div class="notes-panel" id="notesPanel" role="dialog" aria-label="Freie Notizen">
+  <div class="notes-header">
+    <span class="notes-title">Notizen</span>
+    <span class="note-save-indicator" id="notesSaveIndicator">Gespeichert ✓</span>
+    <button class="notes-btn-new" onclick="addNote()" title="Neue Notiz hinzufügen">+ Neu</button>
+    <button class="notes-btn-close" onclick="toggleNotesPanel()" title="Schliessen" aria-label="Schliessen">×</button>
+  </div>
+  <div class="notes-list" id="notesList">
+    <div class="notes-empty">Lade Notizen…</div>
+  </div>
+</div>
+
 <!-- ── ANKER BUTTON ──────────────────────────────────────────────────────── -->
 <button class="btn-anker" id="btnAnker" title="Anker — Regulierung" aria-label="Anker — Regulierung">⚓</button>
 
@@ -3238,6 +3374,12 @@ function switchTab(tab) {
     tabNav.style.display = "none";
     adaFS.style.display = "flex";
     document.getElementById("btnAnker").style.display = "none";
+    // Notes-FAB + Panel auf ADA ausblenden
+    const nFab = document.getElementById("notesFab");
+    const nPanel = document.getElementById("notesPanel");
+    if (nFab) { nFab.style.display = "none"; nFab.classList.remove("active"); }
+    if (nPanel) nPanel.classList.remove("open");
+    notesPanelOpen = false;
     initAdaListeners();
     updateAdaContext();
     loadAdaSessions();
@@ -3284,6 +3426,16 @@ function switchTab(tab) {
   // verfügbar). Nur auf ADA ausblenden, weil ADA eine eigene Fullscreen-UI
   // mit z-index 1000 hat und der Anker dort unter der UI verschwinden würde.
   document.getElementById("btnAnker").style.display = tab === "ada" ? "none" : "flex";
+  // Notes-FAB auf ADA-Tab auch ausblenden (ADA hat eigene Fullscreen-UI)
+  const notesFab = document.getElementById("notesFab");
+  const notesPanel = document.getElementById("notesPanel");
+  if (notesFab) notesFab.style.display = tab === "ada" ? "none" : "flex";
+  // Panel auf ADA-Tab zwingend schliessen
+  if (tab === "ada" && notesPanelOpen && notesPanel) {
+    notesPanel.classList.remove("open");
+    notesFab && notesFab.classList.remove("active");
+    notesPanelOpen = false;
+  }
 }
 
 function escHtml(s) { return (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
@@ -6055,6 +6207,244 @@ async function setTaskDeadline(id, dateStr) {
   } catch {}
   refreshAllTaskViews();
 }
+
+// ══════════════════════════════════════════════════════════════════════════
+// FREIE NOTIZEN — Floating-Panel mit Rich-Text-Editor (überall auf NELION)
+// ══════════════════════════════════════════════════════════════════════════
+// Persistenz: Supabase-Tabelle `notes` (Migration 012_notes.sql).
+// Editor: contenteditable div + document.execCommand für Bold/Italic/Bullets.
+// Autosave: pro Notiz debounced 800ms, PATCH /api/notes/:id.
+// Sanitize beim Laden: Whitelist (b, strong, i, em, u, ul, ol, li, p, br,
+// div, span) — entfernt script/iframe/style + on*-Attribute.
+
+let allNotes = [];
+let notesLoaded = false;
+let notesPanelOpen = false;
+const _noteSaveTimers = {};
+
+function sanitizeNoteHtml(raw) {
+  if (!raw) return "";
+  // Whitelist + Tag/Attr-Stripping via DOMParser
+  const doc = new DOMParser().parseFromString(`<div>${raw}</div>`, "text/html");
+  const root = doc.body.firstElementChild || doc.body;
+  const ALLOWED_TAGS = new Set([
+    "B","STRONG","I","EM","U","UL","OL","LI","P","BR","DIV","SPAN",
+  ]);
+  function clean(node) {
+    const toRemove = [];
+    for (const child of Array.from(node.childNodes)) {
+      if (child.nodeType === 1) {
+        if (!ALLOWED_TAGS.has(child.tagName)) {
+          // Unerlaubtes Tag: Inhalt unwrappen (Text + erlaubte Kinder bleiben)
+          while (child.firstChild) node.insertBefore(child.firstChild, child);
+          toRemove.push(child);
+        } else {
+          // Alle Attribute entfernen (auch on*, style, href etc.)
+          for (const attr of Array.from(child.attributes)) {
+            child.removeAttribute(attr.name);
+          }
+          clean(child);
+        }
+      } else if (child.nodeType !== 3) {
+        // Comments/CDATA etc. entfernen
+        toRemove.push(child);
+      }
+    }
+    toRemove.forEach(n => n.remove());
+  }
+  clean(root);
+  return root.innerHTML;
+}
+
+async function loadNotesIfNeeded() {
+  if (notesLoaded) return;
+  try {
+    const r = await fetch("/api/notes");
+    const data = await r.json();
+    allNotes = Array.isArray(data) ? data : [];
+  } catch { allNotes = []; }
+  notesLoaded = true;
+}
+
+async function toggleNotesPanel() {
+  const panel = document.getElementById("notesPanel");
+  const fab = document.getElementById("notesFab");
+  if (!panel) return;
+  notesPanelOpen = !notesPanelOpen;
+  panel.classList.toggle("open", notesPanelOpen);
+  if (fab) fab.classList.toggle("active", notesPanelOpen);
+  if (notesPanelOpen) {
+    await loadNotesIfNeeded();
+    renderNotesPanel();
+  }
+}
+
+function renderNotesPanel() {
+  const listEl = document.getElementById("notesList");
+  if (!listEl) return;
+  if (allNotes.length === 0) {
+    listEl.innerHTML = '<div class="notes-empty">Noch keine Notizen. Klick auf "+ Neu" um eine anzulegen.</div>';
+    return;
+  }
+  listEl.innerHTML = "";
+  for (const note of allNotes) {
+    listEl.appendChild(buildNoteItem(note));
+  }
+}
+
+function buildNoteItem(note) {
+  const item = document.createElement("div");
+  item.className = "note-item";
+  item.dataset.id = note.id;
+
+  // Header: Titel-Input + Delete-Button
+  const header = document.createElement("div");
+  header.className = "note-item-header";
+  const titleInput = document.createElement("input");
+  titleInput.type = "text";
+  titleInput.className = "note-title-input";
+  titleInput.placeholder = "Titel (optional)";
+  titleInput.value = note.title || "";
+  titleInput.addEventListener("input", () => scheduleNoteSave(note.id, "title", titleInput.value));
+  const delBtn = document.createElement("button");
+  delBtn.className = "note-delete-btn";
+  delBtn.innerHTML = "✕";
+  delBtn.title = "Notiz löschen";
+  delBtn.addEventListener("click", () => deleteNote(note.id));
+  header.append(titleInput, delBtn);
+
+  // Toolbar
+  const toolbar = document.createElement("div");
+  toolbar.className = "note-toolbar";
+  const makeToolBtn = (cmd, label, title) => {
+    const b = document.createElement("button");
+    b.className = "note-tool-btn";
+    b.title = title;
+    b.innerHTML = label;
+    // mousedown statt click, damit der Editor-Fokus nicht verloren geht
+    b.addEventListener("mousedown", (e) => {
+      e.preventDefault();
+      document.execCommand(cmd, false, null);
+      // State-Refresh (aktive Formatierung markieren)
+      updateToolbarState(toolbar);
+      // Nach execCommand ist der Editor modified — Save triggern
+      const editor = item.querySelector(".note-editor");
+      if (editor) scheduleNoteSave(note.id, "content", editor.innerHTML);
+    });
+    return b;
+  };
+  const btnBold = makeToolBtn("bold", "<b>B</b>", "Fett (Ctrl/Cmd+B)");
+  btnBold.dataset.cmd = "bold";
+  const btnItalic = makeToolBtn("italic", "<i>I</i>", "Kursiv (Ctrl/Cmd+I)");
+  btnItalic.dataset.cmd = "italic";
+  const btnBullet = makeToolBtn("insertUnorderedList", "• Liste", "Aufzählungsliste");
+  btnBullet.dataset.cmd = "insertUnorderedList";
+  toolbar.append(btnBold, btnItalic, btnBullet);
+
+  // Editor (contenteditable)
+  const editor = document.createElement("div");
+  editor.className = "note-editor";
+  editor.contentEditable = "true";
+  editor.setAttribute("data-placeholder", "Notiz…");
+  editor.innerHTML = sanitizeNoteHtml(note.content || "");
+  // Autosave beim Tippen
+  editor.addEventListener("input", () => {
+    scheduleNoteSave(note.id, "content", editor.innerHTML);
+  });
+  // Toolbar-State bei Klick / Keyup im Editor aktualisieren
+  editor.addEventListener("keyup", () => updateToolbarState(toolbar));
+  editor.addEventListener("mouseup", () => updateToolbarState(toolbar));
+  editor.addEventListener("focus", () => updateToolbarState(toolbar));
+  // Paste: nur als plain text einfügen, damit kein Fremd-HTML in die Notiz kommt
+  editor.addEventListener("paste", (e) => {
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData("text/plain");
+    document.execCommand("insertText", false, text);
+  });
+
+  item.append(header, toolbar, editor);
+  return item;
+}
+
+function updateToolbarState(toolbar) {
+  for (const btn of toolbar.querySelectorAll(".note-tool-btn")) {
+    try {
+      const active = document.queryCommandState(btn.dataset.cmd);
+      btn.classList.toggle("active", !!active);
+    } catch { btn.classList.remove("active"); }
+  }
+}
+
+function scheduleNoteSave(id, field, value) {
+  if (_noteSaveTimers[id]) clearTimeout(_noteSaveTimers[id]);
+  _noteSaveTimers[id] = setTimeout(() => persistNote(id, field, value), 800);
+}
+
+async function persistNote(id, field, value) {
+  try {
+    const r = await fetch(`/api/notes/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ [field]: value }),
+    });
+    if (r.ok) {
+      const entry = allNotes.find(n => n.id === id);
+      if (entry) entry[field] = value;
+      showNotesSavedIndicator();
+    }
+  } catch (e) { console.warn("Note save failed:", e.message); }
+}
+
+function showNotesSavedIndicator() {
+  const el = document.getElementById("notesSaveIndicator");
+  if (!el) return;
+  el.classList.add("show");
+  clearTimeout(showNotesSavedIndicator._t);
+  showNotesSavedIndicator._t = setTimeout(() => el.classList.remove("show"), 900);
+}
+
+async function addNote() {
+  try {
+    const r = await fetch("/api/notes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: "", content: "" }),
+    });
+    const newNote = await r.json();
+    if (newNote && newNote.id) {
+      allNotes.push(newNote);
+      // Neue Notiz unten anhängen und fokussieren
+      const listEl = document.getElementById("notesList");
+      if (listEl) {
+        // Wenn vorher empty-state war: komplett neu rendern
+        if (allNotes.length === 1) {
+          renderNotesPanel();
+        } else {
+          listEl.appendChild(buildNoteItem(newNote));
+        }
+        const items = listEl.querySelectorAll(".note-item");
+        const last = items[items.length - 1];
+        if (last) {
+          last.scrollIntoView({ block: "nearest" });
+          const title = last.querySelector(".note-title-input");
+          if (title) title.focus();
+        }
+      }
+    }
+  } catch (e) { console.warn("Note add failed:", e.message); }
+}
+
+async function deleteNote(id) {
+  if (!confirm("Notiz wirklich löschen?")) return;
+  try {
+    await fetch(`/api/notes/${id}`, { method: "DELETE" });
+    allNotes = allNotes.filter(n => n.id !== id);
+    renderNotesPanel();
+  } catch (e) { console.warn("Note delete failed:", e.message); }
+}
+
+// Keyboard-Shortcuts: Ctrl/Cmd+B, Ctrl/Cmd+I im Editor funktionieren
+// automatisch via contenteditable + execCommand (Browser-Default).
 
 // ── DRAG & DROP ───────────────────────────────────────────────────────────
 function attachTaskDragHandlers(row, taskId) {

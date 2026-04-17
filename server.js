@@ -1641,6 +1641,67 @@ Bitte generiere die strukturierten Empfehlungen im geforderten JSON-Format.`;
   }
 });
 
+// ─── NOTES ────────────────────────────────────────────────────────────────
+// Freie Notizen (Rich-Text HTML). Migration: 012_notes.sql.
+// Ohne Migration: GET gibt [] zurück, POST/PATCH/DELETE geben 503 zurück.
+app.get("/api/notes", async (req, res) => {
+  if (!supabase) return res.json([]);
+  const { data, error } = await supabase
+    .from("notes")
+    .select("*")
+    .order("position", { ascending: true, nullsFirst: false })
+    .order("updated_at", { ascending: false });
+  if (error) return res.json([]); // Tabelle evtl. nicht migriert
+  res.json(data || []);
+});
+
+app.post("/api/notes", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { title, content, position } = req.body || {};
+  // Auto-assign position = MAX+10
+  let nextPos = typeof position === "number" ? position : null;
+  if (nextPos == null) {
+    try {
+      const r = await supabase.from("notes").select("position")
+        .order("position", { ascending: false, nullsFirst: false }).limit(1);
+      if (!r.error && r.data && r.data.length > 0 && r.data[0].position != null) {
+        nextPos = r.data[0].position + 10;
+      } else {
+        nextPos = 10;
+      }
+    } catch {}
+  }
+  const payload = {
+    title: typeof title === "string" ? title : "",
+    content: typeof content === "string" ? content : "",
+  };
+  if (nextPos != null) payload.position = nextPos;
+  const { data, error } = await supabase.from("notes").insert(payload).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+app.patch("/api/notes/:id", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const allowed = ["title", "content", "position"];
+  const updates = {};
+  for (const k of allowed) {
+    if (k in (req.body || {})) updates[k] = req.body[k];
+  }
+  updates.updated_at = new Date().toISOString();
+  const { data, error } = await supabase
+    .from("notes").update(updates).eq("id", req.params.id).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+app.delete("/api/notes/:id", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { error } = await supabase.from("notes").delete().eq("id", req.params.id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ success: true });
+});
+
 // ─── START ─────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
