@@ -1154,9 +1154,38 @@
   .landing-timeline-wrapper {
     display: none; margin-top: 12px; border-top: 1px solid var(--border);
     padding-top: 12px;
+    position: relative; /* für Tooltip-Absolutposition */
   }
   .landing-timeline-wrapper.open { display: block; }
   .timeline-svg { width: 100%; height: 120px; display: block; }
+  /* Custom Tooltip für Timeline-Punkte (Tasks + Gates): erscheint sofort
+     beim Hover, keine Browser-Verzögerung wie beim nativen <title>. */
+  .tl-tooltip {
+    position: absolute; pointer-events: none; opacity: 0;
+    background: var(--ink); color: #fff;
+    font-family: var(--sans); font-size: 12px; line-height: 1.4;
+    padding: 6px 10px; border-radius: var(--rs);
+    max-width: 260px; white-space: normal;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    transition: opacity .12s;
+    z-index: 10; transform: translate(-50%, -100%);
+    margin-top: -8px;
+  }
+  .tl-tooltip.show { opacity: 1; }
+  .tl-tooltip::after {
+    content: ""; position: absolute; left: 50%; top: 100%;
+    transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: var(--ink);
+  }
+  .tl-tooltip-title { font-weight: 500; }
+  .tl-tooltip-meta {
+    font-family: var(--mono); font-size: 10px;
+    color: rgba(255,255,255,0.7); margin-top: 2px;
+  }
+  /* Hover-Vergrößerung damit klar wird dass der Punkt interaktiv ist */
+  .tl-task-dot, .tl-gate-dot { cursor: pointer; transition: r .12s; }
+  .tl-task-dot:hover { r: 6; }
+  .tl-gate-dot:hover { r: 9; }
   .tl-axis { stroke: var(--border2); stroke-width: 1; }
   .tl-today-line { stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 3,2; }
   .tl-today-label { fill: var(--ink); font-size: 10px; font-family: var(--mono); }
@@ -2335,6 +2364,7 @@
       </div>
       <div class="landing-timeline-wrapper" id="landingTimelineWrapper">
         <div id="landingTimeline"></div>
+        <div class="tl-tooltip" id="landingTimelineTooltip"></div>
       </div>
     </div>
 
@@ -2770,8 +2800,13 @@ function renderTimeline() {
     const dateStr = g.date.toLocaleDateString("de-CH", {
       day: "2-digit", month: "2-digit", year: "2-digit",
     });
+    // Gate-Tooltip: Gate-Nummer + Titel + Datum
+    const tipTitle = `Gate ${g.nr}${g.title ? ": " + g.title : ""}`;
+    const tipMeta = dateStr + (days >= 0 ? ` · in ${days} Tagen` : ` · vor ${Math.abs(days)} Tagen`);
     return `<g>
-      <circle class="${cls}" cx="${x}" cy="${axisY}" r="7"/>
+      <circle class="${cls}" cx="${x}" cy="${axisY}" r="7"
+        data-tip-title="${escapeXmlAttr(tipTitle)}"
+        data-tip-meta="${escapeXmlAttr(tipMeta)}"/>
       <text class="tl-gate-label" x="${x}" y="${axisY - 14}">G${g.nr}</text>
       <text class="tl-gate-date" x="${x}" y="${axisY + 22}">${dateStr}</text>
     </g>`;
@@ -2786,10 +2821,12 @@ function renderTimeline() {
       if (isNaN(d.getTime()) || d < today || d > endDate) return "";
       const x = pxFor(d);
       const prioCls = `p${t.prioritaet || 2}`;
-      const tooltip = `${t.titel || ""} — ${d.toLocaleDateString("de-CH")} (P${t.prioritaet || 2})`;
-      return `<circle class="tl-task-dot ${prioCls}" cx="${x}" cy="${axisY}" r="4">
-        <title>${escapeXmlAttr(tooltip)}</title>
-      </circle>`;
+      const dateStr = d.toLocaleDateString("de-CH", { day:"2-digit", month:"2-digit", year:"2-digit" });
+      const tipTitle = t.titel || "(ohne Titel)";
+      const tipMeta = `${dateStr} · P${t.prioritaet || 2}`;
+      return `<circle class="tl-task-dot ${prioCls}" cx="${x}" cy="${axisY}" r="4"
+        data-tip-title="${escapeXmlAttr(tipTitle)}"
+        data-tip-meta="${escapeXmlAttr(tipMeta)}"/>`;
     }).join("");
 
   const todayX = trackL;
@@ -2804,6 +2841,44 @@ function renderTimeline() {
     ${gateSvg}
     ${todaySvg}
   </svg>`;
+
+  wireTimelineTooltips();
+}
+
+// Tooltip-Handler für Timeline-Punkte. Delegation: ein Handler für alle
+// Circles, liest data-tip-title und data-tip-meta. Positioniert relativ
+// zum landing-timeline-wrapper (position:relative).
+function wireTimelineTooltips() {
+  const wrap = document.getElementById("landingTimelineWrapper");
+  const tip = document.getElementById("landingTimelineTooltip");
+  if (!wrap || !tip) return;
+
+  const svg = wrap.querySelector(".timeline-svg");
+  if (!svg) return;
+
+  // Re-wire (entfernt alte Handler indem wir den Container neu bauen).
+  // Ansatz: Listener auf dem SVG einmal pro Render setzen.
+  svg.addEventListener("mouseover", (e) => {
+    const c = e.target.closest(".tl-task-dot, .tl-gate-dot");
+    if (!c) return;
+    const title = c.getAttribute("data-tip-title") || "";
+    const meta = c.getAttribute("data-tip-meta") || "";
+    tip.innerHTML = `<div class="tl-tooltip-title">${escHtml(title)}</div>`
+      + (meta ? `<div class="tl-tooltip-meta">${escHtml(meta)}</div>` : "");
+    // Position: relativ zum Wrapper berechnen (Kreis → Wrapper)
+    const wrapRect = wrap.getBoundingClientRect();
+    const dotRect = c.getBoundingClientRect();
+    const x = dotRect.left - wrapRect.left + dotRect.width / 2;
+    const y = dotRect.top - wrapRect.top;
+    tip.style.left = x + "px";
+    tip.style.top = y + "px";
+    tip.classList.add("show");
+  });
+  svg.addEventListener("mouseout", (e) => {
+    const c = e.target.closest(".tl-task-dot, .tl-gate-dot");
+    if (!c) return;
+    tip.classList.remove("show");
+  });
 }
 
 function toggleLandingTimeline() {
