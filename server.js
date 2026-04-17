@@ -492,6 +492,8 @@ app.patch("/api/consultations/:id", async (req, res) => {
     "phase4_notes",
     "phase5_notes",
     "completed",
+    "hyp_generated",
+    "hyp_regime",
   ];
   const updates = {};
   for (const key of allowed) {
@@ -500,12 +502,19 @@ app.patch("/api/consultations/:id", async (req, res) => {
   if (Object.keys(updates).length === 0) {
     return res.status(400).json({ error: "Keine Felder zum Update" });
   }
-  const { data, error } = await supabase
-    .from("consultations")
-    .update(updates)
-    .eq("id", req.params.id)
-    .select()
-    .single();
+  // Graceful fallback falls hyp_generated/hyp_regime Spalten fehlen.
+  let { data, error } = await supabase
+    .from("consultations").update(updates).eq("id", req.params.id).select().single();
+  if (error && /hyp_generated|hyp_regime/.test(error.message || "")) {
+    // Spalten fehlen — retry ohne diese Felder
+    delete updates.hyp_generated; delete updates.hyp_regime;
+    if (Object.keys(updates).length === 0) {
+      return res.status(500).json({ error: "Migration 013_consultations_hyp.sql nötig: ADD COLUMN hyp_generated TEXT, hyp_regime TEXT" });
+    }
+    const r2 = await supabase.from("consultations").update(updates).eq("id", req.params.id).select().single();
+    if (r2.error) return res.status(500).json({ error: r2.error.message });
+    return res.json(r2.data);
+  }
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
 });
@@ -1642,6 +1651,97 @@ Bitte generiere die strukturierten Empfehlungen im geforderten JSON-Format.`;
         continue;
       }
       console.error("ADA interventions error:", e.message);
+      const userErr = isOverloaded
+        ? "Claude ist gerade überlastet. Bitte in 30 Sekunden nochmal versuchen."
+        : isRateLimit
+        ? "Zu viele Anfragen. Bitte kurz warten."
+        : "ADA-Fehler: " + e.message;
+      return res.status(500).json({ error: userErr });
+    }
+  }
+});
+
+// ─── ADA ERSTGESPRÄCH HYPOTHESEN ──────────────────────────────────────────
+// Generiert strukturierte Hypothesen aus einem Erstgespräch-Transkript.
+// Input: Phase-Notizen (sync/scan/spiegeln/slice/abschluss) + Signal-Counts.
+// Output: { text } — Markdown-formatierte Antwort von Claude auf Deutsch.
+app.post("/api/ada/erstgespraech-hypothesen", async (req, res) => {
+  if (!anthropic) return res.status(503).json({ error: "ANTHROPIC_API_KEY nicht konfiguriert" });
+  const { person_name, phase_notes, signals } = req.body || {};
+  const notes = phase_notes || {};
+
+  const notesBlock =
+`Phase 1 (Sync):
+${(notes.sync || "— keine Notizen —").trim()}
+
+Phase 2 (Scan):
+${(notes.scan || "— keine Notizen —").trim()}
+
+Phase 3 (Spiegeln):
+${(notes.spiegeln || "— keine Notizen —").trim()}
+
+Phase 4 (Slice + Idealzustand):
+${(notes.slice || "— keine Notizen —").trim()}
+
+Phase 5 (Abschluss):
+${(notes.abschluss || "— keine Notizen —").trim()}`;
+
+  // Signal-Counts pro Phase aggregiert
+  let signalBlock = "";
+  if (signals && typeof signals === "object") {
+    const totals = { L1: 0, L2: 0, L3: 0 };
+    for (const p of Object.keys(signals)) {
+      const pc = signals[p] || {};
+      totals.L1 += pc.L1 || 0;
+      totals.L2 += pc.L2 || 0;
+      totals.L3 += pc.L3 || 0;
+    }
+    signalBlock = `\n\nSignal-Zählungen (gesamt über alle Phasen):\nL1: ${totals.L1} · L2: ${totals.L2} · L3: ${totals.L3}`;
+  }
+
+  const systemPrompt = `Du bist NELION Friction Diagnostics.
+Analysiere dieses Erstgespräch und generiere:
+1. Eine Haupthypothese (1 Satz, Layer benennen: L1/L2/L3)
+2. Zwei alternative Hypothesen
+3. Stärkste Evidenz aus dem Gespräch (direktes Zitat oder Paraphrase)
+4. Empfohlene erste Frage für den Friction Scan
+Antworte auf Deutsch, maximal 200 Wörter, strukturiert.
+
+Verwende Markdown-Formatierung:
+- **Fett** für Überschriften und Layer-Labels
+- Nummerierte Listen (1. 2. 3.) für die Alternativen
+- Kurze, klare Sätze
+
+Die drei Layer der NELION-Friction-Taxonomie:
+- L1 = Biologische Kapazität (Energie, Schlaf, Overload)
+- L2 = Psychologische Dynamik (Muster, Safety, Immunity)
+- L3 = Organisationale Struktur (Prozesse, Entscheidung, Verantwortung)`;
+
+  const userMsg = `Klient${person_name ? ": " + person_name : ""}.
+
+${notesBlock}${signalBlock}
+
+Bitte generiere die Hypothesen-Zusammenfassung.`;
+
+  const maxRetries = 3;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await anthropic.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1024,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userMsg }],
+      });
+      const text = response.content.filter(c => c.type === "text").map(c => c.text).join("");
+      return res.json({ text });
+    } catch (e) {
+      const isOverloaded = e.status === 529 || (e.message && e.message.includes("529"));
+      const isRateLimit = e.status === 429;
+      if ((isOverloaded || isRateLimit) && attempt < maxRetries) {
+        await new Promise(r => setTimeout(r, attempt * 2000));
+        continue;
+      }
+      console.error("Erstgespraech-Hypothesen error:", e.message);
       const userErr = isOverloaded
         ? "Claude ist gerade überlastet. Bitte in 30 Sekunden nochmal versuchen."
         : isRateLimit

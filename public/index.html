@@ -2354,6 +2354,127 @@
   .feature-btn-row {
     display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap;
   }
+  /* Generischer Toggle-Block (ausklappbar) — wird für CLT-Check, Kaskaden-
+     Routing, Theorie-Basis und Diagnostischen Kompass verwendet.
+     Standard: zugeklappt (.disclosure-content hat display:none).
+     Klick auf den Header toggelt .open Klasse und dreht den Pfeil. */
+  .disclosure-block {
+    border: 1px solid var(--border); border-radius: var(--r);
+    background: var(--surface); margin: 8px 0;
+    overflow: hidden;
+  }
+  .disclosure-toggle {
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%; padding: 10px 14px; gap: 12px;
+    background: transparent; border: none; cursor: pointer;
+    font-family: var(--sans); font-size: 13px; font-weight: 500;
+    color: var(--ink); text-align: left;
+    transition: background .12s;
+  }
+  .disclosure-toggle:hover { background: var(--surface2); }
+  .disclosure-title { flex: 1; }
+  .disclosure-arrow {
+    color: var(--ink-mute); font-size: 10px;
+    transition: transform .2s;
+  }
+  .disclosure-toggle.open .disclosure-arrow { transform: rotate(180deg); }
+  .disclosure-content {
+    display: none; padding: 0 14px 14px;
+    border-top: 1px solid var(--border);
+  }
+  .disclosure-content.open { display: block; padding-top: 12px; }
+  .clt-panel-inline { margin-top: 0; border: none; padding: 0; background: transparent; }
+
+  /* Hypothesen-Output (Claude-Antwort) */
+  .hyp-output {
+    background: var(--bg); border: 1px solid var(--border);
+    border-left: 3px solid var(--ada-accent);
+    border-radius: var(--rs); padding: 14px 16px;
+    font-size: 13px; line-height: 1.6; color: var(--ink);
+  }
+  .hyp-output.has-content { background: var(--ada-bg); }
+  .hyp-output-empty {
+    color: var(--ink-mute); font-size: 12px; font-style: italic;
+  }
+  .hyp-output p { margin: 0 0 8px 0; }
+  .hyp-output p:last-child { margin-bottom: 0; }
+  .hyp-output ul, .hyp-output ol { margin: 4px 0 8px 20px; padding: 0; }
+  .hyp-output li { margin-bottom: 3px; }
+  .hyp-output strong { font-weight: 600; color: var(--ada-accent); }
+  .hyp-output em { font-style: italic; }
+
+  /* Regime-Auswahl (Radio-Cards) */
+  .regime-radio-group {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .regime-radio {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 12px; border: 1px solid var(--border);
+    border-radius: var(--rs); cursor: pointer;
+    transition: border-color .12s, background .12s;
+  }
+  .regime-radio:hover { border-color: var(--border2); background: var(--surface2); }
+  .regime-radio.checked {
+    border-color: var(--ada-accent); background: var(--ada-bg);
+  }
+  .regime-radio input[type="radio"] {
+    width: 16px; height: 16px; margin-top: 2px; flex-shrink: 0;
+    accent-color: var(--ada-accent);
+  }
+  .regime-radio-text { flex: 1; min-width: 0; }
+  .regime-radio-label {
+    font-size: 13px; font-weight: 500; color: var(--ink);
+  }
+  .regime-radio-sub {
+    font-size: 12px; color: var(--ink-dim); margin-top: 2px;
+  }
+
+  /* Theoretische Basis — Items */
+  .theorie-item {
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+  }
+  .theorie-item:last-child { border-bottom: none; }
+  .theorie-title { font-size: 13px; font-weight: 500; color: var(--ink); }
+  .theorie-meta {
+    font-family: var(--mono); font-size: 11px; font-weight: 400;
+    color: var(--ink-mute);
+  }
+  .theorie-text {
+    font-size: 12px; color: var(--ink-dim); line-height: 1.5;
+    margin-top: 4px;
+  }
+
+  /* Kaskaden-Flowchart (ASCII-Style mit Layout) */
+  .kaskaden-flowchart {
+    font-family: var(--mono); font-size: 12px; line-height: 1.4;
+    background: var(--surface2); padding: 14px;
+    border-radius: var(--rs); color: var(--ink);
+    overflow-x: auto;
+  }
+  .kflow-node {
+    display: inline-block; padding: 6px 10px;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 4px; margin: 2px 0;
+    font-size: 11px; line-height: 1.35;
+  }
+  .kflow-node.kflow-start {
+    background: var(--ada-bg); border-color: var(--ada-accent);
+    color: var(--ada-accent); font-weight: 500;
+  }
+  .kflow-node.kflow-r1 { background: #eaf2f8; border-color: #3498db; color: #1d6fa5; }
+  .kflow-node.kflow-r2 { background: var(--yellow-bg); border-color: var(--yellow); color: #8a6d0f; }
+  .kflow-node.kflow-r2b { background: #f5eef8; border-color: #8e44ad; color: #5d2e7a; }
+  .kflow-node.kflow-r3 { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+  .kflow-node.kflow-check { background: var(--surface); border-style: dashed; }
+  .kflow-sub { font-size: 10px; color: inherit; opacity: 0.85; }
+  .kflow-branches { padding-left: 10px; margin-top: 6px; }
+  .kflow-branch { margin-bottom: 8px; }
+  .kflow-arrow { color: var(--ink-mute); margin-bottom: 2px; }
+  .kflow-arrow-sm { color: var(--ink-mute); font-size: 11px; }
+  .kflow-sub-branch { padding-left: 16px; }
+  .kflow-sub-branches { padding-left: 16px; margin-top: 4px; }
+  .kflow-sub-item { margin-bottom: 4px; }
+
   .feature-btn {
     padding: 8px 14px; border: 1px solid var(--border2); border-radius: var(--rs);
     background: var(--surface); color: var(--ink-mid); font-family: var(--mono);
@@ -3769,20 +3890,25 @@ function renderPhase(num) {
   const phase = PHASES[num - 1]; if (!phase) return;
   renderPhaseSidebar(num);
   let html = `<div class="phase-header"><span class="phase-number">${escHtml(phase.num)}</span><span class="phase-title">${escHtml(phase.title)}</span><span class="phase-time">${escHtml(phase.time)}</span></div>`;
-  html += `<div class="phase-instruction">${escHtml(phase.instruction)}</div>`;
-  // Phase 2 features: Signal-Radar, CLT-Audit, Diagnostischer Kompass
-  if (num === 2) {
-    html += `<div class="feature-btn-row">
-      <button class="feature-btn" onclick="document.getElementById('signalRadarOverlay').classList.add('open')">Signal-Radar</button>
-      <button class="feature-btn" onclick="toggleCltPanel()">CLT-Check</button>
-    </div>`;
-    html += renderCltPanel();
-    html += renderDiagnostischerKompass();
+  if (phase.instruction && phase.instruction.trim()) {
+    html += `<div class="phase-instruction">${escHtml(phase.instruction)}</div>`;
   }
+  // 1. Gesprächsleitfaden (zuoberst)
   html += `<div class="guide-block"><div class="guide-label">Gesprächsleitfaden</div>`;
   for (const g of phase.guide) html += `<div class="guide-item">${g.text}</div>`;
   html += `</div>`;
+  // 2. Signalradar (Signal-Tracker) — direkt unter Leitfaden
   html += renderSignalTracker();
+  // Phase 2 extras: Signal-Radar-Button + CLT-Check (als Toggle-Block zugeklappt).
+  // Der alte "Diagnostische Kompass" wurde entfernt — er wird im nächsten
+  // Schritt als eigener Block (Layer-Signale + Vertiefungsfragen) neu aufgebaut.
+  if (num === 2) {
+    html += `<div class="feature-btn-row">
+      <button class="feature-btn" onclick="document.getElementById('signalRadarOverlay').classList.add('open')">Signal-Radar</button>
+    </div>`;
+    // 3. CLT-Check als ausklappbarer Block mit eigenem Toggle-Header (standard: zu)
+    html += renderCltBlock();
+  }
   // Phase 5: Hypothesen-Zusammenfassung
   if (num === 5) {
     html += renderHypothesenZusammenfassung();
@@ -4975,9 +5101,25 @@ async function loadScanData(scanId) {
 // ══════════════════════════════════════════════════════════════════════════
 
 // ── CLT-AUDIT LITE (Modul 1 Phase 2) ──
+// CLT-Block mit Toggle-Header — ersetzt den früheren Button-basierten Trigger.
+// Standard: zugeklappt. Klick auf den Header toggelt die Sichtbarkeit.
+function renderCltBlock() {
+  return `
+    <div class="disclosure-block">
+      <button class="disclosure-toggle" type="button" onclick="toggleDisclosure('cltDisclosure', this)">
+        <span class="disclosure-title">CLT-Check (optional)</span>
+        <span class="disclosure-arrow">&#9660;</span>
+      </button>
+      <div class="disclosure-content" id="cltDisclosure">
+        ${renderCltPanel()}
+      </div>
+    </div>
+  `;
+}
+
 function renderCltPanel() {
   return `
-    <div class="clt-panel" id="cltPanel">
+    <div class="clt-panel clt-panel-inline" id="cltPanel">
       <div class="scan-card-title">CLT-Audit Lite — L1 Energie-Status</div>
       <div class="clt-row">
         <div class="clt-label">F1: Längster Fokusblock heute? (Minuten)</div>
@@ -5006,6 +5148,17 @@ function renderCltPanel() {
 function toggleCltPanel() {
   const el = document.getElementById("cltPanel");
   if (el) el.classList.toggle("open");
+}
+
+// Generischer Disclosure-Toggle: klappt einen Content-Block auf/zu und
+// dreht den Pfeil im Header um 180°. Wird für CLT-Check, Kaskaden-
+// Routing, Theorie-Basis und den Diagnostischen Kompass verwendet.
+function toggleDisclosure(contentId, triggerBtn) {
+  const content = document.getElementById(contentId);
+  if (!content) return;
+  const open = !content.classList.contains("open");
+  content.classList.toggle("open", open);
+  if (triggerBtn) triggerBtn.classList.toggle("open", open);
 }
 
 function updateClt() {
@@ -5139,41 +5292,201 @@ function renderMrb02Tools() {
 
 // ── HYPOTHESEN-ZUSAMMENFASSUNG (Modul 1 Phase 5) ──
 function renderHypothesenZusammenfassung() {
+  const saved = (currentConsultation && currentConsultation.hyp_generated) || "";
+  const regime = (currentConsultation && currentConsultation.hyp_regime) || "";
+  const regimeRadio = (v, label, sub) => `
+    <label class="regime-radio${regime === v ? ' checked' : ''}">
+      <input type="radio" name="hypRegime" value="${v}" ${regime === v ? 'checked' : ''} onchange="saveHypRegime(this.value)">
+      <div class="regime-radio-text">
+        <div class="regime-radio-label">${label}</div>
+        <div class="regime-radio-sub">${sub}</div>
+      </div>
+    </label>`;
   return `
     <div class="scan-card" style="margin-top:16px">
-      <div class="scan-card-title">Hypothesen-Zusammenfassung</div>
+      <div class="scan-card-title">Hypothesen</div>
       <div style="font-size:12px;color:var(--ink-mute);margin-bottom:12px">Erstgespräch = Einzelquelle → nur Hypothesen, kein Befund. Validierung erst nach Survey + 3 Interviews.</div>
 
-      <div style="font-weight:500;font-size:13px;margin-bottom:8px">Layer-Einschätzung: Welche Layer sehe ich?</div>
-      <div class="check-row"><input type="checkbox" id="hypL1"><label>L1 dominant</label></div>
-      <div class="check-row"><input type="checkbox" id="hypL2"><label>L2 dominant</label></div>
-      <div class="check-row"><input type="checkbox" id="hypL3"><label>L3 dominant</label></div>
-      <div class="check-row"><input type="checkbox" id="hypCross"><label>Cross-Layer (mehrere gleichzeitig)</label></div>
-      <div class="form-group" style="margin-top:8px"><label class="form-label">Weil...</label><textarea class="form-input" id="hypLayerWeil" rows="2" placeholder="Begründung..."></textarea></div>
-
-      <div style="font-weight:500;font-size:13px;margin-top:16px;margin-bottom:8px">Kaskaden-Einschätzung: Welche Kaskade passt am ehesten?</div>
-      <div class="form-group">
-        <select class="form-input" id="hypKaskade">
-          <option value="">— wählen —</option>
-          <option value="burnout">Burnout-Pfad</option>
-          <option value="angstkultur">Angstkultur-Spirale</option>
-          <option value="reorg">Reorg-Kaskade</option>
-          <option value="lernblockade">Lern-Blockade</option>
-          <option value="neurodivergenz">Neurodivergenz-Falle</option>
-          <option value="vertrauen">Vertrauens-Erosion</option>
-          <option value="changefatigue">Change-Fatigue</option>
-          <option value="keine">Keine / Unklar</option>
-        </select>
+      <div class="btn-row" style="margin-bottom:12px">
+        <button class="btn btn-primary" id="btnGenerateHyp" onclick="generateHypothesen()">Hypothesen generieren</button>
+        <span id="hypGenerateStatus" style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);align-self:center"></span>
       </div>
-      <div class="form-group" style="margin-top:8px"><label class="form-label">Weil...</label><textarea class="form-input" id="hypKaskadeWeil" rows="2" placeholder="Begründung..."></textarea></div>
 
-      <div style="font-weight:500;font-size:13px;margin-top:16px;margin-bottom:8px">Nächster Schritt: Empfehlung</div>
-      <div class="check-row"><input type="radio" name="hypEmpf" id="hypEmpfScan" value="scan"><label>Friction Scan empfehlen</label></div>
-      <div class="check-row"><input type="radio" name="hypEmpf" id="hypEmpfGespraech" value="gespraech"><label>Weiteres Gespräch</label></div>
-      <div class="check-row"><input type="radio" name="hypEmpf" id="hypEmpfNein" value="nein"><label>Nicht geeignet</label></div>
-      <div class="form-group" style="margin-top:8px"><label class="form-label">Begründung / Notizen</label><textarea class="form-input" id="hypEmpfText" rows="2" placeholder="Freitext..."></textarea></div>
+      <div class="hyp-output${saved ? ' has-content' : ''}" id="hypOutput">${saved ? renderMarkdownToHtml(saved) : '<div class="hyp-output-empty">Noch keine Hypothesen generiert. Klick auf "Hypothesen generieren" — Claude analysiert alle Notizen + Signale und liefert Haupthypothese, zwei Alternativen, Evidenz und eine empfohlene erste Scan-Frage.</div>'}</div>
+    </div>
+
+    <div class="disclosure-block" style="margin-top:12px">
+      <button class="disclosure-toggle" type="button" onclick="toggleDisclosure('kaskadenRoutingDisclosure', this)">
+        <span class="disclosure-title">Kaskaden-Routing anzeigen</span>
+        <span class="disclosure-arrow">&#9660;</span>
+      </button>
+      <div class="disclosure-content" id="kaskadenRoutingDisclosure">
+        ${renderKaskadenFlowchart()}
+        <div style="margin-top:16px">
+          <div style="font-weight:500;font-size:13px;margin-bottom:8px">Regime auswählen</div>
+          <div class="regime-radio-group">
+            ${regimeRadio("1", "Regime 1", "Strukturoptimierung — L3 dominant")}
+            ${regimeRadio("2", "Regime 2", "L2 vor L3 adressieren")}
+            ${regimeRadio("2b", "Regime 2b", "L2 benennen, dann L3 formalisieren")}
+            ${regimeRadio("3", "Regime 3", "Erst stabilisieren — L1 rot, keine L3-Intervention")}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="disclosure-block">
+      <button class="disclosure-toggle" type="button" onclick="toggleDisclosure('theorieBasisDisclosure', this)">
+        <span class="disclosure-title">Theoretische Basis</span>
+        <span class="disclosure-arrow">&#9660;</span>
+      </button>
+      <div class="disclosure-content" id="theorieBasisDisclosure">
+        <div class="theorie-item">
+          <div class="theorie-title">Dynamic Systems Theory <span class="theorie-meta">(Thelen &amp; Smith, 1994 ★★☆)</span></div>
+          <div class="theorie-text">Systeme fallen ohne Intervention in denselben Attraktor zurück. Regime-Routing verhindert das.</div>
+        </div>
+        <div class="theorie-item">
+          <div class="theorie-title">Sequenzierungs-Axiom <span class="theorie-meta">(L0 Constitution)</span></div>
+          <div class="theorie-text">L1 ist Gate — keine L3-Intervention solange Biologische Kapazität nicht stabilisiert.</div>
+        </div>
+        <div class="theorie-item">
+          <div class="theorie-title">Meadows Leverage Points <span class="theorie-meta">(Meadows, 1999 ★★★)</span></div>
+          <div class="theorie-text">Nicht alle Hebel haben dieselbe Wirkung. Reihenfolge entscheidet über Hebelwirkung.</div>
+        </div>
+      </div>
     </div>
   `;
+}
+
+// SVG-Flowchart für die Kaskaden-Routing-Logik.
+// Keine externe Library — reines inline-SVG.
+function renderKaskadenFlowchart() {
+  return `
+    <div class="kaskaden-flowchart">
+      <div class="kflow-node kflow-start">L1-Status?</div>
+      <div class="kflow-branches">
+        <div class="kflow-branch">
+          <div class="kflow-arrow">├─ ROT</div>
+          <div class="kflow-node kflow-r3">Regime 3<br><span class="kflow-sub">Erst stabilisieren.<br>Keine L3-Intervention.</span></div>
+        </div>
+        <div class="kflow-branch">
+          <div class="kflow-arrow">├─ GELB + L2 hoch</div>
+          <div class="kflow-node kflow-r2">Regime 2<br><span class="kflow-sub">L2 vor L3 adressieren.</span></div>
+        </div>
+        <div class="kflow-branch">
+          <div class="kflow-arrow">├─ GELB + L2 ok</div>
+          <div class="kflow-sub-branch">
+            <div class="kflow-node kflow-check">Regime 2b prüfen<br><span class="kflow-sub">L3 rot + L2 Immunity?</span></div>
+            <div class="kflow-sub-branches">
+              <div class="kflow-sub-item">
+                <span class="kflow-arrow-sm">├─ JA</span>
+                <div class="kflow-node kflow-r2b">Regime 2b<br><span class="kflow-sub">L2 benennen, dann L3.</span></div>
+              </div>
+              <div class="kflow-sub-item">
+                <span class="kflow-arrow-sm">└─ NEIN</span>
+                <div class="kflow-node kflow-r1">Regime 1</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="kflow-branch">
+          <div class="kflow-arrow">└─ GRÜN + L3 dominant</div>
+          <div class="kflow-node kflow-r1">Regime 1<br><span class="kflow-sub">Strukturoptimierung.</span></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// Minimal Markdown → HTML (bold, italic, lists, paragraphs) für Claude-Output.
+// Keine externe Library — reicht für strukturierte Antworten.
+function renderMarkdownToHtml(md) {
+  if (!md) return "";
+  let h = escHtml(md);
+  h = h.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  h = h.replace(/\*(.+?)\*/g, "<em>$1</em>");
+  // Listen-Zeilen zu <ul><li> gruppieren
+  h = h.replace(/(^|\n)((?:[-•]\s+.+(?:\n|$))+)/g, (match, pfx, block) => {
+    const items = block.split(/\n/).filter(l => /^[-•]\s+/.test(l))
+      .map(l => "<li>" + l.replace(/^[-•]\s+/, "") + "</li>").join("");
+    return pfx + "<ul>" + items + "</ul>";
+  });
+  // Nummerierte Listen
+  h = h.replace(/(^|\n)((?:\d+\.\s+.+(?:\n|$))+)/g, (match, pfx, block) => {
+    const items = block.split(/\n/).filter(l => /^\d+\.\s+/.test(l))
+      .map(l => "<li>" + l.replace(/^\d+\.\s+/, "") + "</li>").join("");
+    return pfx + "<ol>" + items + "</ol>";
+  });
+  // Absätze
+  h = h.split(/\n\n+/).map(p => p.trim()).filter(Boolean).map(p => {
+    if (p.startsWith("<ul>") || p.startsWith("<ol>")) return p;
+    return "<p>" + p.replace(/\n/g, "<br>") + "</p>";
+  }).join("");
+  return h;
+}
+
+async function generateHypothesen() {
+  const btn = document.getElementById("btnGenerateHyp");
+  const status = document.getElementById("hypGenerateStatus");
+  const output = document.getElementById("hypOutput");
+  if (!currentConsultation) { alert("Keine aktive Session."); return; }
+  if (btn) { btn.disabled = true; btn.textContent = "Generiere…"; }
+  if (status) status.textContent = "Claude analysiert (10–30s)…";
+  try {
+    const payload = {
+      person_name: currentContact ? currentContact.name : "",
+      phase_notes: {
+        sync:      currentConsultation.phase1_notes || "",
+        scan:      currentConsultation.phase2_notes || "",
+        spiegeln:  currentConsultation.phase3_notes || "",
+        slice:     currentConsultation.phase4_notes || "",
+        abschluss: currentConsultation.phase5_notes || "",
+      },
+      signals: signalCounts,
+    };
+    const r = await fetch("/api/ada/erstgespraech-hypothesen", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await r.json();
+    if (!r.ok || data.error) throw new Error(data.error || `HTTP ${r.status}`);
+    const text = data.text || "";
+    if (output) {
+      output.innerHTML = renderMarkdownToHtml(text);
+      output.classList.add("has-content");
+    }
+    // Autosave in Consultation (field hyp_generated)
+    currentConsultation.hyp_generated = text;
+    try {
+      await fetch(`/api/consultations/${currentConsultation.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ hyp_generated: text }),
+      });
+    } catch {}
+    if (status) status.textContent = "✓ Generiert.";
+  } catch (e) {
+    if (status) status.textContent = "✗ Fehler: " + e.message;
+    console.error("generateHypothesen:", e.message);
+  }
+  if (btn) { btn.disabled = false; btn.textContent = "Hypothesen neu generieren"; }
+}
+
+async function saveHypRegime(value) {
+  if (!currentConsultation) return;
+  currentConsultation.hyp_regime = value;
+  // Radio-Styling aktualisieren
+  document.querySelectorAll("label.regime-radio").forEach(l => {
+    const input = l.querySelector('input[type="radio"]');
+    l.classList.toggle("checked", input && input.checked);
+  });
+  try {
+    await fetch(`/api/consultations/${currentConsultation.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ hyp_regime: value }),
+    });
+  } catch {}
 }
 
 // ── TRANSKRIPT-ANALYSE (ADA-gestützt, Modul 2 Phase 2) ──

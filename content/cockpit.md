@@ -1,4 +1,4 @@
-# NELION Cockpit — Content v1.0
+# NELION Cockpit — Content v1.1
 # Dieses File wird beim Server-Start gelesen.
 # Änderungen hier → git push → automatisch live nach Deploy.
 #
@@ -14,12 +14,12 @@ num: Phase 1
 title: Sync
 time: ~5 min
 
-instruction: Setze den Raum. Reine Präsenz. Kein Pitch, keine Agenda. Du bist da, um zu verstehen — nicht um zu überzeugen.
+instruction:
 
 guide:
-- "Wie bist du hier angekommen — was hat dich dazu gebracht, heute dieses Gespräch zu führen?"
-- "Was ist gerade die grösste Reibung in deinem Unternehmen?"
-- Hör zu. Nicht analysieren. Nicht reparieren. Nur aufnehmen.
+- "Wie bist du hier angekommen?"
+- "Was hat dich dazu gebracht, heute dieses Gespräch zu führen?"
+- "Was ist gerade die grösste Herausforderung oder Baustelle in deinem Unternehmen?"
 
 ---
 
@@ -49,7 +49,7 @@ instruction: Fasse zusammen, was du gehört hast. Kein Rat. Kein Framework. Nur 
 guide:
 - "Was ich höre ist…" — dann 2–3 Sätze, eigene Worte, keine Papageien-Wiederholung
 - Achte auf die Körperreaktion beim Gegenüber. Nicken = Treffer. Stirnrunzeln = nachjustieren.
-- Frage: "Trifft das, was ich höre?"
+- Frage: "Habe ich deine Aussagen richtig verstanden?"
 
 ---
 
@@ -59,11 +59,10 @@ num: Phase 4
 title: Slice + Idealzustand
 time: ~5 min
 
-instruction: Slice: Ein konkretes, machbares Stück herausschneiden. Idealzustand: Was würde sich das Gegenüber wünschen — die positive Zielvorstellung vor dem ersten Schritt.
+instruction: Eine konkrete, machbare Handlung identifizieren.
 
 guide:
-- "Was wäre der kleinste mögliche erste Schritt?"
-- "Was würde sich Ihr Gegenüber wünschen — wie sieht der Idealzustand aus?"
+- "Was wäre der kleinste mögliche nächste Schritt?"
 - Wenn nötig: Organizational Friction Scan als konkretes Angebot positionieren — "3 Tage, 3-seitiger Befund, Klarheit bevor investiert wird."
 
 ---
@@ -77,7 +76,7 @@ time: ~3 min
 instruction: Klarer Abschluss. Kein offenes Ende. Ein konkreter nächster Schritt — kein vager Ausblick.
 
 guide:
-- "Wie fühlst du dich jetzt im Vergleich zu vor 30 Minuten?"
+- "Kannst du aus diesem Gespräch etwas mitnehmen? Ist dir dabei etwas bewusst geworden, was dir vorher vielleicht nicht klar war?"
 - "Was ist dein nächster konkreter Schritt?"
 - Nächsten Termin anbieten (nicht aufdrängen). Wenn Interesse: Datum fixieren, nicht "melden Sie sich".
 
