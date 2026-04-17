@@ -844,21 +844,29 @@
   }
   .landing-tasks-list.open { display: block; }
   .landing-task-item {
-    display: flex; align-items: center; gap: 10px; padding: 6px 0;
+    display: flex; align-items: center; gap: 10px; padding: 3px 0;
     font-size: 14px; color: var(--ink); position: relative;
+    line-height: 1.35;
   }
   .landing-task-content {
-    flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;
+    flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px;
   }
   .landing-task-title {
     min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
+  /* Prio-Dot: klickbar zum Zyklen P1 → P2 → P3 → P1. Kleiner Hover-Ring
+     signalisiert Interaktivität. */
   .landing-task-prio {
-    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+    cursor: pointer; transition: transform .12s, box-shadow .12s;
   }
-  .landing-task-prio.p1 { background: var(--red); }
-  .landing-task-prio.p2 { background: var(--yellow); }
-  .landing-task-prio.p3 { background: #3498db; }
+  .landing-task-prio:hover {
+    transform: scale(1.3);
+    box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px currentColor;
+  }
+  .landing-task-prio.p1 { background: var(--red); color: var(--red); }
+  .landing-task-prio.p2 { background: var(--yellow); color: var(--yellow); }
+  .landing-task-prio.p3 { background: #3498db; color: #3498db; }
   /* Checkbox zum Abhaken auf der Landing Page — gleicher Style wie im Drawer */
   .landing-task-checkbox {
     width: 16px; height: 16px; cursor: pointer;
@@ -3016,7 +3024,9 @@ function renderLandingTasks() {
     cb.addEventListener("change", () => toggleTaskStatus(t.id));
 
     const dot = document.createElement("div");
-    dot.className = `landing-task-prio p${t.prioritaet}`;
+    dot.className = `landing-task-prio p${t.prioritaet || 2}`;
+    dot.title = `Priorität P${t.prioritaet || 2} — Klick zyklt P1 → P2 → P3`;
+    dot.addEventListener("click", (e) => { e.stopPropagation(); cycleTaskPrio(t.id); });
 
     const content = document.createElement("div");
     content.className = "landing-task-content";
@@ -5846,6 +5856,24 @@ async function approveTask(id) {
     const entry = allTasks.find(t => t.id === id);
     if (entry) entry.nathalie_approved = true;
     refreshAllTaskViews();
+  } catch {}
+}
+
+// Zyklt die Priorität eines Tasks: 1 → 2 → 3 → 1. Optimistic update,
+// persistiert via PATCH. refreshAllTaskViews zeichnet Dot-Farbe neu.
+async function cycleTaskPrio(id) {
+  const t = allTasks.find(x => x.id === id);
+  if (!t) return;
+  const current = t.prioritaet || 2;
+  const next = current >= 3 ? 1 : current + 1;
+  t.prioritaet = next;
+  refreshAllTaskViews();
+  try {
+    await fetch(`/api/tasks/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prioritaet: next }),
+    });
   } catch {}
 }
 
