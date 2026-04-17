@@ -255,6 +255,7 @@ const PUBLIC_AUTH_PATHS = new Set([
   "/login.html",
   "/api/auth/login",
   "/api/auth/status",
+  "/webhook/tally",
 ]);
 
 app.use((req, res, next) => {
@@ -1028,6 +1029,209 @@ app.patch("/api/auswertungen/:id", async (req, res) => {
     if (r2.error) return res.status(500).json({ error: r2.error.message });
     return res.json(r2.data);
   }
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+// ─── TALLY WEBHOOK ────────────────────────────────────────────────────────
+// Empfaengt Tally Form Submissions, normalisiert sie auf F1-F12 → NELION-Achsen,
+// berechnet Score (1-10) und Ampel pro Achse, schreibt in tally_submissions.
+// Webhook-URL fuer Tally: https://nelion-app.onrender.com/webhook/tally
+// Schema siehe supabase/migrations/012_tally_submissions.sql.
+
+// F-Nummer → { layer, achse } (interne Achsen-Keys aus AMPEL_AXES im Frontend)
+const TALLY_F_TO_AXIS = {
+  F1:  { layer: "L1",  achse: "Allostatic Load" },          // Neurobiologische Last
+  F2:  { layer: "L1",  achse: "Energie-Status" },           // Energiereserven
+  F3:  { layer: "L1b", achse: "Anforderungs-Ressourcen-Ungleichgewicht" }, // Strukturelle Ueberlastung
+  F4:  { layer: "L1b", achse: "Erholungsstruktur" },        // Regenerationsdefizit
+  F5:  { layer: "L2",  achse: "Psychological Safety" },     // Selbstzensur
+  F6:  { layer: "L2",  achse: "Immunity-Muster" },          // Veraenderungsresistenz
+  F7:  { layer: "L2",  achse: "Attribution Style" },        // Verantwortungsvermeidung
+  F8:  { layer: "L2",  achse: "Threat-State" },             // Irritabilitaet
+  F9:  { layer: "L3",  achse: "Entscheidungsarchitektur" }, // Fehlentscheidungskosten
+  F10: { layer: "L3",  achse: "Incentive-Struktur" },       // Dysfunktionale Anreize
+  F11: { layer: "L3",  achse: "Strukturelle Ambiguität" },  // Verantwortungsvakuum
+  F12: { layer: "L3",  achse: "Informationsfluss" },        // Informationsblockaden
+};
+
+function tallyScoreToAmpel(score) {
+  if (score == null || isNaN(score)) return "grau";
+  if (score >= 7) return "gruen";
+  if (score >= 4) return "gelb";
+  return "rot";
+}
+
+// Extrahiert numerischen Wert aus diversen Tally-Feld-Typen.
+function extractTallyNumber(field) {
+  const v = field?.value;
+  if (typeof v === "number") return v;
+  if (typeof v === "string") {
+    const n = Number(v);
+    if (!isNaN(n)) return n;
+  }
+  if (Array.isArray(v) && v.length > 0) {
+    const first = v[0];
+    if (typeof first === "number") return first;
+    if (typeof first === "string") {
+      const n = Number(first);
+      if (!isNaN(n)) return n;
+    }
+    if (field.options && Array.isArray(field.options)) {
+      const opt = field.options.find(o => o.id === first || o.value === first);
+      if (opt && typeof opt.value === "number") return opt.value;
+      // Manche Tally-Optionen kodieren den Score im Text (z.B. "7 — eher hoch")
+      if (opt && typeof opt.text === "string") {
+        const m = opt.text.match(/^(\d{1,2})/);
+        if (m) return Number(m[1]);
+      }
+    }
+  }
+  return null;
+}
+
+// Mappt Rohwert auf 1-10 (Tally LINEAR_SCALE liefert ueblicherweise schon 1-10).
+function normalizeTallyScore(raw) {
+  if (raw == null || isNaN(raw)) return null;
+  const n = Number(raw);
+  if (n < 1) return 1;
+  if (n > 10) return 10;
+  return Math.round(n);
+}
+
+function parseRespondentRolle(fields) {
+  for (const f of fields) {
+    const label = (f.label || f.title || f.key || "").toLowerCase();
+    if (!(label.includes("rolle") || /\bf0\b/i.test(label) || label.includes("position"))) continue;
+    let v = f.value;
+    if (Array.isArray(v) && v.length > 0) v = v[0];
+    // Wenn Multiple-Choice mit Options-IDs: in Text aufloesen
+    if (f.options && Array.isArray(f.options)) {
+      const opt = f.options.find(o => o.id === v || o.value === v);
+      if (opt && opt.text) v = opt.text;
+    }
+    const s = String(v || "").toLowerCase();
+    if (s.includes("ceo") || s.includes("geschäft") || s.includes("geschaeft") || s.includes("inhaber")) return "CEO";
+    if (s.includes("führung") || s.includes("fuehrung") || s === "fk" || s.includes("leitung")) return "FK";
+    if (s.includes("operativ") || s.includes("mitarbeit") || s.includes("team")) return "Operativ";
+  }
+  return "unbekannt";
+}
+
+function parseAuswertungIdHidden(fields) {
+  for (const f of fields) {
+    const key = (f.key || f.label || "").toLowerCase();
+    if (!(key.includes("auswertung_id") || key === "auswertung")) continue;
+    const v = Array.isArray(f.value) ? f.value[0] : f.value;
+    if (v && typeof v === "string" && /^[0-9a-f-]{36}$/i.test(v.trim())) {
+      return v.trim();
+    }
+  }
+  return null;
+}
+
+function processTallyPayload(payload) {
+  const data = payload?.data || payload || {};
+  const fields = Array.isArray(data.fields) ? data.fields : [];
+  const submission_id = data.submissionId || data.responseId || payload?.eventId || null;
+
+  const scores = {};
+  const ampeln = {};
+
+  for (const f of fields) {
+    const label = (f.label || f.title || f.key || "");
+    const m = label.match(/F(\d{1,2})\b/i);
+    if (!m) continue;
+    const fNum = parseInt(m[1], 10);
+    const fKey = `F${fNum}`;
+    if (!TALLY_F_TO_AXIS[fKey]) continue;
+    const raw = extractTallyNumber(f);
+    const score = normalizeTallyScore(raw);
+    if (score == null) continue;
+    scores[fKey] = score;
+    ampeln[fKey] = tallyScoreToAmpel(score);
+  }
+
+  return {
+    submission_id,
+    scores,
+    ampeln,
+    respondent_rolle: parseRespondentRolle(fields),
+    auswertung_id: parseAuswertungIdHidden(fields),
+  };
+}
+
+app.post("/webhook/tally", async (req, res) => {
+  try {
+    const payload = req.body || {};
+    const processed = processTallyPayload(payload);
+
+    if (!processed.submission_id || Object.keys(processed.scores).length === 0) {
+      console.warn("Tally webhook: ungueltige oder leere Payload (submission_id/scores fehlen)");
+      return res.status(400).json({ error: "ungueltige Payload" });
+    }
+
+    if (!supabase) {
+      console.warn("Tally webhook: Supabase nicht konfiguriert");
+      return res.status(503).json({ error: "Supabase nicht konfiguriert" });
+    }
+
+    const insert = {
+      auswertung_id: processed.auswertung_id,
+      submission_id: processed.submission_id,
+      respondent_rolle: processed.respondent_rolle,
+      rohdaten: payload,
+      scores: processed.scores,
+      ampeln: processed.ampeln,
+    };
+
+    const { data, error } = await supabase
+      .from("tally_submissions").insert(insert).select().single();
+    if (error) {
+      console.error("Tally webhook: Supabase-Fehler:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+    console.log(`Tally webhook: Submission ${processed.submission_id} gespeichert (id=${data.id}, rolle=${processed.respondent_rolle})`);
+    res.status(200).json({ ok: true, id: data.id });
+  } catch (e) {
+    console.error("Tally webhook: Crash:", e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// "unassigned" muss VOR /:auswertung_id deklariert werden, sonst matcht der UUID-Param.
+app.get("/api/tally/submissions/unassigned", async (req, res) => {
+  if (!supabase) return res.json([]);
+  const { data, error } = await supabase
+    .from("tally_submissions").select("*")
+    .is("auswertung_id", null)
+    .order("eingegangen_am", { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
+});
+
+app.get("/api/tally/submissions/:auswertung_id", async (req, res) => {
+  if (!supabase) return res.json([]);
+  const { data, error } = await supabase
+    .from("tally_submissions").select("*")
+    .eq("auswertung_id", req.params.auswertung_id)
+    .order("eingegangen_am", { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data || []);
+});
+
+app.patch("/api/tally/submissions/:id", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const allowed = ["respondent_rolle", "auswertung_id"];
+  const updates = {};
+  for (const key of allowed) {
+    if (req.body[key] !== undefined) updates[key] = req.body[key];
+  }
+  if (Object.keys(updates).length === 0) {
+    return res.status(400).json({ error: "Keine Felder zum Update" });
+  }
+  const { data, error } = await supabase
+    .from("tally_submissions").update(updates).eq("id", req.params.id).select().single();
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
 });

@@ -1512,6 +1512,204 @@
     color: var(--ink-mute); font-size: 13px;
   }
 
+  /* ── SURVEY PIPELINE (A: Eingang, B: Heatmap, C: Divergenz, D: Routing) ── */
+  .surv-section {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 18px 20px; margin-bottom: 16px;
+  }
+  .surv-section-title {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ada-accent); margin-bottom: 4px;
+  }
+  .surv-section-sub {
+    font-size: 13px; color: var(--ink-dim); line-height: 1.5;
+    margin-bottom: 14px;
+  }
+  .surv-empty {
+    padding: 18px 12px; text-align: center;
+    color: var(--ink-mute); font-size: 12px;
+    border: 1px dashed var(--border); border-radius: var(--rs);
+  }
+  .surv-toolbar {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 12px; margin-bottom: 10px; flex-wrap: wrap;
+  }
+  .surv-sub-table {
+    width: 100%; border-collapse: collapse; font-size: 12px;
+  }
+  .surv-sub-table th, .surv-sub-table td {
+    text-align: left; padding: 6px 8px;
+    border-bottom: 1px solid var(--border); vertical-align: middle;
+  }
+  .surv-sub-table th {
+    font-family: var(--mono); font-size: 10px; color: var(--ink-mute);
+    letter-spacing: 0.05em; text-transform: uppercase; font-weight: 500;
+  }
+  .surv-sub-table select.form-input { padding: 3px 6px; font-size: 11px; min-height: auto; }
+  .surv-sub-status {
+    display: inline-block; padding: 2px 6px; border-radius: 3px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.05em;
+  }
+  .surv-sub-status.assigned   { background: var(--green); color: #fff; }
+  .surv-sub-status.unassigned { background: var(--ink-mute); color: #fff; }
+
+  .surv-heatmap-table {
+    width: 100%; border-collapse: collapse; font-size: 12px;
+  }
+  .surv-heatmap-table th, .surv-heatmap-table td {
+    padding: 6px 8px; border-bottom: 1px solid var(--border); vertical-align: middle;
+  }
+  .surv-heatmap-table th {
+    font-family: var(--mono); font-size: 10px; color: var(--ink-mute);
+    letter-spacing: 0.05em; text-transform: uppercase; font-weight: 500;
+    text-align: center;
+  }
+  .surv-heatmap-table th:first-child,
+  .surv-heatmap-table td:first-child { text-align: left; }
+  .surv-heatmap-table th:nth-child(2),
+  .surv-heatmap-table td:nth-child(2) {
+    text-align: center; font-family: var(--mono); font-size: 10px; color: var(--ink-mute);
+  }
+  .surv-heatmap-layer-row td {
+    background: var(--surface2, var(--bg)); font-weight: 500;
+    font-family: var(--mono); font-size: 11px;
+    color: var(--ink); letter-spacing: 0.05em;
+    border-top: 1px solid var(--border);
+  }
+  .surv-dot {
+    display: inline-block; width: 14px; height: 14px; border-radius: 50%;
+    border: 1px solid transparent;
+  }
+  .surv-dot.gruen { background: #22c55e; border-color: #22c55e; }
+  .surv-dot.gelb  { background: #eab308; border-color: #eab308; }
+  .surv-dot.rot   { background: #ef4444; border-color: #ef4444; }
+  .surv-dot.grau  { background: transparent; border-color: var(--border); }
+  .surv-konfidenz {
+    cursor: pointer; user-select: none;
+    font-size: 12px; letter-spacing: 1px;
+    color: var(--ada-accent);
+  }
+  .surv-konfidenz:hover { opacity: 0.7; }
+
+  .surv-divergenz-card {
+    border: 1px solid var(--border); border-radius: var(--rs);
+    padding: 10px 12px; margin-bottom: 8px; background: var(--bg);
+  }
+  .surv-divergenz-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 10px; flex-wrap: wrap; margin-bottom: 4px;
+  }
+  .surv-divergenz-axis { font-weight: 500; font-size: 13px; color: var(--ink); }
+  .surv-divergenz-type {
+    font-family: var(--mono); font-size: 10px;
+    background: var(--ink); color: var(--surface);
+    padding: 2px 6px; border-radius: 3px;
+    letter-spacing: 0.05em;
+  }
+  .surv-divergenz-type.perception { background: #ef4444; }
+  .surv-divergenz-type.social     { background: #eab308; color: #000; }
+  .surv-divergenz-type.ambiguity  { background: #6366f1; }
+  .surv-divergenz-explain { font-size: 12px; color: var(--ink-dim); margin-top: 4px; }
+  .surv-divergenz-recom {
+    font-size: 12px; color: var(--ink); margin-top: 6px;
+    padding-top: 6px; border-top: 1px dashed var(--border);
+  }
+  .surv-divergenz-recom strong { color: var(--ada-accent); }
+
+  .surv-routing-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 12px; margin-bottom: 14px;
+  }
+  .surv-routing-cell {
+    border: 1px solid var(--border); border-radius: var(--rs);
+    padding: 14px; text-align: center; background: var(--bg);
+  }
+  .surv-routing-cell-label {
+    font-family: var(--mono); font-size: 10px; color: var(--ink-mute);
+    letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .surv-routing-cell-dot {
+    width: 28px; height: 28px; border-radius: 50%;
+    margin: 0 auto 6px; border: 2px solid var(--border);
+  }
+  .surv-routing-cell-dot.gruen { background: #22c55e; border-color: #22c55e; }
+  .surv-routing-cell-dot.gelb  { background: #eab308; border-color: #eab308; }
+  .surv-routing-cell-dot.rot   { background: #ef4444; border-color: #ef4444; }
+  .surv-routing-cell-dot.grau  { background: transparent; border-color: var(--border); }
+  .surv-routing-cell-status { font-size: 12px; color: var(--ink); font-weight: 500; }
+  .surv-routing-recom {
+    border: 1px solid var(--border); border-radius: var(--rs);
+    padding: 12px 14px; background: var(--surface);
+    font-size: 13px; color: var(--ink); line-height: 1.5;
+  }
+  .surv-routing-recom strong { color: var(--ada-accent); }
+  .surv-routing-konfidenz {
+    margin-top: 10px; font-size: 12px; color: var(--ink-dim);
+  }
+
+  .surv-tab-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 12px; margin-bottom: 18px;
+  }
+  .surv-info-btn {
+    background: none; border: 1px solid var(--border);
+    border-radius: 50%; width: 26px; height: 26px;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--ink-mute);
+    transition: all 0.15s; flex-shrink: 0;
+  }
+  .surv-info-btn:hover { color: var(--ada-accent); border-color: var(--ada-accent); }
+  .surv-info-btn svg { width: 14px; height: 14px; }
+
+  .meth-modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none; align-items: center; justify-content: center;
+    z-index: 2000; padding: 20px;
+  }
+  .meth-modal-overlay.open { display: flex; }
+  .meth-modal {
+    background: var(--surface); border-radius: var(--r);
+    max-width: 720px; width: 100%; max-height: 85vh;
+    overflow-y: auto; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  }
+  .meth-modal-header {
+    padding: 18px 24px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    position: sticky; top: 0; background: var(--surface); z-index: 1;
+  }
+  .meth-modal-title { font-size: 14px; font-weight: 500; color: var(--ink); }
+  .meth-modal-close {
+    background: none; border: none; cursor: pointer;
+    font-size: 20px; color: var(--ink-mute); line-height: 1;
+    padding: 4px 8px; border-radius: 4px;
+  }
+  .meth-modal-close:hover { color: var(--ink); background: var(--bg); }
+  .meth-modal-body {
+    padding: 18px 24px; font-size: 13px; line-height: 1.6; color: var(--ink);
+  }
+  .meth-modal-body h3 {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ada-accent); margin: 18px 0 8px; font-weight: 500;
+  }
+  .meth-modal-body h3:first-child { margin-top: 0; }
+  .meth-modal-body p { margin: 0 0 10px; }
+  .meth-modal-body .meth-quote {
+    border-left: 3px solid var(--ada-accent);
+    padding-left: 12px; margin: 10px 0;
+    color: var(--ink-dim); font-style: italic;
+  }
+  .meth-modal-body ul { margin: 6px 0 12px; padding-left: 20px; }
+  .meth-modal-body li { margin-bottom: 4px; }
+  .meth-modal-body code { font-family: var(--mono); font-size: 12px; color: var(--ink); }
+  .meth-modal-footer {
+    padding: 14px 24px; border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end;
+    position: sticky; bottom: 0; background: var(--surface);
+  }
+
   /* ── INTERVENTIONEN ─────────────────────────────────────────────── */
   .interv-header-row {
     display: flex; align-items: baseline; justify-content: space-between;
@@ -2153,6 +2351,43 @@
   <div class="anker-card">
     <div id="ankerContent"></div>
     <button class="anker-close" id="btnAnkerClose">Zurück</button>
+  </div>
+</div>
+
+<!-- ── METHODOLOGIE-MODAL (Auswertungslogik) ────────────────────────────── -->
+<div class="meth-modal-overlay" id="methModalOverlay" onclick="if(event.target===this)closeMethModal()">
+  <div class="meth-modal" role="dialog" aria-labelledby="methModalTitle" aria-modal="true">
+    <div class="meth-modal-header">
+      <div class="meth-modal-title" id="methModalTitle">Auswertungslogik — NELION Friction Scan</div>
+      <button class="meth-modal-close" onclick="closeMethModal()" aria-label="Schliessen">&times;</button>
+    </div>
+    <div class="meth-modal-body">
+      <h3>1 · Datenquellen &amp; Triangulation (Denzin, 1970)</h3>
+      <div class="meth-quote">Ein einzelner Datenpunkt ist ein Gerücht. Drei unabhängige Quellen die auf dieselbe Hypothese zeigen = bestätigter Befund.</div>
+      <p><strong>Evidenzstufen:</strong></p>
+      <ul>
+        <li><code>★★★</code> = 3 Quellen konvergieren → Befund</li>
+        <li><code>★★☆</code> = 2 Quellen konvergieren → starke Hypothese</li>
+        <li><code>★☆☆</code> = 1 Quelle → schwache Hypothese, nicht als Diagnose verwenden</li>
+      </ul>
+
+      <h3>2 · Scoring &amp; Ampeln</h3>
+      <p>Achsen-Score: <code>1–10</code> (intern). Ampel: <code>7–10 grün</code> / <code>4–6 gelb</code> / <code>1–3 rot</code>.</p>
+      <p><strong>Layer-Ampel: Gate-Logik (kein Durchschnitt).</strong> Der schwächste Achsen-Wert bestimmt den Layer. Begründung: L1 rot = Gate. Keine L3-Intervention solange Biologische Kapazität nicht stabilisiert.</p>
+
+      <h3>3 · Divergenz-Typen</h3>
+      <ul>
+        <li><strong>Perception Gap:</strong> CEO grün, Operativ rot → L3-Signal, kein geteiltes Modell</li>
+        <li><strong>Social Desirability:</strong> Survey besser als Interviews → Interview schlägt Survey, neu gewichten</li>
+        <li><strong>Ambiguity Confirmed:</strong> Alle Rollen divergent → L3 Strukturelle Ambiguität bestätigt</li>
+      </ul>
+
+      <h3>4 · Option C (geparkt)</h3>
+      <p>Tally API Pull (<code>GET /forms/{formId}/submissions</code>) für automatischen Daten-Abgleich ohne Webhook. Nicht aktiv — nach Gate 1 evaluieren.</p>
+    </div>
+    <div class="meth-modal-footer">
+      <button class="btn btn-ghost" onclick="closeMethModal()">Schliessen</button>
+    </div>
   </div>
 </div>
 
@@ -6809,9 +7044,14 @@ async function initAuswertungTab() {
 
   // Rendere Scan-Picker + Sektionen
   $el.innerHTML = `
-    <div style="margin-bottom:18px;">
-      <div class="start-title" style="margin-bottom:4px;">Auswertung</div>
-      <div class="start-desc">Interne Arbeitsansicht. Heatmap, Friction-Points und Befund-Entwurf pro Scan.</div>
+    <div class="surv-tab-header">
+      <div>
+        <div class="start-title" style="margin-bottom:4px;">Auswertung</div>
+        <div class="start-desc">Interne Arbeitsansicht. Survey-Daten, Heatmap, Friction-Points und Befund-Entwurf pro Scan.</div>
+      </div>
+      <button class="surv-info-btn" onclick="openMethModal()" title="Auswertungslogik" aria-label="Methodologie öffnen">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M8 7.2 v4.3" stroke-width="1.6"/><circle cx="8" cy="4.7" r="0.75" fill="currentColor" stroke="none"/></svg>
+      </button>
     </div>
     <div class="aus-scan-picker">
       <label class="form-label" style="margin:0;white-space:nowrap;">Scan:</label>
@@ -6882,6 +7122,12 @@ async function loadAuswertungForScan(scan) {
     currentAuswertung = null;
   }
 
+  // Konfidenz aus friction_points.konfidenz laden
+  survLoadKonfidenzFromAuswertung();
+
+  // 3. Tally-Submissions fuer diese Auswertung laden
+  await loadTallySubmissionsForAuswertung();
+
   // Render
   $body.innerHTML = renderAuswertungBody();
   wireAuswertungAutoSave();
@@ -6914,6 +7160,508 @@ async function loadAuswertungForScan(scan) {
   }
 }
 
+// ══════════════════════════════════════════════════════════════════════════
+// SURVEY PIPELINE — Tally → Heatmap × Rollen → Divergenz → Routing
+// ══════════════════════════════════════════════════════════════════════════
+//
+// Datenquelle: tally_submissions (siehe migration 012). Webhook im Server
+// normalisiert F1–F12 auf NELION-Achsen + berechnet Score (1–10) + Ampel
+// pro Achse. Hier aggregieren wir pro Auswertung über die Respondenten
+// (CEO / FK / Operativ) und triangulieren (Denzin, 1970).
+
+// Spiegel des Server-Mappings — F-Nummer → AMPEL_AXES-Eintrag
+const TALLY_F_TO_AXIS = {
+  F1:  { layer: "L1",  achse: "Allostatic Load" },
+  F2:  { layer: "L1",  achse: "Energie-Status" },
+  F3:  { layer: "L1b", achse: "Anforderungs-Ressourcen-Ungleichgewicht" },
+  F4:  { layer: "L1b", achse: "Erholungsstruktur" },
+  F5:  { layer: "L2",  achse: "Psychological Safety" },
+  F6:  { layer: "L2",  achse: "Immunity-Muster" },
+  F7:  { layer: "L2",  achse: "Attribution Style" },
+  F8:  { layer: "L2",  achse: "Threat-State" },
+  F9:  { layer: "L3",  achse: "Entscheidungsarchitektur" },
+  F10: { layer: "L3",  achse: "Incentive-Struktur" },
+  F11: { layer: "L3",  achse: "Strukturelle Ambiguität" },
+  F12: { layer: "L3",  achse: "Informationsfluss" },
+};
+
+const SURV_ROLLEN_ORDER = ["CEO", "FK", "Operativ"];
+
+// Aktive Survey-Daten der Auswertung
+let currentTallySubmissions = [];   // [{ id, respondent_rolle, scores, ampeln, ... }]
+let currentTallyUnassigned  = [];   // pool der nicht zugewiesenen submissions
+let auswertungKonfidenz     = {};   // { "<layer>_<achse>": 1|2|3 } — manuelle Konfidenz-Hochstufung
+
+function survAmpelFromScore(score) {
+  if (score == null || isNaN(score)) return "grau";
+  if (score >= 7) return "gruen";
+  if (score >= 4) return "gelb";
+  return "rot";
+}
+
+// schwachster Wert dominiert: rot < gelb < gruen < grau
+function survWorstAmpel(values) {
+  const order = { rot: 0, gelb: 1, gruen: 2, grau: 3 };
+  let worst = "grau";
+  for (const v of values) {
+    if (v == null) continue;
+    if (order[v] < order[worst]) worst = v;
+  }
+  return worst;
+}
+
+// Layer-Ampel via Gate-Logik:
+// L1a rot wenn MIN(F1,F2) ≤ 3, L1b rot wenn MIN(F3,F4) ≤ 3, L1 rot wenn L1a oder L1b rot
+function survComputeLayerAmpel(layer, axisAmpeln) {
+  // axisAmpeln: { "<layer>_<achse>": "rot"|"gelb"|"gruen"|"grau" }
+  const axes = AMPEL_AXES[layer] || [];
+  const values = axes.map(a => axisAmpeln[`${layer}_${a}`]).filter(Boolean);
+  if (values.length === 0) return "grau";
+  return survWorstAmpel(values);
+}
+
+// L1-Gesamt = worst(L1a, L1b)
+function survComputeL1Combined(axisAmpeln) {
+  return survWorstAmpel([
+    survComputeLayerAmpel("L1",  axisAmpeln),
+    survComputeLayerAmpel("L1b", axisAmpeln),
+  ]);
+}
+
+// Submission-Ampel pro layer/achse fuer Anzeige in der Heatmap
+function survAmpelByRolle(rolle, layer, achse) {
+  const subs = currentTallySubmissions.filter(s => s.respondent_rolle === rolle);
+  if (subs.length === 0) return "grau";
+  // Falls mehrere Submissions pro Rolle: schlechtester Wert dominiert (Gate-Logik konsistent).
+  const ampeln = subs.map(s => {
+    const axisLookup = survAxisFromAmpeln(s);
+    return axisLookup[`${layer}_${achse}`] || "grau";
+  });
+  return survWorstAmpel(ampeln);
+}
+
+// Konvertiert s.ampeln (F1..F12) in axisLookup ("<layer>_<achse>")
+function survAxisFromAmpeln(submission) {
+  const out = {};
+  if (!submission || !submission.ampeln) return out;
+  for (const [fKey, ampel] of Object.entries(submission.ampeln)) {
+    const axis = TALLY_F_TO_AXIS[fKey];
+    if (!axis) continue;
+    out[`${axis.layer}_${axis.achse}`] = ampel;
+  }
+  return out;
+}
+
+// Durchschnitts-Ampel ueber alle Respondenten pro Achse — schwachster Wert
+function survAmpelAverage(layer, achse) {
+  const ampeln = SURV_ROLLEN_ORDER.map(r => survAmpelByRolle(r, layer, achse))
+    .filter(v => v !== "grau");
+  if (ampeln.length === 0) return "grau";
+  return survWorstAmpel(ampeln);
+}
+
+// Konfidenz-Stufe: wieviele unabhaengige Quellen liefern Daten?
+// Initial: 1 (Survey) wenn >0 Submissions. Manuell hochstufbar.
+function survKonfidenzFor(layer, achse) {
+  const key = `${layer}_${achse}`;
+  if (auswertungKonfidenz[key]) return auswertungKonfidenz[key];
+  const hasSurvey = SURV_ROLLEN_ORDER.some(r => survAmpelByRolle(r, layer, achse) !== "grau");
+  return hasSurvey ? 1 : 0;
+}
+
+function survKonfidenzStars(level) {
+  if (level >= 3) return "★★★";
+  if (level >= 2) return "★★☆";
+  if (level >= 1) return "★☆☆";
+  return "☆☆☆";
+}
+
+// ── DATEN LADEN ───────────────────────────────────────────────────────────
+async function loadTallySubmissionsForAuswertung() {
+  currentTallySubmissions = [];
+  currentTallyUnassigned  = [];
+  if (!currentAuswertung || !currentAuswertung.id) return;
+
+  try {
+    const r = await fetch(`/api/tally/submissions/${currentAuswertung.id}`);
+    if (r.ok) currentTallySubmissions = await r.json();
+  } catch (e) { console.warn("Tally submissions load:", e.message); }
+
+  try {
+    const r = await fetch(`/api/tally/submissions/unassigned`);
+    if (r.ok) currentTallyUnassigned = await r.json();
+  } catch (e) { console.warn("Tally unassigned load:", e.message); }
+}
+
+// Konfidenz wird in friction_points.konfidenz gespeichert (existing JSONB-Feld)
+function survLoadKonfidenzFromAuswertung() {
+  auswertungKonfidenz = (currentAuswertung
+    && currentAuswertung.friction_points
+    && currentAuswertung.friction_points.konfidenz) || {};
+}
+
+// ── BEREICH A: DATENEINGANG ───────────────────────────────────────────────
+function renderSurveyDataInput() {
+  const subs = currentTallySubmissions;
+  const unassigned = currentTallyUnassigned;
+
+  let body = `
+    <div class="surv-section" id="survSectionA">
+      <div class="surv-section-title">A · Dateneingang</div>
+      <div class="surv-section-sub">Tally-Submissions für diese Auswertung. Rolle automatisch erkannt — manuell überschreibbar.</div>
+      <div class="surv-toolbar">
+        <div style="font-size:12px;color:var(--ink-mute);">${subs.length} Submission${subs.length === 1 ? "" : "s"} zugeordnet · ${unassigned.length} im Pool</div>
+        <button class="btn btn-ghost btn-sm" onclick="reloadSurveyData()">Submissions neu laden</button>
+      </div>
+  `;
+
+  if (!currentAuswertung || !currentAuswertung.id) {
+    body += `<div class="surv-empty">Auswertung wurde noch nicht gespeichert. Setze unten einen Wert (z.B. eine Heatmap-Ampel oder ein Befund-Feld) — dann kannst du Submissions zuordnen.</div></div>`;
+    return body;
+  }
+
+  if (subs.length === 0 && unassigned.length === 0) {
+    body += `<div class="surv-empty">Keine Tally-Submissions vorhanden. Webhook-URL für Tally: <code>https://nelion-app.onrender.com/webhook/tally</code></div></div>`;
+    return body;
+  }
+
+  if (subs.length > 0) {
+    body += `<table class="surv-sub-table">
+      <thead><tr>
+        <th style="width:30%;">Rolle</th>
+        <th style="width:30%;">Eingegangen</th>
+        <th style="width:20%;">Status</th>
+        <th style="width:20%;">Aktion</th>
+      </tr></thead>
+      <tbody>`;
+    for (const s of subs) {
+      const dt = new Date(s.eingegangen_am).toLocaleString("de-CH",
+        { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" });
+      body += `<tr>
+        <td>
+          <select class="form-input" data-sub-id="${escHtml(s.id)}" onchange="onSurveySubmissionRolleChange(this)">
+            <option value="CEO"       ${s.respondent_rolle === "CEO" ? "selected" : ""}>CEO</option>
+            <option value="FK"        ${s.respondent_rolle === "FK" ? "selected" : ""}>Führungskraft</option>
+            <option value="Operativ"  ${s.respondent_rolle === "Operativ" ? "selected" : ""}>Operativ</option>
+            <option value="unbekannt" ${s.respondent_rolle === "unbekannt" ? "selected" : ""}>unbekannt</option>
+          </select>
+        </td>
+        <td>${escHtml(dt)}</td>
+        <td><span class="surv-sub-status assigned">zugeordnet</span></td>
+        <td><button class="btn btn-ghost btn-sm" onclick="onSurveySubmissionUnassign('${escHtml(s.id)}')">Lösen</button></td>
+      </tr>`;
+    }
+    body += `</tbody></table>`;
+  }
+
+  if (unassigned.length > 0) {
+    body += `<div style="margin-top:14px;">
+      <div style="font-size:11px;color:var(--ink-mute);font-family:var(--mono);letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px;">Pool (${unassigned.length})</div>
+      <table class="surv-sub-table"><tbody>`;
+    for (const s of unassigned) {
+      const dt = new Date(s.eingegangen_am).toLocaleString("de-CH",
+        { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" });
+      body += `<tr>
+        <td style="width:30%;">${escHtml(s.respondent_rolle || "unbekannt")}</td>
+        <td style="width:30%;">${escHtml(dt)}</td>
+        <td style="width:20%;"><span class="surv-sub-status unassigned">offen</span></td>
+        <td style="width:20%;"><button class="btn btn-primary btn-sm" onclick="onSurveySubmissionAssign('${escHtml(s.id)}')">Zuordnen</button></td>
+      </tr>`;
+    }
+    body += `</tbody></table></div>`;
+  }
+  body += `</div>`;
+  return body;
+}
+
+async function reloadSurveyData() {
+  await loadTallySubmissionsForAuswertung();
+  rerenderSurveySections();
+}
+
+async function onSurveySubmissionRolleChange(sel) {
+  const id = sel.dataset.subId;
+  const rolle = sel.value;
+  try {
+    const r = await fetch(`/api/tally/submissions/${id}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ respondent_rolle: rolle }),
+    });
+    if (r.ok) {
+      const sub = currentTallySubmissions.find(s => s.id === id);
+      if (sub) sub.respondent_rolle = rolle;
+      rerenderSurveySections();
+    }
+  } catch (e) { console.warn("Rolle-Update:", e.message); }
+}
+
+async function onSurveySubmissionAssign(id) {
+  if (!currentAuswertung || !currentAuswertung.id) return;
+  try {
+    const r = await fetch(`/api/tally/submissions/${id}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ auswertung_id: currentAuswertung.id }),
+    });
+    if (r.ok) await reloadSurveyData();
+  } catch (e) { console.warn("Submission assign:", e.message); }
+}
+
+async function onSurveySubmissionUnassign(id) {
+  try {
+    const r = await fetch(`/api/tally/submissions/${id}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ auswertung_id: null }),
+    });
+    if (r.ok) await reloadSurveyData();
+  } catch (e) { console.warn("Submission unassign:", e.message); }
+}
+
+// ── BEREICH B: FRICTION HEATMAP (Achse × Rolle) ───────────────────────────
+function renderSurveyHeatmap() {
+  let body = `
+    <div class="surv-section" id="survSectionB">
+      <div class="surv-section-title">B · Friction Heatmap (Survey)</div>
+      <div class="surv-section-sub">12 Achsen × 3 Respondenten. Layer-Ampel via Gate-Logik (schwächster Wert dominiert, kein Mittelwert).</div>
+  `;
+  if (currentTallySubmissions.length === 0) {
+    body += `<div class="surv-empty">Keine zugeordneten Submissions — Heatmap leer.</div></div>`;
+    return body;
+  }
+
+  body += `<table class="surv-heatmap-table">
+    <thead><tr>
+      <th>Achse</th><th>L</th><th>CEO</th><th>FK</th><th>Operativ</th><th>Ø</th><th>Konfidenz</th>
+    </tr></thead><tbody>`;
+
+  // axisAmpeln-Lookup fuer Layer-Gate
+  const axisLookup = {};
+  for (const layer of Object.keys(AMPEL_AXES)) {
+    for (const achse of AMPEL_AXES[layer]) {
+      axisLookup[`${layer}_${achse}`] = survAmpelAverage(layer, achse);
+    }
+  }
+
+  const layerOrder = ["L1", "L1b", "L2", "L3"];
+  for (const layer of layerOrder) {
+    const axes = AMPEL_AXES[layer] || [];
+    for (const achse of axes) {
+      const ceo = survAmpelByRolle("CEO", layer, achse);
+      const fk  = survAmpelByRolle("FK", layer, achse);
+      const op  = survAmpelByRolle("Operativ", layer, achse);
+      const avg = survAmpelAverage(layer, achse);
+      const konf = survKonfidenzFor(layer, achse);
+      body += `<tr>
+        <td>${escHtml(axisLabel(achse))}</td>
+        <td>${escHtml(layer)}</td>
+        <td><span class="surv-dot ${ceo}"></span></td>
+        <td><span class="surv-dot ${fk}"></span></td>
+        <td><span class="surv-dot ${op}"></span></td>
+        <td><span class="surv-dot ${avg}"></span></td>
+        <td><span class="surv-konfidenz" data-konf-key="${escHtml(layer + '_' + achse)}" onclick="onSurveyKonfidenzClick(this)" title="Klick erhöht (1→2→3→1)">${escHtml(survKonfidenzStars(konf))}</span></td>
+      </tr>`;
+    }
+    // Layer-Gesamtzeile
+    const layerLabelText = layer === "L1" ? "L1a" : layer;
+    const layerAmpel = survComputeLayerAmpel(layer, axisLookup);
+    body += `<tr class="surv-heatmap-layer-row">
+      <td colspan="5">${escHtml(layerLabelText)} — Gate (schwächster Wert dominiert)</td>
+      <td><span class="surv-dot ${layerAmpel}"></span></td>
+      <td></td>
+    </tr>`;
+  }
+  body += `</tbody></table></div>`;
+  return body;
+}
+
+function onSurveyKonfidenzClick(el) {
+  const key = el.dataset.konfKey;
+  const cur = auswertungKonfidenz[key] || 1;
+  const next = cur >= 3 ? 1 : cur + 1;
+  auswertungKonfidenz[key] = next;
+  el.textContent = survKonfidenzStars(next);
+  scheduleAuswertungSave();
+}
+
+// ── BEREICH C: DIVERGENZ-PANEL ───────────────────────────────────────────
+function renderSurveyDivergenz() {
+  let body = `
+    <div class="surv-section" id="survSectionC">
+      <div class="surv-section-title">C · Divergenz</div>
+      <div class="surv-section-sub">Achsen mit divergenten Ampeln über die Rollen. Automatisch erkannt.</div>
+  `;
+  if (currentTallySubmissions.length === 0) {
+    body += `<div class="surv-empty">Keine Submissions — keine Divergenz-Analyse möglich.</div></div>`;
+    return body;
+  }
+
+  const cards = [];
+  for (const layer of Object.keys(AMPEL_AXES)) {
+    for (const achse of AMPEL_AXES[layer]) {
+      const ceo = survAmpelByRolle("CEO", layer, achse);
+      const fk  = survAmpelByRolle("FK", layer, achse);
+      const op  = survAmpelByRolle("Operativ", layer, achse);
+      // Falls eine Rolle keine Daten hat: ignorieren
+      const provided = [ceo, fk, op].filter(v => v !== "grau");
+      if (provided.length < 2) continue;
+      const distinct = new Set(provided);
+      if (distinct.size <= 1) continue; // keine Divergenz
+
+      // Typ-Detektion
+      let type = null, label = null, explain = null, recom = null;
+      if (ceo === "gruen" && op === "rot") {
+        type = "perception";
+        label = "Perception Gap";
+        explain = "CEO sieht grün, Operativ sieht rot. Kein geteiltes Modell der Realität.";
+        recom = "L3-Signal — Interview priorisieren, Strukturelle Ambiguität prüfen.";
+      } else if (distinct.size >= 3) {
+        type = "ambiguity";
+        label = "Ambiguity Confirmed";
+        explain = "Alle drei Rollen haben unterschiedliche Wahrnehmung.";
+        recom = "L3 Strukturelle Ambiguität bestätigt — Rollen-/Verantwortungsmatrix prüfen.";
+      } else {
+        // Social desirability: Survey-Werte tendenziell besser als Tendenz
+        // Heuristik: alle Survey-Werte sind grün oder gelb, aber durchschnittliche Tendenz ist rot
+        type = "social";
+        label = "Social Desirability";
+        explain = "Divergenz ohne klares Pattern — Survey könnte beschönigt sein.";
+        recom = "Interview priorisieren, Survey-Werte neu gewichten.";
+      }
+
+      cards.push({ layer, achse, type, label, explain, recom });
+    }
+  }
+
+  if (cards.length === 0) {
+    body += `<div class="surv-empty">Keine Divergenz erkannt — Wahrnehmung der Rollen konvergiert.</div></div>`;
+    return body;
+  }
+
+  for (const c of cards) {
+    body += `<div class="surv-divergenz-card">
+      <div class="surv-divergenz-head">
+        <div>
+          <span class="surv-divergenz-axis">${escHtml(axisLabel(c.achse))}</span>
+          <span style="font-family:var(--mono);font-size:10px;color:var(--ink-mute);margin-left:6px;">${escHtml(c.layer)}</span>
+        </div>
+        <span class="surv-divergenz-type ${c.type}">${escHtml(c.label)}</span>
+      </div>
+      <div class="surv-divergenz-explain">${escHtml(c.explain)}</div>
+      <div class="surv-divergenz-recom"><strong>Empfehlung:</strong> ${escHtml(c.recom)}</div>
+    </div>`;
+  }
+  body += `</div>`;
+  return body;
+}
+
+// ── BEREICH D: ROUTING ────────────────────────────────────────────────────
+function renderSurveyRouting() {
+  let body = `
+    <div class="surv-section" id="survSectionD">
+      <div class="surv-section-title">D · Routing-Empfehlung (Survey)</div>
+      <div class="surv-section-sub">Layer-Ampeln via Gate-Logik. Routing nach Regime-Tabelle.</div>
+  `;
+  if (currentTallySubmissions.length === 0) {
+    body += `<div class="surv-empty">Keine Submissions — kein Routing berechenbar.</div></div>`;
+    return body;
+  }
+
+  // axisAmpeln aggregiert
+  const axisLookup = {};
+  for (const layer of Object.keys(AMPEL_AXES)) {
+    for (const achse of AMPEL_AXES[layer]) {
+      axisLookup[`${layer}_${achse}`] = survAmpelAverage(layer, achse);
+    }
+  }
+  const l1 = survComputeL1Combined(axisLookup);
+  const l2 = survComputeLayerAmpel("L2", axisLookup);
+  const l3 = survComputeLayerAmpel("L3", axisLookup);
+  const l2ImmunityRot = axisLookup["L2_Immunity-Muster"] === "rot";
+
+  // Routing-Regel
+  let regimeText = "—";
+  if (l1 === "rot") {
+    regimeText = "<strong>Regime 3:</strong> Stabilisierung zuerst. Keine L3-Intervention.";
+  } else if (l3 === "rot" && l2ImmunityRot) {
+    regimeText = "<strong>Regime 2b:</strong> L2 benennen, dann L3 formalisieren.";
+  } else if (l1 === "gelb" && l2 === "rot") {
+    regimeText = "<strong>Regime 2:</strong> L2 vor L3.";
+  } else if (l3 === "rot") {
+    regimeText = "<strong>Regime 1:</strong> Strukturoptimierung.";
+  } else if (l2 === "rot") {
+    regimeText = "<strong>Regime 2:</strong> L2 priorisieren.";
+  } else {
+    regimeText = "Noch nicht genug rote Ampeln für eine eindeutige Routing-Empfehlung.";
+  }
+
+  // Konfidenz-Gesamt: max der Konfidenz ueber die nicht-grauen Achsen
+  const allKonf = [];
+  for (const layer of Object.keys(AMPEL_AXES)) {
+    for (const achse of AMPEL_AXES[layer]) {
+      const k = survKonfidenzFor(layer, achse);
+      if (k > 0) allKonf.push(k);
+    }
+  }
+  const avgKonf = allKonf.length > 0
+    ? Math.round(allKonf.reduce((a, b) => a + b, 0) / allKonf.length)
+    : 0;
+  const konfText = avgKonf >= 3 ? "★★★ — 3 Quellen konvergieren → Befund"
+                  : avgKonf >= 2 ? "★★☆ — 2 Quellen → starke Hypothese"
+                  : avgKonf >= 1 ? "★☆☆ — 1 Quelle (Survey) → schwache Hypothese, nicht als Diagnose verwenden"
+                  : "Keine Konfidenz berechenbar.";
+
+  body += `<div class="surv-routing-grid">
+    <div class="surv-routing-cell">
+      <div class="surv-routing-cell-label">L1 (Biologie)</div>
+      <div class="surv-routing-cell-dot ${l1}"></div>
+      <div class="surv-routing-cell-status">${escHtml(l1.toUpperCase())}</div>
+    </div>
+    <div class="surv-routing-cell">
+      <div class="surv-routing-cell-label">L2 (Psychologie)</div>
+      <div class="surv-routing-cell-dot ${l2}"></div>
+      <div class="surv-routing-cell-status">${escHtml(l2.toUpperCase())}</div>
+    </div>
+    <div class="surv-routing-cell">
+      <div class="surv-routing-cell-label">L3 (Struktur)</div>
+      <div class="surv-routing-cell-dot ${l3}"></div>
+      <div class="surv-routing-cell-status">${escHtml(l3.toUpperCase())}</div>
+    </div>
+  </div>
+  <div class="surv-routing-recom">${regimeText}</div>
+  <div class="surv-routing-konfidenz"><strong>Gesamt-Konfidenz:</strong> ${escHtml(konfText)}</div>
+  </div>`;
+  return body;
+}
+
+function rerenderSurveySections() {
+  // Nur die 4 Survey-Sektionen aktualisieren — bestehende Heatmap/Friction/Befund unangetastet
+  const $a = document.getElementById("survSectionA");
+  const $b = document.getElementById("survSectionB");
+  const $c = document.getElementById("survSectionC");
+  const $d = document.getElementById("survSectionD");
+  if ($a) $a.outerHTML = renderSurveyDataInput();
+  if ($b) $b.outerHTML = renderSurveyHeatmap();
+  if ($c) $c.outerHTML = renderSurveyDivergenz();
+  if ($d) $d.outerHTML = renderSurveyRouting();
+}
+
+// ── METHODOLOGIE-MODAL ────────────────────────────────────────────────────
+function openMethModal() {
+  const ov = document.getElementById("methModalOverlay");
+  if (ov) ov.classList.add("open");
+}
+function closeMethModal() {
+  const ov = document.getElementById("methModalOverlay");
+  if (ov) ov.classList.remove("open");
+}
+
+// ESC schliesst das Modal
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    const ov = document.getElementById("methModalOverlay");
+    if (ov && ov.classList.contains("open")) closeMethModal();
+  }
+});
+
 // ── BESTE AMPEL-PHASE ERMITTELN ───────────────────────────────────────────
 // Priorität: final > interview > survey. Fallback = grau.
 function getBestAmpel(layer, achse) {
@@ -6926,9 +7674,13 @@ function getBestAmpel(layer, achse) {
   return "grau";
 }
 
-// ── RENDER BODY (3 Sektionen) ─────────────────────────────────────────────
+// ── RENDER BODY (4 Survey-Sektionen + 3 manuelle Sektionen) ───────────────
 function renderAuswertungBody() {
   return [
+    renderSurveyDataInput(),
+    renderSurveyHeatmap(),
+    renderSurveyDivergenz(),
+    renderSurveyRouting(),
     renderAuswertungHeatmap(),
     renderAuswertungFrictionPoints(),
     renderAuswertungBefund(),
@@ -7165,6 +7917,7 @@ async function saveAuswertungNow() {
     friction_points: {
       overrides: auswertungFrictionOverrides,
       notes: auswertungFrictionNotes,
+      konfidenz: auswertungKonfidenz,
     },
     befund_entwurf: auswertungBefund,
     routing_empfehlung: `${routing.regime} — ${routing.text}`,
