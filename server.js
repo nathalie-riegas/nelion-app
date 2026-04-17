@@ -886,7 +886,11 @@ app.post("/api/pai/sessions", async (req, res) => {
 
 app.patch("/api/pai/sessions/:id", async (req, res) => {
   if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
-  const allowed = ["person_name", "person_rolle", "status", "current_phase"];
+  const allowed = [
+    "person_name", "person_rolle", "status", "current_phase",
+    // PAI Umbau 2026-04-17 — Phase 2/4 Felder auf pai_sessions
+    "pai_transkript_analyse", "pai_abschluss_ampeln", "pai_next_session",
+  ];
   const updates = {};
   for (const key of allowed) {
     if (req.body[key] !== undefined) updates[key] = req.body[key];
