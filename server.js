@@ -482,6 +482,78 @@ app.get("/api/consultations/:id", async (req, res) => {
   res.json(data);
 });
 
+// Regime einer Consultation (Quick-Access für Friction-Scan-Banner).
+// Gibt { regime: "1"|"2"|"2b"|"3"|null } zurück. Graceful fallback falls
+// hyp_regime-Spalte nicht migriert ist (Migration 013_consultations_hyp.sql).
+app.get("/api/consultations/:id/regime", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { data, error } = await supabase
+    .from("consultations")
+    .select("hyp_regime")
+    .eq("id", req.params.id)
+    .maybeSingle();
+  if (error) {
+    if (/hyp_regime/.test(error.message || "")) {
+      return res.json({ regime: null });
+    }
+    return res.status(500).json({ error: error.message });
+  }
+  res.json({ regime: (data && data.hyp_regime) || null });
+});
+
+// Convenience: findet die neueste Consultation für den Klient eines Scans
+// via Name-Matching (scans.kunde_name → contacts.name → consultations).
+// Rückgabe: { consultation_id, regime, consultation_date } oder { regime: null }.
+// Keine FK-Spalte auf scans nötig — Name-Match genügt für den Banner-Use-Case.
+app.get("/api/scans/:id/linked-regime", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  try {
+    // 1. Scan laden → kunde_name holen
+    const scanRes = await supabase
+      .from("scans")
+      .select("kunde_name")
+      .eq("id", req.params.id)
+      .maybeSingle();
+    if (scanRes.error || !scanRes.data) return res.json({ regime: null });
+    const kundeName = (scanRes.data.kunde_name || "").trim();
+    if (!kundeName) return res.json({ regime: null });
+
+    // 2. Contact mit diesem Namen finden (case-insensitive, exact match)
+    const contactRes = await supabase
+      .from("contacts")
+      .select("id")
+      .ilike("name", kundeName)
+      .limit(1);
+    if (contactRes.error || !contactRes.data || contactRes.data.length === 0) {
+      return res.json({ regime: null });
+    }
+    const contactId = contactRes.data[0].id;
+
+    // 3. Neueste Consultation für diesen Contact → hyp_regime
+    const consRes = await supabase
+      .from("consultations")
+      .select("id, consultation_date, hyp_regime")
+      .eq("contact_id", contactId)
+      .order("consultation_date", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(1);
+    if (consRes.error) {
+      // hyp_regime Spalte fehlt evtl. — retry ohne
+      if (/hyp_regime/.test(consRes.error.message || "")) return res.json({ regime: null });
+      return res.json({ regime: null });
+    }
+    if (!consRes.data || consRes.data.length === 0) return res.json({ regime: null });
+    const c = consRes.data[0];
+    res.json({
+      regime: c.hyp_regime || null,
+      consultation_id: c.id,
+      consultation_date: c.consultation_date,
+    });
+  } catch (e) {
+    res.json({ regime: null, error: e.message });
+  }
+});
+
 app.patch("/api/consultations/:id", async (req, res) => {
   if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
   const allowed = [

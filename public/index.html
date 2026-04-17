@@ -2560,6 +2560,39 @@
     font-weight: 500;
   }
 
+  /* Regime-Banner: Hinweis im Friction Scan Tab wenn im Erstgespräch
+     ein Regime gespeichert wurde. 4 Farbvarianten (r1/r2/r2b/r3). */
+  .regime-banner {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 10px 14px; margin-bottom: 16px;
+    border: 1px solid; border-left-width: 4px;
+    border-radius: var(--rs);
+    font-size: 13px; line-height: 1.5;
+  }
+  .regime-banner-r1 {
+    background: #eaf2f8; border-color: #3498db; color: #1d6fa5;
+  }
+  .regime-banner-r2 {
+    background: var(--yellow-bg); border-color: var(--yellow); color: #8a6d0f;
+  }
+  .regime-banner-r2b {
+    background: #fff2e0; border-color: #e67e22; color: #8a4b0f;
+  }
+  .regime-banner-r3 {
+    background: var(--red-bg); border-color: var(--red); color: var(--red);
+  }
+  .regime-banner-icon { font-size: 16px; flex-shrink: 0; line-height: 1.3; }
+  .regime-banner-body { flex: 1; min-width: 0; }
+  .regime-banner-label { font-weight: 600; }
+  .regime-banner-text { color: inherit; opacity: 0.9; }
+  .regime-banner-close {
+    background: none; border: none; cursor: pointer;
+    color: inherit; opacity: 0.6; font-size: 18px;
+    line-height: 1; padding: 2px 6px; border-radius: 3px;
+    flex-shrink: 0; transition: opacity .15s, background .15s;
+  }
+  .regime-banner-close:hover { opacity: 1; background: rgba(0,0,0,0.06); }
+
   /* Kaskaden-Simulation (interaktiver Stepper) */
   .sim-wrap { display: flex; flex-direction: column; gap: 12px; }
   .sim-step {
@@ -2613,37 +2646,6 @@
     display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;
   }
 
-  /* Kaskaden-Flowchart (ASCII-Style) — DEPRECATED, Simulation ersetzt dies */
-  .kaskaden-flowchart {
-    font-family: var(--mono); font-size: 12px; line-height: 1.4;
-    background: var(--surface2); padding: 14px;
-    border-radius: var(--rs); color: var(--ink);
-    overflow-x: auto;
-  }
-  .kflow-node {
-    display: inline-block; padding: 6px 10px;
-    background: var(--surface); border: 1px solid var(--border2);
-    border-radius: 4px; margin: 2px 0;
-    font-size: 11px; line-height: 1.35;
-  }
-  .kflow-node.kflow-start {
-    background: var(--ada-bg); border-color: var(--ada-accent);
-    color: var(--ada-accent); font-weight: 500;
-  }
-  .kflow-node.kflow-r1 { background: #eaf2f8; border-color: #3498db; color: #1d6fa5; }
-  .kflow-node.kflow-r2 { background: var(--yellow-bg); border-color: var(--yellow); color: #8a6d0f; }
-  .kflow-node.kflow-r2b { background: #f5eef8; border-color: #8e44ad; color: #5d2e7a; }
-  .kflow-node.kflow-r3 { background: var(--red-bg); border-color: var(--red); color: var(--red); }
-  .kflow-node.kflow-check { background: var(--surface); border-style: dashed; }
-  .kflow-sub { font-size: 10px; color: inherit; opacity: 0.85; }
-  .kflow-branches { padding-left: 10px; margin-top: 6px; }
-  .kflow-branch { margin-bottom: 8px; }
-  .kflow-arrow { color: var(--ink-mute); margin-bottom: 2px; }
-  .kflow-arrow-sm { color: var(--ink-mute); font-size: 11px; }
-  .kflow-sub-branch { padding-left: 16px; }
-  .kflow-sub-branches { padding-left: 16px; margin-top: 4px; }
-  .kflow-sub-item { margin-bottom: 4px; }
-
   .feature-btn {
     padding: 8px 14px; border: 1px solid var(--border2); border-radius: var(--rs);
     background: var(--surface); color: var(--ink-mid); font-family: var(--mono);
@@ -2680,28 +2682,6 @@
     font-size: 13px; color: #8a6d0f; line-height: 1.45;
   }
   .clt-obs-warn.show { display: block; }
-  .clt-row {
-    display: flex; align-items: center; gap: 12px; padding: 8px 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .clt-row:last-of-type { border-bottom: none; }
-  .clt-label { flex: 1; font-size: 13px; color: var(--ink); }
-  .clt-input {
-    width: 70px; border: 1px solid var(--border2); border-radius: var(--rs);
-    padding: 6px 8px; font-size: 13px; text-align: center; outline: none;
-  }
-  .clt-input:focus { border-color: var(--ada-accent); }
-  .clt-ampel {
-    width: 24px; height: 24px; border-radius: 50%; background: #ddd;
-    flex-shrink: 0;
-  }
-  .clt-ampel.gruen { background: var(--green); }
-  .clt-ampel.gelb { background: var(--yellow); }
-  .clt-ampel.rot { background: var(--red); }
-  .clt-result {
-    display: flex; align-items: center; gap: 10px; padding: 12px 0;
-    font-weight: 500; font-size: 14px;
-  }
 
   /* ── KOMPASS-CHECK (Fünf-Kern-Check Modul 2 Phase 5) ─────────────── */
   /* Hinweis: .kompass-panel + .kompass-check-hint wurden mit dem
@@ -4577,6 +4557,7 @@ function renderScanPhase(num) {
       <span class="cockpit-contact-name">${escHtml(currentScan.kunde_name)}</span>
       <span class="cockpit-contact-date">— Friction Scan</span>
     </div>
+    <div id="scanRegimeBannerMount"></div>
     <div class="cockpit-layout">
       <nav class="phase-sidebar">${renderScanPhaseSidebar(num)}</nav>
       <div class="cockpit-content">${content}</div>
@@ -4585,7 +4566,71 @@ function renderScanPhase(num) {
 
   bindScanPhaseEvents(num);
   wireAutoSave();
+  // Regime-Banner oberhalb der Scan-Felder — fetched linked consultation
+  // via Name-Matching. Fire-and-forget; wenn kein Regime, bleibt leer.
+  loadAndRenderScanRegimeBanner();
   window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// ── REGIME-BANNER (aus Erstgespräch in Friction Scan) ─────────────────
+// Zeigt oberhalb der Scan-Felder einen farbigen Banner wenn im
+// Erstgespräch des gleichen Klienten ein Regime gespeichert wurde.
+// Pro Scan-ID gecached per sessionStorage, dismiss-State per localStorage.
+
+const REGIME_BANNER_CONFIG = {
+  "1":  { color: "r1",  icon: "📋", label: "Regime 1",  text: "Strukturoptimierung. L3-Achsen im Fokus." },
+  "2":  { color: "r2",  icon: "⚠️", label: "Regime 2",  text: "L2 vor L3 adressieren. Psychological Safety + Immunity zuerst prüfen." },
+  "2b": { color: "r2b", icon: "⚠️", label: "Regime 2b", text: "L2 benennen, dann L3 formalisieren. Nicht umgekehrt." },
+  "3":  { color: "r3",  icon: "🔴", label: "Regime 3",  text: "L1 stabilisieren zuerst. Keine L3-Intervention bis Biologische Kapazität stabil." },
+};
+
+async function loadAndRenderScanRegimeBanner() {
+  if (!currentScan || !currentScan.id) return;
+  const mount = document.getElementById("scanRegimeBannerMount");
+  if (!mount) return;
+  // Dismiss-Status per Scan
+  try {
+    if (localStorage.getItem(`regime_banner_dismissed_${currentScan.id}`) === "1") {
+      mount.innerHTML = "";
+      return;
+    }
+  } catch {}
+  // Cache nur für die aktuelle Session — damit Änderungen im Erstgespräch
+  // sofort sichtbar werden, cachen wir nicht länger als diese Session.
+  let regimeKey = null;
+  try {
+    const cached = sessionStorage.getItem(`regime_for_scan_${currentScan.id}`);
+    if (cached) regimeKey = cached === "null" ? null : cached;
+  } catch {}
+  if (regimeKey === null) {
+    try {
+      const r = await fetch(`/api/scans/${currentScan.id}/linked-regime`);
+      if (r.ok) {
+        const d = await r.json();
+        regimeKey = d && d.regime ? d.regime : null;
+        try { sessionStorage.setItem(`regime_for_scan_${currentScan.id}`, regimeKey || "null"); } catch {}
+      }
+    } catch (e) { console.warn("Linked regime load failed:", e.message); }
+  }
+  if (!regimeKey) { mount.innerHTML = ""; return; }
+  const cfg = REGIME_BANNER_CONFIG[regimeKey];
+  if (!cfg) { mount.innerHTML = ""; return; }
+  mount.innerHTML = `
+    <div class="regime-banner regime-banner-${cfg.color}">
+      <span class="regime-banner-icon">${cfg.icon}</span>
+      <div class="regime-banner-body">
+        <span class="regime-banner-label">${escHtml(cfg.label)} aus Erstgespräch</span>
+        <span class="regime-banner-text">— ${escHtml(cfg.text)}</span>
+      </div>
+      <button class="regime-banner-close" onclick="dismissScanRegimeBanner('${currentScan.id}')" aria-label="Schliessen" title="Schliessen">×</button>
+    </div>
+  `;
+}
+
+function dismissScanRegimeBanner(scanId) {
+  try { localStorage.setItem(`regime_banner_dismissed_${scanId}`, "1"); } catch {}
+  const mount = document.getElementById("scanRegimeBannerMount");
+  if (mount) mount.innerHTML = "";
 }
 
 async function returnToScanList() {
@@ -5498,48 +5543,6 @@ function toggleDisclosure(contentId, triggerBtn) {
   if (triggerBtn) triggerBtn.classList.toggle("open", open);
 }
 
-function updateClt() {
-  const fokus = parseInt(document.getElementById("cltFokus")?.value);
-  const projekte = parseInt(document.getElementById("cltProjekte")?.value);
-  const meetings = parseInt(document.getElementById("cltMeetings")?.value);
-
-  function ampelClass(val) {
-    if (!val && val !== 0) return "";
-    return val;
-  }
-
-  // F1: Fokus
-  let a1 = "";
-  if (!isNaN(fokus)) { a1 = fokus < 45 ? "rot" : fokus <= 90 ? "gelb" : "gruen"; }
-  const e1 = document.getElementById("cltA1");
-  if (e1) { e1.className = "clt-ampel " + a1; }
-
-  // F2: Projekte
-  let a2 = "";
-  if (!isNaN(projekte)) { a2 = projekte > 3 ? "rot" : projekte >= 2 ? "gelb" : "gruen"; }
-  const e2 = document.getElementById("cltA2");
-  if (e2) { e2.className = "clt-ampel " + a2; }
-
-  // F3: Meetings
-  let a3 = "";
-  if (!isNaN(meetings)) { a3 = meetings > 6 ? "rot" : meetings >= 4 ? "gelb" : "gruen"; }
-  const e3 = document.getElementById("cltA3");
-  if (e3) { e3.className = "clt-ampel " + a3; }
-
-  // Gesamt: schlechteste
-  const vals = [a1, a2, a3].filter(v => v);
-  let gesamt = "";
-  if (vals.length > 0) {
-    if (vals.includes("rot")) gesamt = "rot";
-    else if (vals.includes("gelb")) gesamt = "gelb";
-    else gesamt = "gruen";
-  }
-  const eg = document.getElementById("cltGesamt");
-  const el = document.getElementById("cltGesamtLabel");
-  if (eg) eg.className = "clt-ampel " + gesamt;
-  if (el) el.textContent = gesamt ? (gesamt === "rot" ? "Rot" : gesamt === "gelb" ? "Gelb" : "Grün") : "—";
-}
-
 // ── DIAGNOSTISCHER KOMPASS V2 (Erstgespräch Phase 2) ──
 // Zwei separate Toggle-Blöcke unter einem gemeinsamen Titel:
 //   1. Layer-Signale — 4 Spalten (L1/L2/L3/Cross-Layer) mit je 5 Signalen
@@ -5663,18 +5666,6 @@ function renderKompassLayerSignale() {
     html += `</div></div>`;
   }
   html += `</div>`;
-  return html;
-}
-
-// Platzhalter: die alte Funktion wird durch renderKompassLayerSignale mit
-// integrierten Mini-Toggles ersetzt. Dead code bleibt nicht stehen — diese
-// Stub wird nie mehr aufgerufen (renderDiagnostischerKompassV2 ruft nur noch
-// renderKompassLayerSignale).
-function renderKompassVertiefungsfragen() {
-  let html = "";
-  for (const layer of []) {
-    html += "";
-  }
   return html;
 }
 
@@ -6097,8 +6088,6 @@ async function generateHypothesen() {
   if (btn) { btn.disabled = false; btn.textContent = "Hypothesen neu generieren"; }
 }
 
-// saveHypRegime ersetzt durch saveKaskadenRegime (Simulation-basiert).
-// Die Legacy-Regime-Radio-Cards sind entfernt.
 
 // ── TRANSKRIPT-ANALYSE (ADA-gestützt, Modul 2 Phase 2) ──
 const TRANSKRIPT_ANALYSE_PROMPT = `Du bist NELION Friction Diagnostics.
