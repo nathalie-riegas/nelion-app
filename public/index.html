@@ -284,12 +284,16 @@
   .notes-area::placeholder { color: var(--ink-mute); }
 
   /* ── PHASE SIDEBAR ────────────────────────────────────────────────────── */
-  .cockpit-layout { display: flex; gap: 0; width: 100%; max-width: none; }
+  .cockpit-layout { display: flex; gap: 0; width: 100%; max-width: none; align-items: flex-start; }
   .phase-sidebar {
     width: 200px; min-width: 200px; background: var(--surface);
     border-right: 1px solid var(--border); border-radius: var(--r) 0 0 var(--r);
     padding: 16px 0; display: flex; flex-direction: column; gap: 2px; flex-shrink: 0;
+    position: sticky; top: 16px; align-self: flex-start;
+    max-height: calc(100vh - 32px); overflow-y: auto;
   }
+  .phase-sidebar::-webkit-scrollbar { width: 6px; }
+  .phase-sidebar::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
   .phase-sidebar-label {
     font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em;
     text-transform: uppercase; color: var(--ink-mute); padding: 0 16px 8px;
@@ -313,7 +317,7 @@
   .phase-nav-item.active .phase-nav-dot { border-color: var(--accent); background: var(--accent); color: #fff; }
   .phase-nav-item.done .phase-nav-dot { border-color: var(--green); background: var(--green); color: #fff; }
   .phase-nav-title { flex: 1; min-width: 0; }
-  .cockpit-content { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 20px; padding: 0; }
+  .cockpit-content { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 20px; padding: 0 0 0 32px; }
 
   /* ── SIGNAL TRACKER ───────────────────────────────────────────────────── */
   .signal-tracker {
@@ -631,10 +635,12 @@
     .phase-sidebar {
       width: 100%; min-width: 0; flex-direction: row; border-right: none;
       border-bottom: 1px solid var(--border); border-radius: var(--r) var(--r) 0 0;
-      padding: 8px 8px; gap: 0; overflow-x: auto; -webkit-overflow-scrolling: touch;
+      padding: 8px 8px; gap: 0; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch;
+      position: static; top: auto; max-height: none; align-self: auto;
     }
     .phase-sidebar::-webkit-scrollbar { display: none; }
     .phase-sidebar-label { display: none; }
+    .cockpit-content { padding: 0; }
     .phase-nav-item {
       flex-direction: column; gap: 4px; padding: 8px 12px;
       border-left: none; border-bottom: 3px solid transparent;
@@ -5215,6 +5221,8 @@ const PAI_KPI_KEYS = [
   "psych_safety_niedrig",
   "entscheidungsblockade",
   "hypothesen_gestellt",
+  "empathic_accuracy_correct",
+  "empathic_accuracy_corrected",
 ];
 
 function initPAITab() {
@@ -5467,7 +5475,7 @@ function renderPaiPhase1() {
     </div>
     <div class="btn-row" style="margin-top:12px">
       <button class="btn btn-ghost" onclick="goToPaiPhase(0)">Zurück</button>
-      <button class="btn btn-primary" onclick="savePaiPhaseAndNext(1, 2)">Weiter</button>
+      <button class="btn btn-primary" onclick="savePaiPhase1WithGuard()">Weiter</button>
     </div>
   `;
 }
@@ -5682,12 +5690,49 @@ async function savePaiAmpelNotizen() {
 
 // ── PAI PHASE 5: HYPOTHESEN & NAECHSTE SCHRITTE ──
 function renderPaiPhase5() {
+  const empStatus = getPaiVal(5, 'empathic_status');
   return `
     <div class="phase-header"><span class="phase-number">Phase 5</span><span class="phase-title">Hypothesen & nächste Schritte</span></div>
-    <div class="phase-instruction">Drei Hypothesen formulieren, Evidenz verlinken, nächste Schritte definieren.</div>
-    ${renderPaiHypotheseSlot(1)}
-    ${renderPaiHypotheseSlot(2)}
-    ${renderPaiHypotheseSlot(3)}
+    <div class="phase-instruction">9 Hypothesen (3 pro Layer) formulieren, Evidenz verlinken, nächste Schritte definieren.</div>
+
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title">L1 — Neurobiologische Kapazität</div>
+      ${renderPaiHypotheseSlotLayered(1, 'L1')}
+      ${renderPaiHypotheseSlotLayered(2, 'L1')}
+      ${renderPaiHypotheseSlotLayered(3, 'L1')}
+    </div>
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title">L2 — Wissensblockaden</div>
+      ${renderPaiHypotheseSlotLayered(4, 'L2')}
+      ${renderPaiHypotheseSlotLayered(5, 'L2')}
+      ${renderPaiHypotheseSlotLayered(6, 'L2')}
+    </div>
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title">L3 — Strukturelle Reibung</div>
+      ${renderPaiHypotheseSlotLayered(7, 'L3')}
+      ${renderPaiHypotheseSlotLayered(8, 'L3')}
+      ${renderPaiHypotheseSlotLayered(9, 'L3')}
+    </div>
+
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title">Empathic Accuracy</div>
+      <div style="font-size:12px;color:var(--ink-mute);margin-bottom:10px">PAI benennt Momentanzustand — Person bestätigt oder korrigiert</div>
+      <div class="form-group">
+        <label class="form-label">Inferenz</label>
+        <textarea class="form-input" id="paiEmpathicInferenz" rows="2" placeholder="Mein Eindruck: Diese Person ist gerade [Zustand]" data-pai-feld="empathic_inferenz" data-pai-phase="5">${escHtml(getPaiVal(5, 'empathic_inferenz'))}</textarea>
+      </div>
+      <div class="btn-row" style="margin-top:8px;justify-content:flex-start;gap:8px">
+        <button class="btn ${empStatus === 'correct' ? 'btn-primary' : 'btn-ghost'}" id="btnEmpathicCorrect" onclick="setEmpathicStatus('correct')">✓ Bestätigt</button>
+        <button class="btn ${empStatus === 'corrected' ? 'btn-primary' : 'btn-ghost'}" id="btnEmpathicCorrected" onclick="setEmpathicStatus('corrected')">✗ Korrigiert</button>
+      </div>
+      <div id="empathicKorrekturBlock" style="margin-top:8px;display:${empStatus === 'corrected' ? 'block' : 'none'}">
+        <div class="form-group">
+          <label class="form-label">Tatsächlicher Zustand</label>
+          <textarea class="form-input" id="paiEmpathicKorrektur" rows="2" placeholder="Tatsächlicher Zustand:" data-pai-feld="empathic_korrektur" data-pai-phase="5">${escHtml(getPaiVal(5, 'empathic_korrektur'))}</textarea>
+        </div>
+      </div>
+    </div>
+
     <div class="scan-card" style="margin-top:12px">
       <div class="scan-card-title">Empfohlene nächste Schritte</div>
       <textarea class="form-input" id="paiNextSteps" rows="4" placeholder="Konkrete Empfehlungen…" data-pai-feld="next_steps" data-pai-phase="5">${escHtml(getPaiVal(5, 'next_steps'))}</textarea>
@@ -5709,18 +5754,18 @@ function renderPaiPhase5() {
 }
 
 function renderPaiHypotheseSlot(num) {
+  // Legacy — replaced by renderPaiHypotheseSlotLayered
+  return renderPaiHypotheseSlotLayered(num, 'L1');
+}
+
+function renderPaiHypotheseSlotLayered(num, layer) {
   return `
-    <div class="hyp-card" style="margin-top:12px">
+    <div class="hyp-card" style="margin-top:8px">
       <div style="font-weight:500;margin-bottom:8px">Hypothese ${num}</div>
       <div class="hyp-fields">
         <div class="form-group">
-          <label class="form-label${num === 1 ? ' pflicht' : ''}">Layer</label>
-          <select class="form-input" id="paiHyp${num}Layer" data-pai-feld="hyp${num}_layer" data-pai-phase="5">
-            <option value="">— wählen —</option>
-            <option value="L1" ${getPaiVal(5, 'hyp'+num+'_layer')==='L1'?'selected':''}>L1</option>
-            <option value="L2" ${getPaiVal(5, 'hyp'+num+'_layer')==='L2'?'selected':''}>L2</option>
-            <option value="L3" ${getPaiVal(5, 'hyp'+num+'_layer')==='L3'?'selected':''}>L3</option>
-          </select>
+          <label class="form-label">Layer</label>
+          <input class="form-input" value="${layer}" readonly style="background:var(--surface2);color:var(--ink-mid);font-family:var(--mono);font-size:12px" data-pai-feld="hyp${num}_layer" data-pai-phase="5">
         </div>
         <div class="form-group">
           <label class="form-label">Konfidenz</label>
@@ -5733,7 +5778,7 @@ function renderPaiHypotheseSlot(num) {
         </div>
       </div>
       <div class="form-group" style="margin-top:8px">
-        <label class="form-label${num === 1 ? ' pflicht' : ''}">Mechanismus</label>
+        <label class="form-label">Mechanismus</label>
         <textarea class="form-input" id="paiHyp${num}Mech" rows="2" placeholder="Was passiert und warum…" data-pai-feld="hyp${num}_mechanismus" data-pai-phase="5">${escHtml(getPaiVal(5, 'hyp'+num+'_mechanismus'))}</textarea>
       </div>
       <div class="form-group" style="margin-top:8px">
@@ -5742,6 +5787,22 @@ function renderPaiHypotheseSlot(num) {
       </div>
     </div>
   `;
+}
+
+function setEmpathicStatus(status) {
+  const current = getPaiVal(5, 'empathic_status');
+  const next = current === status ? '' : status;
+  paiErhebung['5_empathic_status'] = next;
+  savePaiErhebungField(5, 'empathic_status', next);
+  if (next === 'correct') paiKpis['empathic_accuracy_correct'] = (paiKpis['empathic_accuracy_correct'] || 0) + 1;
+  if (next === 'corrected') paiKpis['empathic_accuracy_corrected'] = (paiKpis['empathic_accuracy_corrected'] || 0) + 1;
+  const btnC = document.getElementById('btnEmpathicCorrect');
+  const btnX = document.getElementById('btnEmpathicCorrected');
+  if (btnC) btnC.className = `btn ${next === 'correct' ? 'btn-primary' : 'btn-ghost'}`;
+  if (btnX) btnX.className = `btn ${next === 'corrected' ? 'btn-primary' : 'btn-ghost'}`;
+  const korr = document.getElementById('empathicKorrekturBlock');
+  if (korr) korr.style.display = next === 'corrected' ? 'block' : 'none';
+  autoSavePaiPhase();
 }
 
 function renderPaiKpis() {
@@ -5754,6 +5815,8 @@ function renderPaiKpis() {
     "psych_safety_niedrig": "Psych. Safety niedrig",
     "entscheidungsblockade": "Entscheidungsblockade",
     "hypothesen_gestellt": "Hypothesen gestellt",
+    "empathic_accuracy_correct": "Empathic Accuracy bestätigt",
+    "empathic_accuracy_corrected": "Empathic Accuracy korrigiert",
   };
   let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
   for (const key of PAI_KPI_KEYS) {
@@ -5828,6 +5891,25 @@ async function savePaiKpis() {
   } catch (e) { console.warn("PAI KPI save:", e.message); }
 }
 
+function savePaiPhase1WithGuard() {
+  const ids = ['paiF1', 'paiF2', 'paiF3'];
+  let valid = true;
+  ids.forEach(id => {
+    const existing = document.getElementById(`${id}Warn`);
+    if (existing) existing.remove();
+    const val = document.getElementById(id)?.value?.trim() || '';
+    if (!val) {
+      valid = false;
+      const warn = document.createElement('div');
+      warn.id = `${id}Warn`;
+      warn.style.cssText = 'color:var(--red,#e74c3c);font-size:11px;margin-top:4px;font-family:var(--mono)';
+      warn.textContent = 'Dieses Feld ist für die Diagnose erforderlich.';
+      document.getElementById(id)?.insertAdjacentElement('afterend', warn);
+    }
+  });
+  if (valid) savePaiPhaseAndNext(1, 2);
+}
+
 async function savePaiPhaseAndNext(fromPhase, toPhase) {
   // Collect and save all fields on current page
   const fields = document.querySelectorAll("[data-pai-feld][data-pai-phase]");
@@ -5848,6 +5930,13 @@ async function savePaiPhase5() {
     const wert = el.tagName === "SELECT" ? el.value : (el.value || "");
     await savePaiErhebungField(phase, feld, wert);
   }
+  // Auto-calculate hypothesen_gestellt: count slots 1-9 where mechanismus is not empty
+  let hypCount = 0;
+  for (let i = 1; i <= 9; i++) {
+    const mech = document.getElementById(`paiHyp${i}Mech`)?.value?.trim() || getPaiVal(5, `hyp${i}_mechanismus`);
+    if (mech) hypCount++;
+  }
+  paiKpis['hypothesen_gestellt'] = hypCount;
   await savePaiKpis();
   showSaveIndicator();
 }
