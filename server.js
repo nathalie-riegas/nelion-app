@@ -704,6 +704,8 @@ app.patch("/api/scans/:id", async (req, res) => {
     "respondent_ceo_kuerzel", "respondent_fk_kuerzel", "respondent_op_kuerzel",
     "respondent_ceo_deadline", "respondent_fk_deadline", "respondent_op_deadline",
     "respondent_ceo_verschickt", "respondent_fk_verschickt", "respondent_op_verschickt",
+    // Migration 020
+    "regime_begruendung",
   ];
   const updates = {};
   for (const key of allowed) {
@@ -726,6 +728,9 @@ app.patch("/api/scans/:id", async (req, res) => {
     "interview_f1_notiz", "interview_f2_notiz",
     "interview_f3_notiz", "interview_abschluss_notiz",
   ];
+  const MIGRATION_020_COLS = [
+    "regime_begruendung",
+  ];
   async function tryUpdate(u) {
     return supabase.from("scans").update(u).eq("id", req.params.id).select().single();
   }
@@ -734,12 +739,14 @@ app.patch("/api/scans/:id", async (req, res) => {
     const msg = error.message || "";
     const m017 = MIGRATION_017_COLS.some(c => msg.includes(c));
     const m015 = MIGRATION_015_COLS.some(c => msg.includes(c));
-    if (m017 || m015) {
+    const m020 = MIGRATION_020_COLS.some(c => msg.includes(c));
+    if (m017 || m015 || m020) {
       const stripped = { ...updates };
       if (m017) for (const c of MIGRATION_017_COLS) delete stripped[c];
       if (m015) for (const c of MIGRATION_015_COLS) delete stripped[c];
+      if (m020) for (const c of MIGRATION_020_COLS) delete stripped[c];
       if (Object.keys(stripped).length === 0) {
-        return res.status(500).json({ error: "Migration 015 oder 017 nötig (scans neue Spalten)" });
+        return res.status(500).json({ error: "Migration 015, 017 oder 020 nötig (scans neue Spalten)" });
       }
       const r2 = await tryUpdate(stripped);
       if (r2.error) return res.status(500).json({ error: r2.error.message });

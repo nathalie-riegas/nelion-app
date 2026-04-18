@@ -5332,10 +5332,11 @@ function autoSaveScanPhase() {
       } else if (scanPhase === 3) {
         const updates = {};
         const map = {
-          arbeitshypothese:      "arbeitshypothese",
-          befundPrimaerFriction: "friction_vektor",
-          befundRegime:          "regime",
-          befundHypothesen:      "hypothesen_spiegel_notizen",
+          arbeitshypothese:        "arbeitshypothese",
+          befundPrimaerFriction:   "friction_vektor",
+          befundRegime:            "regime",
+          befundRegimeBegruendung: "regime_begruendung",
+          befundHypothesen:        "hypothesen_spiegel_notizen",
         };
         for (const [id, col] of Object.entries(map)) {
           const el = document.getElementById(id);
@@ -5656,7 +5657,7 @@ function renderScanErsteEinschaetzung() {
       </div>
       <div class="form-group" style="margin-top:8px">
         <label class="form-label">Begründung (optional)</label>
-        <textarea class="form-input" id="befundRegimeBegruendung" rows="2" placeholder="Warum dieses Regime?"></textarea>
+        <textarea class="form-input" id="befundRegimeBegruendung" rows="2" placeholder="Warum dieses Regime?">${escHtml(s.regime_begruendung || "")}</textarea>
       </div>
     </div>
 
@@ -5795,7 +5796,8 @@ async function exportBefundTxt() {
 
   const regimeVal = (currentScan.regime || "").trim();
   const regimeLabel = regimeVal ? `Regime ${regimeVal}` : "[nicht ausgefüllt]";
-  const regimeBegr = _fieldOrEmpty("befundRegimeBegruendung");
+  const regimeBegrForm = (document.getElementById("befundRegimeBegruendung")?.value || "").trim();
+  const regimeBegr = regimeBegrForm || (currentScan.regime_begruendung || "").trim() || "[nicht ausgefüllt]";
 
   const hypothesen = _scanFieldOrEmpty("hypothesen_spiegel_notizen");
   const primVektor = _scanFieldOrEmpty("friction_vektor");
@@ -5910,6 +5912,55 @@ function renderFrictionProfilReadonly(manual) {
   }
   html += '</div>';
   return html;
+}
+
+// renderAmpelGrid — editierbare 12-Achsen-Traffic-Light-Matrix für Manual
+// Override und PAI-Kontexte. Wiederhergestellt 2026-04-18 (war im
+// Cleanup-Commit 8403e69 versehentlich entfernt, wurde aber noch von
+// renderFrictionProfilReadonly(manual=true) aufgerufen → ReferenceError).
+function renderAmpelGrid(phase) {
+  let html = '<div class="ampel-grid">';
+  for (const [layer, axes] of Object.entries(AMPEL_AXES)) {
+    html += `<div class="layer-label">${escHtml(layerLabel(layer))}</div>`;
+    for (const achse of axes) {
+      const key  = `${layer}_${achse}_${phase}`;
+      const wert = scanAmpeln[key] || "grau";
+      html += `<div class="ampel-row"><span class="ampel-label">${escHtml(axisLabel(achse))}</span><div class="ampel-dots">`;
+      for (const farbe of ["gruen", "gelb", "rot"]) {
+        const active = wert === farbe ? " " + farbe : "";
+        html += `<div class="ampel-dot${active}" data-layer="${escHtml(layer)}" data-achse="${escHtml(achse)}" data-phase="${escHtml(phase)}" data-farbe="${farbe}" onclick="setScanAmpel(this)"></div>`;
+      }
+      html += `</div></div>`;
+    }
+  }
+  html += '</div>';
+  return html;
+}
+
+async function setScanAmpel(dot) {
+  const { layer, achse, phase, farbe } = dot.dataset;
+  if (!layer || !achse || !phase || !farbe) return;
+  const key = `${layer}_${achse}_${phase}`;
+  const prev = scanAmpeln[key] || "grau";
+  const next = (prev === farbe) ? "grau" : farbe;
+  scanAmpeln[key] = next;
+
+  // UI: Dots in der Zeile zurücksetzen, dann neuen aktiv setzen (falls nicht grau)
+  const row = dot.parentElement;
+  if (row) {
+    row.querySelectorAll(".ampel-dot").forEach(d => {
+      d.className = "ampel-dot" + (next !== "grau" && d.dataset.farbe === next ? " " + next : "");
+    });
+  }
+
+  try {
+    await fetch(`/api/scans/${currentScan.id}/ampeln`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ampeln: [{ layer, achse, wert: next, phase }] }),
+    });
+    if (typeof showSaveIndicator === "function") showSaveIndicator();
+  } catch (e) { console.warn("Ampel save:", e.message); }
 }
 
 async function onFrictionManualOverrideToggle(cb) {
