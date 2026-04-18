@@ -6302,7 +6302,7 @@ function renderHypothesenZusammenfassung() {
       <div id="transkriptPreview" style="margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--ink-mute);white-space:pre-wrap;max-height:120px;overflow:auto">${transkriptFilename ? `📄 ${escHtml(transkriptFilename)}\n\n${escHtml(transkriptPreview)}${transkriptText.length > 300 ? "…" : ""}` : ""}</div>
 
       <div class="btn-row" style="margin-top:10px">
-        <button class="btn btn-primary" id="btnAnalyseTranskript" onclick="analyseTranskript()" ${transkriptText ? "" : "disabled"}>Transkript analysieren</button>
+        <button class="btn btn-primary" id="btnAnalyseTranskript" onclick="analyseErstgespraechTranskript()" ${transkriptText ? "" : "disabled"}>Transkript analysieren</button>
         <span id="transkriptAnalyseStatus" style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);align-self:center"></span>
       </div>
 
@@ -6770,7 +6770,7 @@ async function onTranskriptFileChange(event) {
   }
 }
 
-async function analyseTranskript() {
+async function analyseErstgespraechTranskript() {
   if (!currentConsultation) return;
   const transkript = currentConsultation.transkript_text || "";
   if (!transkript.trim()) { alert("Kein Transkript geladen."); return; }
