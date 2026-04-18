@@ -34,7 +34,7 @@ instruction: Drei diagnostische Fragen. Jede öffnet eine andere Ebene. Lass Pau
 guide:
 - "Was möchtest du verändern?" — Zielzustand erfassen
 - "Was hast du bereits versucht?" — Bisherige Lösungsversuche + Muster erkennen
-- "Woran würdest du merken, dass es sich gelohnt hat?" — Erfolgskriterium auf der Ebene, die wirklich zählt
+- "Woran würdest du nach unserem Gespräch merken, dass es sich gelohnt hat, heute diese Zeit zu investieren?" — Erfolgskriterium auf der Ebene, die wirklich zählt
 
 ---
 
