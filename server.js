@@ -282,11 +282,9 @@ app.post("/api/auth/login", (req, res) => {
     `Max-Age=${maxAge}`,
     `Path=/`,
     `HttpOnly`,
-    `SameSite=Lax`,
+    `SameSite=None`,
+    `Secure`,
   ];
-  if (req.secure || req.headers["x-forwarded-proto"] === "https") {
-    cookieParts.push("Secure");
-  }
   res.setHeader("Set-Cookie", cookieParts.join("; "));
   res.json({ success: true });
 });
