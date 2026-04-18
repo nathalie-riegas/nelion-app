@@ -1889,8 +1889,9 @@ Analysiere dieses Erstgespräch und generiere:
 1. Eine Haupthypothese (1 Satz, Layer benennen: L1/L2/L3)
 2. Zwei alternative Hypothesen
 3. Stärkste Evidenz aus dem Gespräch (direktes Zitat oder Paraphrase)
-4. Empfohlene erste Frage für den Friction Scan
-Antworte auf Deutsch, maximal 200 Wörter, strukturiert.
+4. Empfohlene erste Friction Scan-Frage — mit Begründung (siehe Format-Regel unten)
+
+Antworte auf Deutsch, maximal 250 Wörter, strukturiert.
 
 Verwende Markdown-Formatierung:
 - **Fett** für Überschriften und Layer-Labels
@@ -1898,15 +1899,23 @@ Verwende Markdown-Formatierung:
 - Kurze, klare Sätze
 
 Die drei Layer der NELION-Friction-Taxonomie:
-- L1 = Biologische Kapazität (Energie, Schlaf, Overload)
-- L2 = Psychologische Dynamik (Muster, Safety, Immunity)
-- L3 = Organisationale Struktur (Prozesse, Entscheidung, Verantwortung)`;
+- L1 = Neurobiologische Kapazität (Energie, Schlaf, Overload)
+- L2 = Wissensblockaden (Muster, Safety, Immunity)
+- L3 = Strukturelle Reibung (Prozesse, Entscheidung, Verantwortung)
+
+Format-Regel für die Friction-Frage (obligatorisch):
+
+**Empfohlene erste Friction Scan-Frage**
+"[Frage]"
+
+**Warum diese Frage:**
+[2–3 Sätze: welches psychologische oder strukturelle Muster sie testet, wissenschaftliche Basis, was die Antwort über den Layer verrät]`;
 
   const userMsg = `Klient${person_name ? ": " + person_name : ""}.
 
 ${notesBlock}${signalBlock}
 
-Bitte generiere die Hypothesen-Zusammenfassung.`;
+Bitte generiere die Hypothesen-Zusammenfassung. Nach der empfohlenen Friction-Frage immer eine Begründung ausgeben (siehe Format-Regel im System-Prompt).`;
 
   const maxRetries = 3;
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -1969,15 +1978,23 @@ Extrahiere:
    - Geschützte Personen nie als Reibungsquelle genannt?
    - Wo hat der Ton gewechselt?
 3. Stärkste Friction-Hypothese (1 Satz)
-4. Empfohlene Vertiefungsfrage für Hypothesen-Spiegel
+4. Empfohlene erste Friction Scan-Frage — mit Begründung (Format unten, obligatorisch)
 
-Antworte strukturiert, deutsch, maximal 400 Wörter.
-Verwende Markdown: **Fett** für Überschriften, nummerierte Listen, kurze Sätze.
+Antworte strukturiert, deutsch, maximal 450 Wörter.
+Verwende Markdown: ## / ### für Überschriften, **Fett** für Layer-Labels, nummerierte Listen, kurze Sätze.
 
 Die drei Layer:
-- L1 = Biologische Kapazität (Energie, Schlaf, Overload)
-- L2 = Psychologische Dynamik (Muster, Safety, Immunity)
-- L3 = Organisationale Struktur (Prozesse, Entscheidung, Verantwortung)`;
+- L1 = Neurobiologische Kapazität (Energie, Schlaf, Overload)
+- L2 = Wissensblockaden (Muster, Safety, Immunity)
+- L3 = Strukturelle Reibung (Prozesse, Entscheidung, Verantwortung)
+
+Format-Regel für die Friction-Frage (obligatorisch):
+
+**Empfohlene erste Friction Scan-Frage**
+"[Frage]"
+
+**Warum diese Frage:**
+[2–3 Sätze: welches psychologische oder strukturelle Muster sie testet, wissenschaftliche Basis, was die Antwort über den Layer verrät]`;
 
   const userMsg = `Klient${person_name ? ": " + person_name : ""}.
 

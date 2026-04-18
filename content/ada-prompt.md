@@ -51,21 +51,35 @@ Primärer Friction-Vektor. Regime-Routing.
 3 Sofort-Massnahmen.
 
 ## Layer-Struktur
-- **L1a (Individuelle Biologische Kapazität):**
-  Neurobiologische Last, Energiereserven,
+
+### L1 — Neurobiologische Kapazität (Hardware)
+Energie, Erschöpfung, biologische Belastung, sensorische
+Verarbeitung.
+- **L1a — individuelle Kapazität** (neutral — Biologie ist
+  kein Defekt): Neurobiologische Last, Energiereserven,
   Kognitive Diversität, Körperwahrnehmung
-- **L1b (Strukturell verursachte Erschöpfung):**
-  Strukturelle Überlastung, Regenerationsdefizit
-- **L2 (Psychologische Dynamik):**
-  Selbstzensur (Psychological Safety),
-  Veränderungsresistenz (Immunity-Muster),
-  Verantwortungsvermeidung (Attribution Style),
-  Irritabilität (Threat-State)
-- **L3 (Strukturelle Reibung):**
-  Fehlentscheidungskosten (Entscheidungsarchitektur),
-  Dysfunktionale Anreize (Incentive-Struktur),
-  Verantwortungsvakuum (Strukturelle Ambiguität),
-  Informationsblockaden (Informationsfluss)
+- **L1b — strukturell verursachte Erschöpfung**
+  (Designfehler): Strukturelle Überlastung,
+  Regenerationsdefizit
+
+### L2 — Wissensblockaden (Betriebssystem)
+Psychologische Muster, Vermeidung, Selbstzensur,
+Veränderungsresistenz. Vier Achsen:
+- **Selbstzensur** (Psychological Safety)
+- **Veränderungsresistenz** (Immunity-Muster)
+- **Verantwortungsvermeidung** (Attribution Style)
+- **Irritabilität** (Threat-State)
+
+### L3 — Strukturelle Reibung (Architektur)
+Prozesse, Entscheidungswege, Anreize, Informationsfluss.
+Vier Achsen:
+- **Fehlentscheidungskosten** (Entscheidungsarchitektur)
+- **Dysfunktionale Anreize** (Incentive-Struktur)
+- **Verantwortungsvakuum** (Strukturelle Ambiguität)
+- **Informationsblockaden** (Informationsfluss)
+
+### Sequenzierungs-Axiom
+L1 ist Gate. L1 rot → keine L3-Intervention.
 
 Format-Regel: "Klienten-Name (Wissenschaftlicher Name)" —
 Klienten-Name zuerst, Wissenschaftlicher Name in Klammern.

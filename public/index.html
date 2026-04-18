@@ -2496,11 +2496,14 @@
   .hyp-output-empty {
     color: var(--ink-mute); font-size: 12px; font-style: italic;
   }
-  .hyp-output p { margin: 0 0 8px 0; }
+  .hyp-output p { font-size: 13px; line-height: 1.6; margin: 0 0 8px 0; }
   .hyp-output p:last-child { margin-bottom: 0; }
-  .hyp-output ul, .hyp-output ol { margin: 4px 0 8px 20px; padding: 0; }
-  .hyp-output li { margin-bottom: 3px; }
-  .hyp-output strong { font-weight: 600; color: var(--ada-accent); }
+  .hyp-output h2 { font-size: 15px; font-weight: 500; color: #1a1a2e; margin: 12px 0 6px; }
+  .hyp-output h2:first-child { margin-top: 0; }
+  .hyp-output h3 { font-size: 13px; font-weight: 500; color: #534AB7; margin: 8px 0 4px; }
+  .hyp-output ul, .hyp-output ol { padding-left: 16px; font-size: 13px; margin: 4px 0 8px 0; }
+  .hyp-output li { margin-bottom: 4px; }
+  .hyp-output strong { font-weight: 500; color: #1a1a2e; }
   .hyp-output em { font-style: italic; }
 
   /* Regime-Auswahl (Radio-Cards) */
@@ -2823,6 +2826,173 @@
     .task-drawer.open { width: 100%; position: absolute; right: 0; top: 0; height: 100%; z-index: 10; }
     .landing-greeting { font-size: 22px; }
   }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     NELION Tab — Framework-Präsentation (statisch)
+     ═══════════════════════════════════════════════════════════════════ */
+  .nelion-hero {
+    background: #1a1a2e; color: #fff;
+    padding: 28px 32px; border-radius: 10px;
+    margin-bottom: 18px;
+  }
+  .nelion-hero-title { font-size: 26px; font-weight: 600; margin-bottom: 8px; letter-spacing: -0.01em; }
+  .nelion-hero-sub { font-size: 14px; opacity: 0.75; line-height: 1.5; font-weight: 300; }
+
+  .nelion-intro {
+    font-size: 14px; line-height: 1.65; color: var(--ink-mid);
+    margin: 0 0 24px 0; max-width: 760px;
+  }
+
+  .nelion-section-label {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--ink-mute);
+    margin: 22px 0 10px 0;
+  }
+
+  /* ROI-Kacheln (Blau) */
+  .nelion-roi-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 14px; margin-bottom: 24px;
+  }
+  .nelion-roi-tile {
+    background: #E6F1FB; border: 1px solid #B5D4F4;
+    border-radius: 8px; padding: 16px 18px;
+  }
+  .nelion-roi-title {
+    font-size: 14px; font-weight: 600; color: #185FA5;
+    margin-bottom: 8px;
+  }
+  .nelion-roi-text {
+    font-size: 13px; line-height: 1.55; color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .nelion-roi-tag {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.05em;
+    color: #185FA5; opacity: 0.75;
+  }
+  @media (max-width: 860px) {
+    .nelion-roi-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Layer-Blöcke (je eine Farbpalette pro Layer) */
+  .nelion-layer { margin-bottom: 12px; }
+  .nelion-layer-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 18px; border-radius: 8px;
+    cursor: pointer; user-select: none;
+    border: 1px solid transparent;
+    transition: background .15s, border-color .15s;
+  }
+  .nelion-layer-header:hover { filter: brightness(0.98); }
+  .nelion-layer-title { font-size: 16px; font-weight: 600; flex: 1; }
+  .nelion-layer-badge {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em;
+    padding: 3px 8px; border-radius: 10px;
+    background: rgba(255,255,255,0.4);
+  }
+  .nelion-layer-arrow {
+    font-size: 12px; transition: transform .2s; opacity: 0.7;
+  }
+  .nelion-layer-header.open .nelion-layer-arrow { transform: rotate(180deg); }
+  .nelion-layer-body {
+    display: none; padding: 14px 18px;
+    border: 1px solid var(--border); border-top: none;
+    border-radius: 0 0 8px 8px;
+    background: var(--surface);
+  }
+  .nelion-layer-body.open { display: block; }
+  .nelion-layer-body p {
+    font-size: 13px; line-height: 1.6; color: var(--ink);
+    margin: 0 0 10px 0;
+  }
+  .nelion-layer-body h4 {
+    font-size: 12px; font-weight: 600; letter-spacing: 0.04em;
+    text-transform: uppercase; color: var(--ink-mute);
+    margin: 14px 0 6px 0;
+  }
+  .nelion-layer-body ul {
+    margin: 0 0 10px 0; padding-left: 18px;
+    font-size: 13px; line-height: 1.6;
+  }
+  .nelion-layer-body ul li { margin-bottom: 3px; }
+
+  /* L1 — Teal */
+  .nelion-layer-l1 .nelion-layer-header {
+    background: #E1F5EE; color: #0F6E56; border-color: #9FE1CB;
+  }
+  .nelion-layer-l1 .nelion-layer-badge { color: #0F6E56; background: rgba(255,255,255,0.55); }
+  .nelion-layer-l1 .nelion-roi-box {
+    background: #E1F5EE; border-left: 3px solid #0F6E56;
+  }
+
+  /* L2 — Indigo */
+  .nelion-layer-l2 .nelion-layer-header {
+    background: #EEEDFE; color: #534AB7; border-color: #AFA9EC;
+  }
+  .nelion-layer-l2 .nelion-layer-badge { color: #534AB7; background: rgba(255,255,255,0.55); }
+  .nelion-layer-l2 .nelion-roi-box {
+    background: #EEEDFE; border-left: 3px solid #534AB7;
+  }
+
+  /* L3 — Amber */
+  .nelion-layer-l3 .nelion-layer-header {
+    background: #FAEEDA; color: #BA7517; border-color: #FAC775;
+  }
+  .nelion-layer-l3 .nelion-layer-badge { color: #BA7517; background: rgba(255,255,255,0.55); }
+  .nelion-layer-l3 .nelion-roi-box {
+    background: #FAEEDA; border-left: 3px solid #BA7517;
+  }
+
+  .nelion-roi-box {
+    padding: 10px 14px; border-radius: 6px;
+    font-size: 12px; line-height: 1.55;
+    color: var(--ink); margin: 10px 0 14px 0;
+  }
+  .nelion-roi-box-title {
+    font-weight: 600; margin-bottom: 4px;
+    font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase;
+  }
+
+  /* Sub-Achsen (Toggles innerhalb eines Layers) */
+  .nelion-axis {
+    margin-top: 8px; border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .nelion-axis-header {
+    padding: 10px 14px; cursor: pointer; user-select: none;
+    font-size: 13px; font-weight: 500;
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface2);
+    transition: background .15s;
+  }
+  .nelion-axis-header:hover { background: var(--border); }
+  .nelion-axis-arrow { font-size: 11px; transition: transform .2s; opacity: 0.55; }
+  .nelion-axis-header.open .nelion-axis-arrow { transform: rotate(180deg); }
+  .nelion-axis-body {
+    display: none; padding: 10px 14px; font-size: 12px;
+    line-height: 1.55; color: var(--ink);
+    border-top: 1px solid var(--border);
+  }
+  .nelion-axis-body.open { display: block; }
+  .nelion-axis-body dl { margin: 0; }
+  .nelion-axis-body dt {
+    font-weight: 600; color: var(--ink-mute);
+    font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase;
+    margin-top: 6px;
+  }
+  .nelion-axis-body dt:first-child { margin-top: 0; }
+  .nelion-axis-body dd { margin: 2px 0 0 0; }
+
+  .nelion-footer {
+    margin-top: 28px; padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono); font-size: 11px;
+    color: var(--ink-mute); text-align: center;
+  }
+
+  .tab-btn.active[data-tab="nelion"] { border-bottom-color: #534AB7; }
 </style>
 </head>
 <body>
@@ -2846,6 +3016,7 @@
   <!-- PAI Self-Assessment deaktiviert (2026-04-17) — Tab zusammengeführt mit PAI Interview. Code bleibt erhalten. -->
   <!-- <button class="tab-btn" data-tab="modul4" onclick="switchTab('modul4')">PAI Self-Assessment</button> -->
   <button class="tab-btn" data-tab="ada" onclick="switchTab('ada')">ADA<span class="tab-badge" id="adaTabBadge" style="display:none;">🎓 <span id="adaTabBadgeCount">0</span></span></button>
+  <button class="tab-btn" data-tab="nelion" onclick="switchTab('nelion')">NELION</button>
 </nav>
 
 <div class="main">
@@ -3036,6 +3207,290 @@
   <div id="interventionenContent"></div>
 </div>
 
+<!-- ╔═══════════════════════════════════════════════════════════════════════╗ -->
+<!-- ║  NELION — Framework-Präsentation (statisch, kein Autosave)          ║ -->
+<!-- ╚═══════════════════════════════════════════════════════════════════════╝ -->
+<div class="module" id="moduleNelion">
+
+  <div class="nelion-hero">
+    <div class="nelion-hero-title">NELION Framework</div>
+    <div class="nelion-hero-sub">Organizational Friction Diagnostics — drei Ebenen, wissenschaftlich fundiert</div>
+  </div>
+
+  <p class="nelion-intro">
+    Organisationen investieren in Lösungen bevor sie wissen auf welcher Ebene das Problem liegt.
+    NELION diagnostiziert systematisch auf drei Ebenen — bevor interveniert wird.
+  </p>
+
+  <!-- ─── ROI-BLOCK ──────────────────────────────────────────────────── -->
+  <div class="nelion-section-label">Warum das Business-relevant ist</div>
+  <div class="nelion-roi-grid">
+    <div class="nelion-roi-tile">
+      <div class="nelion-roi-title">Richtig investieren</div>
+      <div class="nelion-roi-text">Eine Intervention auf der falschen Ebene kostet CHF 50'000+ ohne Wirkung. Der Scan kostet CHF 3'500 und zeigt zuerst wo das Problem wirklich liegt.</div>
+      <div class="nelion-roi-tag">Fehlallokation vermeiden</div>
+    </div>
+    <div class="nelion-roi-tile">
+      <div class="nelion-roi-title">Fluktuation reduzieren</div>
+      <div class="nelion-roi-text">Eine Kündigung kostet 50–200% des Jahresgehalts. L1/L2-Friction ist einer der häufigsten unsichtbaren Fluktuationstreiber.</div>
+      <div class="nelion-roi-tag">Frühwarnsystem</div>
+    </div>
+    <div class="nelion-roi-tile">
+      <div class="nelion-roi-title">Entscheidungen beschleunigen</div>
+      <div class="nelion-roi-text">L3-Friction (unklare Verantwortung, Informationsblockaden) kostet messbar Zeit und Geld. Sichtbar machen, bevor es eskaliert.</div>
+      <div class="nelion-roi-tag">Strukturelle Hebelwirkung</div>
+    </div>
+  </div>
+
+  <!-- ─── DREI LAYER ─────────────────────────────────────────────────── -->
+  <div class="nelion-section-label">Drei Ebenen der Organizational Friction</div>
+
+  <!-- L1 ───────────────────────────────── -->
+  <div class="nelion-layer nelion-layer-l1">
+    <div class="nelion-layer-header" onclick="toggleNelionLayer(this, 'nelionL1Body')">
+      <div class="nelion-layer-title">L1 — Neurobiologische Kapazität</div>
+      <span class="nelion-layer-badge">Hardware</span>
+      <span class="nelion-layer-arrow">▼</span>
+    </div>
+    <div class="nelion-layer-body" id="nelionL1Body">
+      <p>Die biologische Ebene: Energie, Erschöpfung, sensorische Verarbeitung, Regeneration. Hardware schlägt Software — wenn Menschen biologisch erschöpft sind, greifen keine strukturellen Massnahmen.</p>
+
+      <h4>Theorien</h4>
+      <ul>
+        <li>Polyvagal Theory (Porges, 1995 ★★★) — Nervensystem und Threat-State</li>
+        <li>Allostatic Load (McEwen ★★★) — biologische Stressakkumulation</li>
+        <li>Window of Tolerance (Siegel ★★☆) — Regulationskapazität</li>
+      </ul>
+
+      <h4>Warum relevant</h4>
+      <p>L1 ist das Gate: solange das System im Threat-State ist, ist jede andere Intervention verschwendetes Budget.</p>
+
+      <div class="nelion-roi-box">
+        <div class="nelion-roi-box-title">Business-Impact</div>
+        Burnout kostet 1.5–3× Jahresgehalt (Ausfall, Vertretung, Wiedereingliederung). L1 früh erkennen = Frühwarnsystem. Fehldiagnose als Motivationsproblem = typische Fehlinvestition von CHF 20'000+ in Teambuilding ohne Wirkung. Führungskräfte im Threat-State treffen nachweislich schlechtere Entscheidungen (Decision Fatigue ★★★).
+      </div>
+
+      <h4>Vier Achsen</h4>
+
+      <div class="nelion-axis">
+        <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL1Ax1')">
+          <span>L1a — Energiereserven</span><span class="nelion-axis-arrow">▼</span>
+        </div>
+        <div class="nelion-axis-body" id="nelionL1Ax1">
+          <dl>
+            <dt>Was</dt><dd>Verfügbare kognitive und physische Energie</dd>
+            <dt>Gemessen</dt><dd>Survey F2 + Interview</dd>
+            <dt>Warum</dt><dd>Entscheidungsqualität sinkt mit sinkender Energie (Decision Fatigue ★★★)</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="nelion-axis">
+        <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL1Ax2')">
+          <span>L1a — Neurobiologische Last</span><span class="nelion-axis-arrow">▼</span>
+        </div>
+        <div class="nelion-axis-body" id="nelionL1Ax2">
+          <dl>
+            <dt>Was</dt><dd>Akkumulierte biologische Stressbelastung</dd>
+            <dt>Gemessen</dt><dd>Survey F1 + Interview</dd>
+            <dt>Warum</dt><dd>Allostatic Load als stiller Leistungskiller — oft unsichtbar bis Ausfall</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="nelion-axis">
+        <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL1Ax3')">
+          <span>L1b — Strukturelle Überlastung</span><span class="nelion-axis-arrow">▼</span>
+        </div>
+        <div class="nelion-axis-body" id="nelionL1Ax3">
+          <dl>
+            <dt>Was</dt><dd>Systemisch verursachte Überlastung (Designfehler, nicht Personenproblem)</dd>
+            <dt>Gemessen</dt><dd>Survey F3 + Interview</dd>
+            <dt>Warum</dt><dd>Unterscheidet individuelle von struktureller Erschöpfung — entscheidend für Intervention</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="nelion-axis">
+        <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL1Ax4')">
+          <span>L1b — Regenerationsdefizit</span><span class="nelion-axis-arrow">▼</span>
+        </div>
+        <div class="nelion-axis-body" id="nelionL1Ax4">
+          <dl>
+            <dt>Was</dt><dd>Fehlende Erholungsstrukturen im System</dd>
+            <dt>Gemessen</dt><dd>Survey F4 + Interview</dd>
+            <dt>Warum</dt><dd>Chronisches Defizit = Regime 3 Trigger — kein Einzelproblem, Systemfehler</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- L2 ───────────────────────────────── -->
+  <div class="nelion-layer nelion-layer-l2">
+    <div class="nelion-layer-header" onclick="toggleNelionLayer(this, 'nelionL2Body')">
+      <div class="nelion-layer-title">L2 — Wissensblockaden</div>
+      <span class="nelion-layer-badge">Betriebssystem</span>
+      <span class="nelion-layer-arrow">▼</span>
+    </div>
+    <div class="nelion-layer-body" id="nelionL2Body">
+      <p>Die psychologische Ebene: Muster, Ängste, Vermeidung, Veränderungsresistenz. Das Betriebssystem entscheidet ob neue Strukturen wirklich angenommen werden — oder informell absorbiert.</p>
+
+      <h4>Theorien</h4>
+      <ul>
+        <li>Psychological Safety (Edmondson, 1999 ★★★) — Selbstzensur und Feedback</li>
+        <li>Immunity to Change (Kegan & Lahey ★★★) — Warum Veränderung scheitert</li>
+        <li>Attribution Style (Seligman ★★★) — Verantwortungsvermeidung</li>
+      </ul>
+
+      <h4>Warum relevant</h4>
+      <p>L2-Muster sind unsichtbar aber kostspielig: Feedback wird nicht gegeben, Probleme nicht benannt, Verantwortung abgewälzt.</p>
+
+      <div class="nelion-roi-box">
+        <div class="nelion-roi-box-title">Business-Impact</div>
+        Teams mit niedriger Psychological Safety haben messbar höhere Fehlerquoten und schlechtere Projektergebnisse (Edmondson, Google Project Aristotle). Veränderungsresistenz ist der häufigste Grund warum Reorganisationen scheitern — trotz korrekter L3-Strukturen.
+      </div>
+
+      <h4>Vier Achsen</h4>
+
+      <div class="nelion-axis">
+        <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL2Ax1')">
+          <span>Selbstzensur (Psychological Safety)</span><span class="nelion-axis-arrow">▼</span>
+        </div>
+        <div class="nelion-axis-body" id="nelionL2Ax1">
+          <dl>
+            <dt>Was</dt><dd>Werden Probleme offen benannt?</dd>
+            <dt>Gemessen</dt><dd>Survey F5 + Interview</dd>
+            <dt>Warum</dt><dd>Unsichtbare Probleme können nicht gelöst werden</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="nelion-axis">
+        <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL2Ax2')">
+          <span>Veränderungsresistenz (Immunity to Change)</span><span class="nelion-axis-arrow">▼</span>
+        </div>
+        <div class="nelion-axis-body" id="nelionL2Ax2">
+          <dl>
+            <dt>Was</dt><dd>Warum scheitern Veränderungen trotz gutem Willen?</dd>
+            <dt>Gemessen</dt><dd>Survey F6 + Interview</dd>
+            <dt>Warum</dt><dd>Verborgene Annahmen blockieren echten Wandel — auch bei motivierten Menschen</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="nelion-axis">
+        <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL2Ax3')">
+          <span>Verantwortungsvermeidung (Attribution Style)</span><span class="nelion-axis-arrow">▼</span>
+        </div>
+        <div class="nelion-axis-body" id="nelionL2Ax3">
+          <dl>
+            <dt>Was</dt><dd>Wem wird Ursache zugeschrieben?</dd>
+            <dt>Gemessen</dt><dd>Survey F7 + Interview</dd>
+            <dt>Warum</dt><dd>Externe Attribution verhindert Lernschleifen und Eigenverantwortung</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="nelion-axis">
+        <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL2Ax4')">
+          <span>Irritabilität (Threat-State)</span><span class="nelion-axis-arrow">▼</span>
+        </div>
+        <div class="nelion-axis-body" id="nelionL2Ax4">
+          <dl>
+            <dt>Was</dt><dd>Ist das Team im Abwehrmodus?</dd>
+            <dt>Gemessen</dt><dd>Survey F8 + Interview</dd>
+            <dt>Warum</dt><dd>Erhöhte Reizbarkeit = L1/L2-Grenzbereich, Alarm-Signal für systemische Überlastung</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- L3 ───────────────────────────────── -->
+  <div class="nelion-layer nelion-layer-l3">
+    <div class="nelion-layer-header" onclick="toggleNelionLayer(this, 'nelionL3Body')">
+      <div class="nelion-layer-title">L3 — Strukturelle Reibung</div>
+      <span class="nelion-layer-badge">Architektur</span>
+      <span class="nelion-layer-arrow">▼</span>
+    </div>
+    <div class="nelion-layer-body" id="nelionL3Body">
+      <p>Die strukturelle Ebene: Prozesse, Entscheidungswege, Anreize, Informationsfluss. Schlechte Architektur erzeugt vorhersehbares Fehlverhalten — unabhängig davon wer die Stellen besetzt.</p>
+
+      <h4>Theorien</h4>
+      <ul>
+        <li>Goodhart's Law (★★★) — Anreize steuern Verhalten</li>
+        <li>Dunbar's Number (★★★) — Informationsfluss und Grösse</li>
+        <li>Meadows Leverage Points (★★★) — Wo Struktureingriffe wirken</li>
+      </ul>
+
+      <h4>Warum relevant</h4>
+      <p>L3 ist der häufigste Einstieg — aber oft der falsche. Strukturen optimieren wenn L1/L2 nicht adressiert sind: Budget weg, Zustand wie vorher.</p>
+
+      <div class="nelion-roi-box">
+        <div class="nelion-roi-box-title">Business-Impact</div>
+        Unklare Entscheidungswege kosten nachweislich 20–40% der verfügbaren Führungszeit (McKinsey Org Research). Meetings ohne Ergebnis, doppelte Arbeit und Silos sind direkt quantifizierbar in Stunden × Stundensatz. L3-Friction ist oft das teuerste Problem — und das am einfachsten behebbare wenn L1/L2 stabil sind.
+      </div>
+
+      <h4>Vier Achsen</h4>
+
+      <div class="nelion-axis">
+        <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL3Ax1')">
+          <span>Fehlentscheidungskosten (Entscheidungsarchitektur)</span><span class="nelion-axis-arrow">▼</span>
+        </div>
+        <div class="nelion-axis-body" id="nelionL3Ax1">
+          <dl>
+            <dt>Was</dt><dd>Wie klar sind Entscheidungswege und -befugnisse?</dd>
+            <dt>Gemessen</dt><dd>Survey F9 + Interview</dd>
+            <dt>Warum</dt><dd>Unklare Entscheidungswege = Lähmung oder Chaos — beides kostet messbar Zeit</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="nelion-axis">
+        <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL3Ax2')">
+          <span>Dysfunktionale Anreize (Incentive-Struktur)</span><span class="nelion-axis-arrow">▼</span>
+        </div>
+        <div class="nelion-axis-body" id="nelionL3Ax2">
+          <dl>
+            <dt>Was</dt><dd>Was wird tatsächlich belohnt — informell?</dd>
+            <dt>Gemessen</dt><dd>Survey F10 + Interview</dd>
+            <dt>Warum</dt><dd>Formale Ziele ≠ echte Anreize = Goodhart's Law in Aktion</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="nelion-axis">
+        <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL3Ax3')">
+          <span>Verantwortungsvakuum (Strukturelle Ambiguität)</span><span class="nelion-axis-arrow">▼</span>
+        </div>
+        <div class="nelion-axis-body" id="nelionL3Ax3">
+          <dl>
+            <dt>Was</dt><dd>Gibt es ungeklärte Verantwortlichkeiten?</dd>
+            <dt>Gemessen</dt><dd>Survey F11 + Interview</dd>
+            <dt>Warum</dt><dd>Vakuum = entweder niemand kümmert sich oder alle übereinander — beide Varianten teuer</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="nelion-axis">
+        <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL3Ax4')">
+          <span>Informationsblockaden (Informationsfluss)</span><span class="nelion-axis-arrow">▼</span>
+        </div>
+        <div class="nelion-axis-body" id="nelionL3Ax4">
+          <dl>
+            <dt>Was</dt><dd>Kommen relevante Informationen an wo sie gebraucht werden?</dd>
+            <dt>Gemessen</dt><dd>Survey F12 + Interview</dd>
+            <dt>Warum</dt><dd>Informationsblockaden erzeugen Silos, Doppelarbeit und Fehlentscheidungen</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nelion-footer">NELION — Organizational Friction Diagnostics · Basel · 2026</div>
+</div>
+
 </div><!-- /.container -->
 </div><!-- /.main -->
 
@@ -3178,7 +3633,7 @@
 
       <h3>2 · Scoring &amp; Ampeln</h3>
       <p>Achsen-Score: <code>1–10</code> (intern). Ampel: <code>7–10 grün</code> / <code>4–6 gelb</code> / <code>1–3 rot</code>.</p>
-      <p><strong>Layer-Ampel: Gate-Logik (kein Durchschnitt).</strong> Der schwächste Achsen-Wert bestimmt den Layer. Begründung: L1 rot = Gate. Keine L3-Intervention solange Biologische Kapazität nicht stabilisiert.</p>
+      <p><strong>Layer-Ampel: Gate-Logik (kein Durchschnitt).</strong> Der schwächste Achsen-Wert bestimmt den Layer. Begründung: L1 rot = Gate. Keine L3-Intervention solange Neurobiologische Kapazität nicht stabilisiert.</p>
 
       <h3>3 · Divergenz-Typen</h3>
       <ul>
@@ -3792,6 +4247,8 @@ function switchTab(tab) {
   } else if (tab === "interventionen") {
     document.getElementById("moduleInterventionen").classList.add("active");
     initInterventionenTab();
+  } else if (tab === "nelion") {
+    document.getElementById("moduleNelion").classList.add("active");
   }
 
   // Anker auf allen NELION-Seiten sichtbar (Regulations-Werkzeug immer
@@ -4576,7 +5033,7 @@ const AMPEL_AXES = {
 // Display-Labels im Format: "Klienten-Name (Wissenschaftlicher Name)"
 // Interne Achsen-Keys (AMPEL_AXES-Werte, scan_ampeln.achse, data-Attribute) bleiben unverändert.
 const AXIS_DISPLAY_LABELS = {
-  // L1a — Individuelle Biologische Kapazität
+  // L1a — Individuelle Neurobiologische Kapazität
   "Allostatic Load":          "Neurobiologische Last (Allostatic Load)",
   "Energie-Status":           "Energiereserven (Energie-Status)",
   "Verarbeitungsarchitektur": "Kognitive Diversität (Verarbeitungsarchitektur)",
@@ -4584,7 +5041,7 @@ const AXIS_DISPLAY_LABELS = {
   // L1b — Strukturell verursachte Erschöpfung
   "Anforderungs-Ressourcen-Ungleichgewicht": "Strukturelle Überlastung (Anforderungs-Ressourcen-Ungleichgewicht)",
   "Erholungsstruktur":        "Regenerationsdefizit (Erholungsstruktur)",
-  // L2 — Psychologische Dynamik
+  // L2 — Wissensblockaden
   "Psychological Safety":     "Selbstzensur (Psychological Safety)",
   "Immunity-Muster":          "Veränderungsresistenz (Immunity-Muster)",
   "Attribution Style":        "Verantwortungsvermeidung (Attribution Style)",
@@ -4598,9 +5055,9 @@ const AXIS_DISPLAY_LABELS = {
 
 // Layer-Display-Labels für die Gruppen-Überschriften in den Grids.
 const LAYER_DISPLAY_LABELS = {
-  L1:  "L1a — Individuelle Biologische Kapazität",
+  L1:  "L1a — Individuelle Neurobiologische Kapazität",
   L1b: "L1b — Strukturell verursachte Erschöpfung",
-  L2:  "L2 — Psychologische Dynamik",
+  L2:  "L2 — Wissensblockaden",
   L3:  "L3 — Strukturelle Reibung",
 };
 
@@ -4858,7 +5315,7 @@ const REGIME_BANNER_CONFIG = {
   "1":  { color: "r1",  icon: "📋", label: "Regime 1",  text: "Strukturoptimierung. L3-Achsen im Fokus." },
   "2":  { color: "r2",  icon: "⚠️", label: "Regime 2",  text: "L2 vor L3 adressieren. Psychological Safety + Immunity zuerst prüfen." },
   "2b": { color: "r2b", icon: "⚠️", label: "Regime 2b", text: "L2 benennen, dann L3 formalisieren. Nicht umgekehrt." },
-  "3":  { color: "r3",  icon: "🔴", label: "Regime 3",  text: "L1 stabilisieren zuerst. Keine L3-Intervention bis Biologische Kapazität stabil." },
+  "3":  { color: "r3",  icon: "🔴", label: "Regime 3",  text: "L1 stabilisieren zuerst. Keine L3-Intervention bis Neurobiologische Kapazität stabil." },
 };
 
 async function loadAndRenderScanRegimeBanner() {
@@ -6097,6 +6554,24 @@ function toggleDisclosure(contentId, triggerBtn) {
   if (triggerBtn) triggerBtn.classList.toggle("open", open);
 }
 
+// NELION-Tab: Toggle eines Layer-Blocks (L1/L2/L3). Header-Pfeil dreht.
+function toggleNelionLayer(headerEl, bodyId) {
+  const body = document.getElementById(bodyId);
+  if (!body) return;
+  const open = !body.classList.contains("open");
+  body.classList.toggle("open", open);
+  if (headerEl) headerEl.classList.toggle("open", open);
+}
+
+// NELION-Tab: Toggle einer Sub-Achse innerhalb eines Layers.
+function toggleNelionAxis(headerEl, bodyId) {
+  const body = document.getElementById(bodyId);
+  if (!body) return;
+  const open = !body.classList.contains("open");
+  body.classList.toggle("open", open);
+  if (headerEl) headerEl.classList.toggle("open", open);
+}
+
 // ── DIAGNOSTISCHER KOMPASS V2 (Erstgespräch Phase 2) ──
 // Zwei separate Toggle-Blöcke unter einem gemeinsamen Titel:
 //   1. Layer-Signale — 4 Spalten (L1/L2/L3/Cross-Layer) mit je 5 Signalen
@@ -6343,7 +6818,7 @@ function renderHypothesenZusammenfassung() {
         </div>
         <div class="theorie-item">
           <div class="theorie-title">Sequenzierungs-Axiom <span class="theorie-meta">(L0 Constitution)</span></div>
-          <div class="theorie-text">L1 ist Gate — keine L3-Intervention solange Biologische Kapazität nicht stabilisiert.</div>
+          <div class="theorie-text">L1 ist Gate — keine L3-Intervention solange Neurobiologische Kapazität nicht stabilisiert.</div>
         </div>
         <div class="theorie-item">
           <div class="theorie-title">Meadows Leverage Points <span class="theorie-meta">(Meadows, 1999 ★★★)</span></div>
@@ -6466,39 +6941,43 @@ let simulationState = { l1: null, l2: null, immunity: null };
 
 const KASKADEN_REGIMES = {
   "1": {
-    label: "Regime 1", color: "r1",
-    erklaerung: "Strukturoptimierung — L3 ist der primäre Hebel.",
+    label: "Regime 1 — Strukturoptimierung (Strukturelle Reibung — L3)", color: "r1",
+    erklaerung: "System stabil, psychologische Muster unauffällig. Strukturelle Friction ist der primäre Hebel — höchste Hebelwirkung hier.",
+    basis: "Meadows Leverage Points (★★★) · Requisite Variety (Ashby ★★★)",
     bedeutet: [
-      "Entscheidungsarchitektur, Rollen und Incentives adressieren.",
-      "L1/L2 stabil genug, um strukturelle Veränderung zu tragen.",
-      "Klassische Organisationsentwicklung — sauber sequenzierbar.",
+      "Prozesse und Entscheidungswege optimieren",
+      "Anreizstrukturen klären",
+      "Direkte L3-Intervention möglich",
     ],
   },
   "2": {
-    label: "Regime 2", color: "r2",
-    erklaerung: "L2 vor L3 adressieren — psychologische Dynamik zuerst.",
+    label: "Regime 2 — Psychologische Klärung (Wissensblockaden — L2)", color: "r2",
+    erklaerung: "Strukturelle Massnahmen greifen nicht solange psychologische Muster aktiv sind. Vertrauen, Rollen und Kommunikation zuerst klären.",
+    basis: "Immunity to Change (Kegan & Lahey ★★★) · Psychological Safety (Edmondson ★★★)",
     bedeutet: [
-      "Psychological Safety, Attribution, Immunity-Muster explizit benennen.",
-      "L3-Interventionen würden ohne L2-Vorarbeit vom System absorbiert.",
-      "Coaching-nahe Arbeit vor Struktur-Redesign.",
+      "L2-Muster benennen und adressieren",
+      "Erst dann Strukturveränderungen",
+      "Reihenfolge ist entscheidend",
     ],
   },
   "2b": {
-    label: "Regime 2b", color: "r2b",
-    erklaerung: "L2 benennen, dann L3 formalisieren — integrierte Sequenz.",
+    label: "Regime 2b — Struktur benennen, dann formalisieren (Wissensblockaden + Strukturelle Reibung — L2+L3)", color: "r2b",
+    erklaerung: "Ein strukturelles Versagen erzeugt psychologische Blockaden. L2 zuerst benennen, dann L3 formalisieren — sonst wird die neue Struktur informell absorbiert.",
+    basis: "Double-Loop Learning (Argyris ★★★) · NELION L0 Constitution Regime 2b",
     bedeutet: [
-      "L3 rot + L2 Immunity: Struktur muss anders werden, blockiert aber durch Muster.",
-      "Erst Muster benennen (Immunity-Map), dann L3-Veränderung mit Begleitung.",
-      "Einzelner Interventionspfad, kein L3-Alleingang.",
+      "Blockade benennen: 'Die Struktur macht das schwierig'",
+      "Neue Struktur einführen",
+      "Nicht umgekehrt",
     ],
   },
   "3": {
-    label: "Regime 3", color: "r3",
-    erklaerung: "Erst stabilisieren — L1 rot, keine L3-Intervention.",
+    label: "Regime 3 — Stabilisierung (Neurobiologische Kapazität — L1)", color: "r3",
+    erklaerung: "Das System ist biologisch erschöpft. Interventionen greifen nicht wenn Menschen im Threat-State operieren. Erst stabilisieren, dann verändern.",
+    basis: "Polyvagal Theory (Porges ★★★) · Sequenzierungs-Axiom (L0) · Dynamic Systems Theory (Thelen ★★☆)",
     bedeutet: [
-      "Biologische Kapazität ist erschöpft — Regeneration hat Vorrang.",
-      "Workload-Reduktion, Recovery, Schlaf/Energie-Monitoring.",
-      "Jede L3-Intervention würde Erschöpfung verstärken.",
+      "Keine Workshops oder Prozess-Redesigns jetzt",
+      "Erst: Entlastung, Ressourcen, Regeneration ermöglichen",
+      "Dann: erneute Einschätzung",
     ],
   },
 };
@@ -6542,10 +7021,13 @@ function setKaskadenStep(field, value) {
   renderKaskadenSimulation();
 }
 
-function buildSimStep(question, selected, options, onclickBuilder) {
+function buildSimStep(question, selected, options, onclickBuilder, explanation) {
   let html = `<div class="sim-step">
-    <div class="sim-step-q">${escHtml(question)}</div>
-    <div class="sim-step-options">`;
+    <div class="sim-step-q">${escHtml(question)}</div>`;
+  if (explanation) {
+    html += `<div class="sim-step-expl" style="font-size:11px;color:var(--ink-mute);line-height:1.5;margin:2px 0 6px 0">${escHtml(explanation)}</div>`;
+  }
+  html += `<div class="sim-step-options">`;
   for (const o of options) {
     const activeCls = selected === o.v ? " active" : "";
     html += `<button class="sim-btn sim-btn-${o.cls}${activeCls}" type="button" onclick="${onclickBuilder(o.v)}">${escHtml(o.label)}</button>`;
@@ -6560,23 +7042,30 @@ function renderKaskadenSimulation() {
   const s = simulationState;
   let html = `<div class="sim-wrap">`;
 
-  html += buildSimStep("1. L1-Status?", s.l1,
+  html += buildSimStep(
+    "Wie ist die biologische Belastung? (Neurobiologische Kapazität — L1)",
+    s.l1,
     [
-      { v: "rot", label: "Rot", cls: "r3" },
-      { v: "gelb", label: "Gelb", cls: "r2" },
-      { v: "gruen", label: "Grün", cls: "r1" },
+      { v: "rot", label: "Rot — erschöpft / am Limit", cls: "r3" },
+      { v: "gelb", label: "Gelb — angespannt aber funktional", cls: "r2" },
+      { v: "gruen", label: "Grün — stabil", cls: "r1" },
     ],
     (v) => `setKaskadenStep('l1', '${v}')`);
 
   if (s.l1 === "gelb") {
-    html += buildSimStep("2. L2-Status?", s.l2,
+    html += buildSimStep(
+      "Sind psychologische Muster sichtbar? (Wissensblockaden — L2)",
+      s.l2,
       [
-        { v: "hoch", label: "Hoch", cls: "r2" },
-        { v: "ok", label: "Ok", cls: "r1" },
+        { v: "hoch", label: "Ja — Muster sichtbar", cls: "r2" },
+        { v: "ok", label: "Nein — unauffällig", cls: "r1" },
       ],
-      (v) => `setKaskadenStep('l2', '${v}')`);
+      (v) => `setKaskadenStep('l2', '${v}')`,
+      "Auffällig = mindestens eine Achse gelb/rot: Selbstzensur, Veränderungsresistenz, Verantwortungsvermeidung oder Irritabilität");
   } else if (s.l1 === "gruen") {
-    html += buildSimStep("2. Welche Layer sind auffällig?", s.l2,
+    html += buildSimStep(
+      "Welche Layer sind auffällig? (Wissensblockaden / Strukturelle Reibung)",
+      s.l2,
       [
         { v: "dominant", label: "L2 dominant", cls: "r2" },
         { v: "l3-dominant", label: "L3 dominant", cls: "r1" },
@@ -6586,12 +7075,15 @@ function renderKaskadenSimulation() {
   }
 
   if (s.l1 === "gelb" && s.l2 === "ok") {
-    html += buildSimStep("3. L3 rot + L2 Immunity?", s.immunity,
+    html += buildSimStep(
+      "Liegt ein strukturelles Problem vor das Blockaden erzeugt? (Strukturelle Reibung — L3)",
+      s.immunity,
       [
-        { v: "ja", label: "Ja", cls: "r2b" },
-        { v: "nein", label: "Nein", cls: "r1" },
+        { v: "ja", label: "Ja — Struktur erzeugt Blockaden", cls: "r2b" },
+        { v: "nein", label: "Nein — Struktur unauffällig", cls: "r1" },
       ],
-      (v) => `setKaskadenStep('immunity', '${v}')`);
+      (v) => `setKaskadenStep('immunity', '${v}')`,
+      "Typisch: unklare Verantwortungen, dysfunktionale Anreize oder Informationsblockaden führen zu Vermeidungsverhalten im Team");
   }
 
   const regimeKey = determineKaskadenRegime(s);
@@ -6600,7 +7092,8 @@ function renderKaskadenSimulation() {
     html += `<div class="sim-result sim-result-${r.color}">
       <div class="sim-result-label">${escHtml(r.label)}</div>
       <div class="sim-result-expl">${escHtml(r.erklaerung)}</div>
-      <div class="sim-result-mean-head">Was das bedeutet:</div>
+      ${r.basis ? `<div class="sim-result-basis" style="font-size:11px;color:var(--ink-mute);margin-top:6px;line-height:1.5"><strong style="font-weight:500">Basis:</strong> ${escHtml(r.basis)}</div>` : ""}
+      <div class="sim-result-mean-head">Massnahmen:</div>
       <ul class="sim-result-mean">`;
     for (const p of r.bedeutet) html += `<li>${escHtml(p)}</li>`;
     html += `</ul></div>`;
@@ -6630,11 +7123,16 @@ async function saveKaskadenRegime(regimeKey) {
   } catch (e) { console.warn("Save regime failed:", e.message); }
 }
 
-// Minimal Markdown → HTML (bold, italic, lists, paragraphs) für Claude-Output.
+// Minimal Markdown → HTML (Headings, bold, italic, lists, paragraphs) für Claude-Output.
 // Keine externe Library — reicht für strukturierte Antworten.
+// ## → <h2>, ### → <h3>, **fett**, *kursiv*, - / 1. Listen, Leerzeilen → Absätze.
 function renderMarkdownToHtml(md) {
   if (!md) return "";
   let h = escHtml(md);
+  // Headings (vor Bold/Italic, damit ## nicht zu *<em>* wird)
+  h = h.replace(/^### (.+)$/gm, "<h3>$1</h3>");
+  h = h.replace(/^## (.+)$/gm, "<h2>$1</h2>");
+  // Inline Formatierung
   h = h.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
   h = h.replace(/\*(.+?)\*/g, "<em>$1</em>");
   // Listen-Zeilen zu <ul><li> gruppieren
@@ -6651,7 +7149,7 @@ function renderMarkdownToHtml(md) {
   });
   // Absätze
   h = h.split(/\n\n+/).map(p => p.trim()).filter(Boolean).map(p => {
-    if (p.startsWith("<ul>") || p.startsWith("<ol>")) return p;
+    if (p.startsWith("<ul>") || p.startsWith("<ol>") || p.startsWith("<h2>") || p.startsWith("<h3>")) return p;
     return "<p>" + p.replace(/\n/g, "<br>") + "</p>";
   }).join("");
   return h;
@@ -8843,9 +9341,9 @@ function renderPaiTranskriptAnalysis(data) {
   const text = data.text || "";
   const when = data.analyzed_at ? new Date(data.analyzed_at).toLocaleString("de-CH") : "";
   return `
-    <div class="scan-card" style="background:var(--ada-bg);border-color:rgba(75,0,130,0.2);padding:10px">
-      <div class="scan-card-title" style="color:var(--ada-accent)">Linguistik- und Layer-Analyse${when ? ` <span style="font-weight:400;font-size:11px;color:var(--ink-mute)">· ${escHtml(when)}</span>` : ""}</div>
-      <div style="font-size:13px;white-space:pre-wrap;line-height:1.6">${escHtml(text)}</div>
+    <div class="scan-card hyp-output has-content" style="padding:12px 14px">
+      <div class="scan-card-title" style="color:var(--ada-accent);margin-bottom:8px">Linguistik- und Layer-Analyse${when ? ` <span style="font-weight:400;font-size:11px;color:var(--ink-mute)">· ${escHtml(when)}</span>` : ""}</div>
+      <div>${renderMarkdownToHtml(text)}</div>
     </div>
   `;
 }
@@ -10188,9 +10686,9 @@ function printTriangulationMatrix() {
     const fKeysInLayer = byLayer[layer] || [];
     if (fKeysInLayer.length === 0) continue;
     // Layer-Trennzeile (fett, schwarz hinterlegt im CSS)
-    const layerTitle = layer === "L1"  ? "L1a — Individuelle Biologische Kapazität"
+    const layerTitle = layer === "L1"  ? "L1a — Individuelle Neurobiologische Kapazität"
                      : layer === "L1b" ? "L1b — Strukturell verursachte Erschöpfung"
-                     : layer === "L2"  ? "L2 — Psychologische Dynamik"
+                     : layer === "L2"  ? "L2 — Wissensblockaden"
                      : layer === "L3"  ? "L3 — Strukturelle Reibung"
                      : layer;
     tableRows += `<tr class="pm-layer-sep"><td colspan="8">${escHtml(layerTitle)}</td></tr>`;
@@ -10338,23 +10836,30 @@ function renderKaskadenSimulationAus() {
   const s = simulationStateAus;
   let html = `<div class="sim-wrap">`;
 
-  html += buildSimStep("1. L1-Status?", s.l1,
+  html += buildSimStep(
+    "Wie ist die biologische Belastung? (Neurobiologische Kapazität — L1)",
+    s.l1,
     [
-      { v: "rot", label: "Rot", cls: "r3" },
-      { v: "gelb", label: "Gelb", cls: "r2" },
-      { v: "gruen", label: "Grün", cls: "r1" },
+      { v: "rot", label: "Rot — erschöpft / am Limit", cls: "r3" },
+      { v: "gelb", label: "Gelb — angespannt aber funktional", cls: "r2" },
+      { v: "gruen", label: "Grün — stabil", cls: "r1" },
     ],
     (v) => `setKaskadenStepAus('l1', '${v}')`);
 
   if (s.l1 === "gelb") {
-    html += buildSimStep("2. L2-Status?", s.l2,
+    html += buildSimStep(
+      "Sind psychologische Muster sichtbar? (Wissensblockaden — L2)",
+      s.l2,
       [
-        { v: "hoch", label: "Hoch", cls: "r2" },
-        { v: "ok", label: "Ok", cls: "r1" },
+        { v: "hoch", label: "Ja — Muster sichtbar", cls: "r2" },
+        { v: "ok", label: "Nein — unauffällig", cls: "r1" },
       ],
-      (v) => `setKaskadenStepAus('l2', '${v}')`);
+      (v) => `setKaskadenStepAus('l2', '${v}')`,
+      "Auffällig = mindestens eine Achse gelb/rot: Selbstzensur, Veränderungsresistenz, Verantwortungsvermeidung oder Irritabilität");
   } else if (s.l1 === "gruen") {
-    html += buildSimStep("2. Welche Layer sind auffällig?", s.l2,
+    html += buildSimStep(
+      "Welche Layer sind auffällig? (Wissensblockaden / Strukturelle Reibung)",
+      s.l2,
       [
         { v: "dominant", label: "L2 dominant", cls: "r2" },
         { v: "l3-dominant", label: "L3 dominant", cls: "r1" },
@@ -10364,12 +10869,15 @@ function renderKaskadenSimulationAus() {
   }
 
   if (s.l1 === "gelb" && s.l2 === "ok") {
-    html += buildSimStep("3. L3 rot + L2 Immunity?", s.immunity,
+    html += buildSimStep(
+      "Liegt ein strukturelles Problem vor das Blockaden erzeugt? (Strukturelle Reibung — L3)",
+      s.immunity,
       [
-        { v: "ja", label: "Ja", cls: "r2b" },
-        { v: "nein", label: "Nein", cls: "r1" },
+        { v: "ja", label: "Ja — Struktur erzeugt Blockaden", cls: "r2b" },
+        { v: "nein", label: "Nein — Struktur unauffällig", cls: "r1" },
       ],
-      (v) => `setKaskadenStepAus('immunity', '${v}')`);
+      (v) => `setKaskadenStepAus('immunity', '${v}')`,
+      "Typisch: unklare Verantwortungen, dysfunktionale Anreize oder Informationsblockaden führen zu Vermeidungsverhalten im Team");
   }
 
   const regimeKey = determineKaskadenRegime(s);
@@ -10378,7 +10886,8 @@ function renderKaskadenSimulationAus() {
     html += `<div class="sim-result sim-result-${r.color}">
       <div class="sim-result-label">${escHtml(r.label)}</div>
       <div class="sim-result-expl">${escHtml(r.erklaerung)}</div>
-      <div class="sim-result-mean-head">Was das bedeutet:</div>
+      ${r.basis ? `<div class="sim-result-basis" style="font-size:11px;color:var(--ink-mute);margin-top:6px;line-height:1.5"><strong style="font-weight:500">Basis:</strong> ${escHtml(r.basis)}</div>` : ""}
+      <div class="sim-result-mean-head">Massnahmen:</div>
       <ul class="sim-result-mean">`;
     for (const p of r.bedeutet) html += `<li>${escHtml(p)}</li>`;
     html += `</ul></div>`;
