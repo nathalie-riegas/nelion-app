@@ -6614,6 +6614,14 @@ async function generateHypothesen() {
   if (btn) { btn.disabled = true; btn.textContent = "Generiere…"; }
   if (status) status.textContent = "Claude analysiert (10–30s)…";
   try {
+    // Transkript-Analyse (falls vorhanden) zusätzlich in den Abschluss-Block
+    // mergen — liefert Claude Kontext aus dem Original-Transkript.
+    const transkriptAnalyse = currentConsultation.transkript_analyse && currentConsultation.transkript_analyse.text
+      ? currentConsultation.transkript_analyse.text : "";
+    const abschlussBlock = [
+      currentConsultation.phase5_notes || "",
+      transkriptAnalyse ? "\n\n— Transkript-Analyse —\n" + transkriptAnalyse : "",
+    ].join("");
     const payload = {
       person_name: currentContact ? currentContact.name : "",
       phase_notes: {
@@ -6625,7 +6633,7 @@ async function generateHypothesen() {
           currentConsultation.phase4_idealzustand ? "Idealzustand: " + currentConsultation.phase4_idealzustand : "",
           !currentConsultation.phase4_schritt && !currentConsultation.phase4_idealzustand ? (currentConsultation.phase4_notes || "") : "",
         ].filter(Boolean).join("\n\n"),
-        abschluss: currentConsultation.phase5_notes || "",
+        abschluss: abschlussBlock,
       },
       signals: signalCounts,
     };
@@ -6658,6 +6666,116 @@ async function generateHypothesen() {
   if (btn) { btn.disabled = false; btn.textContent = "Hypothesen neu generieren"; }
 }
 
+// ── ERSTGESPRÄCH PHASE 5: TRANSKRIPT-UPLOAD + CLAUDE-ANALYSE ──────────────
+async function onTranskriptFileChange(event) {
+  const file = event.target.files?.[0];
+  if (!file || !currentConsultation) return;
+  const preview = document.getElementById("transkriptPreview");
+  const status = document.getElementById("transkriptAnalyseStatus");
+  const btnAnalyse = document.getElementById("btnAnalyseTranskript");
+
+  const ext = (file.name.split(".").pop() || "").toLowerCase();
+  if (!["txt", "docx"].includes(ext)) {
+    if (status) status.textContent = "✗ Nur .txt oder .docx erlaubt.";
+    return;
+  }
+
+  if (status) status.textContent = "Lade Datei…";
+  try {
+    let text = "";
+    if (ext === "txt") {
+      text = await file.text();
+    } else {
+      // .docx → /api/upload (nutzt mammoth auf server-side)
+      const fd = new FormData();
+      fd.append("file", file);
+      const r = await fetch("/api/upload", { method: "POST", body: fd });
+      const d = await r.json();
+      if (!r.ok || d.error) throw new Error(d.error || "Upload fehlgeschlagen");
+      text = d.text || "";
+    }
+    text = text.trim();
+    if (!text) throw new Error("Kein Text extrahierbar");
+
+    currentConsultation.transkript_text = text;
+    // Persistieren
+    try {
+      await fetch(`/api/consultations/${currentConsultation.id}`, {
+        method: "PATCH", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ transkript_text: text }),
+      });
+    } catch {}
+
+    // Preview rendern
+    if (preview) {
+      const pv = text.slice(0, 300) + (text.length > 300 ? "…" : "");
+      preview.textContent = `📄 ${file.name}\n\n${pv}`;
+    }
+    if (btnAnalyse) btnAnalyse.disabled = false;
+    if (status) status.textContent = `✓ Datei geladen (${text.length.toLocaleString("de-CH")} Zeichen).`;
+  } catch (e) {
+    if (status) status.textContent = "✗ " + e.message;
+    console.warn("Transkript upload:", e.message);
+  }
+}
+
+async function analyseTranskript() {
+  if (!currentConsultation) return;
+  const transkript = currentConsultation.transkript_text || "";
+  if (!transkript.trim()) { alert("Kein Transkript geladen."); return; }
+  const btn = document.getElementById("btnAnalyseTranskript");
+  const status = document.getElementById("transkriptAnalyseStatus");
+  const output = document.getElementById("transkriptAnalyseOutput");
+  if (btn) { btn.disabled = true; btn.textContent = "Analysiere…"; }
+  if (status) status.textContent = "Claude analysiert (15–45s)…";
+
+  try {
+    const payload = {
+      transkript,
+      person_name: currentContact ? currentContact.name : "",
+      phase_notes: {
+        phase1: currentConsultation.phase1_notes || "",
+        phase2: currentConsultation.phase2_notes || "",
+        phase3: currentConsultation.phase3_notes || "",
+        phase4: [
+          currentConsultation.phase4_schritt ? "Schritt: " + currentConsultation.phase4_schritt : "",
+          currentConsultation.phase4_idealzustand ? "Idealzustand: " + currentConsultation.phase4_idealzustand : "",
+          !currentConsultation.phase4_schritt && !currentConsultation.phase4_idealzustand ? (currentConsultation.phase4_notes || "") : "",
+        ].filter(Boolean).join("\n\n"),
+      },
+    };
+    const r = await fetch("/api/ada/transkript-analyse", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await r.json();
+    if (!r.ok || data.error) throw new Error(data.error || `HTTP ${r.status}`);
+    const text = data.text || "";
+
+    if (output) {
+      output.innerHTML = renderMarkdownToHtml(text);
+      output.classList.add("has-content");
+    }
+    const filename = document.getElementById("transkriptFileInput")?.files?.[0]?.name || "";
+    const analyse = {
+      text, filename,
+      generated_at: data.generated_at || new Date().toISOString(),
+    };
+    currentConsultation.transkript_analyse = analyse;
+    try {
+      await fetch(`/api/consultations/${currentConsultation.id}`, {
+        method: "PATCH", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ transkript_analyse: analyse }),
+      });
+    } catch {}
+    if (status) status.textContent = "✓ Analyse fertig.";
+  } catch (e) {
+    if (status) status.textContent = "✗ " + e.message;
+    console.error("Transkript-Analyse:", e.message);
+  }
+  if (btn) { btn.disabled = false; btn.textContent = "Transkript erneut analysieren"; }
+}
 
 // ── TRANSKRIPT-ANALYSE (ADA-gestützt, Modul 2 Phase 2) ──
 const TRANSKRIPT_ANALYSE_PROMPT = `Du bist NELION Friction Diagnostics.

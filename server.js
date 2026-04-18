@@ -371,6 +371,7 @@ app.post("/api/upload", (req, res) => {
       if (ext === ".pdf") text = await extractPdfText(buffer);
       else if (ext === ".docx") text = await extractDocxText(buffer);
       else if (ext === ".pptx") text = extractPptxText(buffer);
+      else if (ext === ".txt") text = buffer.toString("utf-8");
       else return res.status(400).json({ error: "Format nicht unterstuetzt" });
 
       text = (text || "").replace(/\r\n/g, "\n").replace(/[ \t]+\n/g, "\n").trim();
@@ -596,6 +597,10 @@ app.patch("/api/consultations/:id", async (req, res) => {
   if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
   const allowed = [
     "current_phase",
+    "consultation_date",
+    "unternehmen",
+    "abteilung",
+    "phase0_notiz",
     "phase1_notes",
     "phase2_notes",
     "phase3_notes",
@@ -607,6 +612,8 @@ app.patch("/api/consultations/:id", async (req, res) => {
     "phase5_mitnehmen_notizen",
     "phase5_naechster_schritt_notizen",
     "phase5_multiplikator",
+    "transkript_analyse",
+    "transkript_text",
     "completed",
     "hyp_generated",
     "hyp_regime",
@@ -619,26 +626,29 @@ app.patch("/api/consultations/:id", async (req, res) => {
     return res.status(400).json({ error: "Keine Felder zum Update" });
   }
   // Graceful fallback falls optional-Spalten noch nicht migriert sind.
+  const OPTIONAL_COLS = [
+    "hyp_generated", "hyp_regime",
+    "phase4_schritt", "phase4_idealzustand", "phase4_schritt_notizen",
+    "phase5_mitnehmen_notizen", "phase5_naechster_schritt_notizen", "phase5_multiplikator",
+    "unternehmen", "abteilung", "phase0_notiz",
+    "transkript_analyse", "transkript_text",
+  ];
   let { data, error } = await supabase
     .from("consultations").update(updates).eq("id", req.params.id).select().single();
-  if (error && /hyp_generated|hyp_regime|phase4_schritt|phase4_idealzustand|phase4_schritt_notizen|phase5_mitnehmen_notizen|phase5_naechster_schritt_notizen|phase5_multiplikator/.test(error.message || "")) {
-    // Fehlende optionale Spalten entfernen und erneut versuchen
-    delete updates.hyp_generated;
-    delete updates.hyp_regime;
-    delete updates.phase4_schritt;
-    delete updates.phase4_idealzustand;
-    delete updates.phase4_schritt_notizen;
-    delete updates.phase5_mitnehmen_notizen;
-    delete updates.phase5_naechster_schritt_notizen;
-    delete updates.phase5_multiplikator;
-    if (Object.keys(updates).length === 0) {
-      return res.status(500).json({ error: "Migrationen nötig: 013_consultations_hyp.sql + 014_consultations_phase4_split.sql + 015_consultations_guide_notes.sql" });
+  if (error) {
+    const msg = error.message || "";
+    const missing = OPTIONAL_COLS.filter(c => msg.includes(c));
+    if (missing.length > 0) {
+      for (const c of missing) delete updates[c];
+      if (Object.keys(updates).length === 0) {
+        return res.status(500).json({ error: "Migrationen nötig: 013/014/015/018 (consultations-Spalten fehlen: " + missing.join(", ") + ")" });
+      }
+      const r2 = await supabase.from("consultations").update(updates).eq("id", req.params.id).select().single();
+      if (r2.error) return res.status(500).json({ error: r2.error.message });
+      return res.json(r2.data);
     }
-    const r2 = await supabase.from("consultations").update(updates).eq("id", req.params.id).select().single();
-    if (r2.error) return res.status(500).json({ error: r2.error.message });
-    return res.json(r2.data);
+    return res.status(500).json({ error: error.message });
   }
-  if (error) return res.status(500).json({ error: error.message });
   res.json(data);
 });
 
@@ -1910,6 +1920,84 @@ Bitte generiere die Hypothesen-Zusammenfassung.`;
         continue;
       }
       console.error("Erstgespraech-Hypothesen error:", e.message);
+      const userErr = isOverloaded
+        ? "Claude ist gerade überlastet. Bitte in 30 Sekunden nochmal versuchen."
+        : isRateLimit
+        ? "Zu viele Anfragen. Bitte kurz warten."
+        : "ADA-Fehler: " + e.message;
+      return res.status(500).json({ error: userErr });
+    }
+  }
+});
+
+// ─── ADA TRANSKRIPT-ANALYSE (Erstgespräch Phase 5) ────────────────────────
+// Analysiert ein Gesprächs-Transkript einer Führungsperson und extrahiert
+// Layer-Hypothesen (L1/L2/L3) mit Zitaten, Omission Bias Check, stärkste
+// Friction-Hypothese und eine empfohlene Vertiefungsfrage für den
+// Hypothesen-Spiegel. Antwort = strukturierter deutscher Markdown-Text.
+app.post("/api/ada/transkript-analyse", async (req, res) => {
+  if (!anthropic) return res.status(503).json({ error: "ANTHROPIC_API_KEY nicht konfiguriert" });
+  const { transkript, phase_notes, person_name } = req.body || {};
+  if (!transkript || !transkript.trim()) {
+    return res.status(400).json({ error: "Transkript erforderlich" });
+  }
+  const notes = phase_notes || {};
+
+  const kontextBlock =
+`Phase 1 (Sync): ${(notes.phase1 || "— keine Notizen —").trim()}
+Phase 2 (Scan): ${(notes.phase2 || "— keine Notizen —").trim()}
+Phase 3 (Spiegeln): ${(notes.phase3 || "— keine Notizen —").trim()}
+Phase 4 (Slice): ${(notes.phase4 || "— keine Notizen —").trim()}`;
+
+  const systemPrompt = `Du bist NELION Friction Diagnostics.
+Analysiere dieses Erstgespräch-Transkript einer Führungsperson.
+
+Kontext aus dem Gespräch:
+${kontextBlock}
+
+Extrahiere:
+1. Layer-Hypothesen (L1/L2/L3) — je mit direktem Zitat als Evidenz
+2. Omission Bias Check:
+   - Biologische Last über Systemsprache kommuniziert?
+   - Geschützte Personen nie als Reibungsquelle genannt?
+   - Wo hat der Ton gewechselt?
+3. Stärkste Friction-Hypothese (1 Satz)
+4. Empfohlene Vertiefungsfrage für Hypothesen-Spiegel
+
+Antworte strukturiert, deutsch, maximal 400 Wörter.
+Verwende Markdown: **Fett** für Überschriften, nummerierte Listen, kurze Sätze.
+
+Die drei Layer:
+- L1 = Biologische Kapazität (Energie, Schlaf, Overload)
+- L2 = Psychologische Dynamik (Muster, Safety, Immunity)
+- L3 = Organisationale Struktur (Prozesse, Entscheidung, Verantwortung)`;
+
+  const userMsg = `Klient${person_name ? ": " + person_name : ""}.
+
+Transkript:
+${transkript.trim()}
+
+Bitte liefere die strukturierte Analyse.`;
+
+  const maxRetries = 3;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await anthropic.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 2048,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userMsg }],
+      });
+      const text = response.content.filter(c => c.type === "text").map(c => c.text).join("");
+      return res.json({ text, generated_at: new Date().toISOString() });
+    } catch (e) {
+      const isOverloaded = e.status === 529 || (e.message && e.message.includes("529"));
+      const isRateLimit = e.status === 429;
+      if ((isOverloaded || isRateLimit) && attempt < maxRetries) {
+        await new Promise(r => setTimeout(r, attempt * 2000));
+        continue;
+      }
+      console.error("Transkript-Analyse error:", e.message);
       const userErr = isOverloaded
         ? "Claude ist gerade überlastet. Bitte in 30 Sekunden nochmal versuchen."
         : isRateLimit
