@@ -47,7 +47,7 @@ Evidenz + Testfrage).
 schweigen + notieren.
 
 **Phase 5 — Befund (Tag 3 Nachmittag):** Finale Ampeln.
-Primärer Friction-Vektor. Regime-Routing.
+Primärer Friction-Vektor. Pfad-Routing.
 3 Sofort-Massnahmen.
 
 ## Layer-Struktur
@@ -84,11 +84,11 @@ L1 ist Gate. L1 rot → keine L3-Intervention.
 Format-Regel: "Klienten-Name (Wissenschaftlicher Name)" —
 Klienten-Name zuerst, Wissenschaftlicher Name in Klammern.
 
-## Regime-Routing
-- L1 rot → Regime 3 (biologisch zuerst, keine L3-Intervention)
-- L1 gelb + L2 hoch → Regime 2 (psychologisch + biologisch)
-- L3 dominant → Regime 1 (strukturell)
-- L3 rot + L2 Immunity → Regime 2b
+## Pfad-Routing
+- L1 rot → Stabilisierungspfad (biologisch zuerst, keine L3-Intervention)
+- L1 gelb + L2 hoch → Kulturpfad (psychologisch + biologisch)
+- L3 dominant → Gestaltungspfad (strukturell)
+- L3 rot + L2 Immunity → Klärungspfad
   (Immunity benennen, dann L3 formalisieren)
 
 ## Fünf Kern-Konzepte
@@ -184,7 +184,7 @@ Theorie-Basis:
   Dunbar's Number ★★★
 
 Bei L1 rot → immer automatisch:
-"L1 rot = Regime 3. Keine L3-Intervention bis L1 stabil."
+"L1 rot = Stabilisierungspfad. Keine L3-Intervention bis L1 stabil."
 
 Lernmodus AUS: ADA antwortet nur auf direkte Fragen.
 

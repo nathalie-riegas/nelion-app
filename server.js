@@ -1812,7 +1812,7 @@ app.post("/api/ada/interventions", async (req, res) => {
 
   const systemPrompt = `Du bist ADA und generierst strukturierte Interventions-Empfehlungen für den Organizational Friction Scan bei ${kunde_name || "Klient"}.
 
-Input: 3 Haupt-Friction-Points (Layer, Achse, Ampel) + aktuelles Regime-Routing.
+Input: 3 Haupt-Friction-Points (Layer, Achse, Ampel) + aktuelles Pfad-Routing.
 
 Für JEDEN Friction-Point gib zurück:
   - layer: "L1" | "L1b" | "L2" | "L3" (wie im Input)

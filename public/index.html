@@ -748,6 +748,32 @@
   }
 
   /* ── INTERVIEW CARD ─────────────────────────────────────────────────── */
+  /* Interview-Tabs (Block B — 2026-04-20): 3 Tabs, ein Interview sichtbar. */
+  .interview-tabs {
+    display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;
+  }
+  .interview-tab {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 20px; padding: 7px 14px; cursor: pointer;
+    font-family: var(--sans); font-size: 13px; font-weight: 500;
+    color: var(--ink-dim); transition: all .15s;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .interview-tab:hover { border-color: var(--ink-dim); color: var(--ink); }
+  .interview-tab.active {
+    background: var(--ink); border-color: var(--ink); color: var(--surface);
+  }
+  .interview-tab.active .interview-status-badge { opacity: 0.9; }
+  .interview-status-badge {
+    font-size: 10px; font-family: var(--mono); letter-spacing: 0.04em;
+    padding: 2px 6px; border-radius: 10px;
+  }
+  .interview-status-pending { background: var(--surface2); color: var(--ink-mute); border: 1px solid var(--border); }
+  .interview-status-run     { background: var(--yellow-bg); color: #8a6d0f; border: 1px solid var(--yellow); }
+  .interview-status-done    { background: #e8f5e9; color: #1b5e20; border: 1px solid #66bb6a; }
+  .interview-tab.active .interview-status-pending { background: rgba(255,255,255,0.15); color: var(--surface); border-color: transparent; }
+  .interview-tab.active .interview-status-run     { background: rgba(255,255,255,0.15); color: var(--surface); border-color: transparent; }
+  .interview-tab.active .interview-status-done    { background: rgba(255,255,255,0.15); color: var(--surface); border-color: transparent; }
   .interview-card {
     background: var(--surface); border: 1px solid var(--border);
     border-radius: var(--r); padding: 20px; margin-bottom: 12px;
@@ -2684,13 +2710,16 @@
   }
 
   /* Regime-Banner: Hinweis im Friction Scan Tab wenn im Erstgespräch
-     ein Regime gespeichert wurde. 4 Farbvarianten (r1/r2/r2b/r3). */
+     ein Regime gespeichert wurde. 6 Farbvarianten (r0/r1/r2/r2b/r3/r4). */
   .regime-banner {
     display: flex; align-items: flex-start; gap: 12px;
     padding: 10px 14px; margin-bottom: 16px;
     border: 1px solid; border-left-width: 4px;
     border-radius: var(--rs);
     font-size: 13px; line-height: 1.5;
+  }
+  .regime-banner-r0 {
+    background: #fde8e8; border-color: #7f1d1d; color: #7f1d1d;
   }
   .regime-banner-r1 {
     background: #eaf2f8; border-color: #3498db; color: #1d6fa5;
@@ -2703,6 +2732,9 @@
   }
   .regime-banner-r3 {
     background: var(--red-bg); border-color: var(--red); color: var(--red);
+  }
+  .regime-banner-r4 {
+    background: #fde8e8; border-color: #7f1d1d; color: #7f1d1d;
   }
   .regime-banner-icon { font-size: 16px; flex-shrink: 0; line-height: 1.3; }
   .regime-banner-body { flex: 1; min-width: 0; }
@@ -2734,24 +2766,30 @@
     color: var(--ink); transition: all .15s;
   }
   .sim-btn:hover { border-color: var(--ink-dim); }
+  .sim-btn-r0.active { background: #fde8e8; border-color: #991b1b; color: #7f1d1d; }
   .sim-btn-r1.active { background: #eaf2f8; border-color: #3498db; color: #1d6fa5; }
   .sim-btn-r2.active { background: var(--yellow-bg); border-color: var(--yellow); color: #8a6d0f; }
   .sim-btn-r2b.active { background: #f5eef8; border-color: #8e44ad; color: #5d2e7a; }
   .sim-btn-r3.active { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+  .sim-btn-r4.active { background: #fde8e8; border-color: #7f1d1d; color: #7f1d1d; }
   .sim-result {
     border: 2px solid; border-radius: var(--r); padding: 14px 16px;
   }
+  .sim-result-r0 { background: #fde8e8; border-color: #7f1d1d; }
   .sim-result-r1 { background: #eaf2f8; border-color: #3498db; }
   .sim-result-r2 { background: var(--yellow-bg); border-color: var(--yellow); }
   .sim-result-r2b { background: #f5eef8; border-color: #8e44ad; }
   .sim-result-r3 { background: var(--red-bg); border-color: var(--red); }
+  .sim-result-r4 { background: #fde8e8; border-color: #7f1d1d; }
   .sim-result-label {
     font-size: 20px; font-weight: 600; margin-bottom: 4px;
   }
+  .sim-result-r0 .sim-result-label { color: #7f1d1d; }
   .sim-result-r1 .sim-result-label { color: #1d6fa5; }
   .sim-result-r2 .sim-result-label { color: #8a6d0f; }
   .sim-result-r2b .sim-result-label { color: #5d2e7a; }
   .sim-result-r3 .sim-result-label { color: var(--red); }
+  .sim-result-r4 .sim-result-label { color: #7f1d1d; }
   .sim-result-expl {
     font-size: 13px; color: var(--ink); margin-bottom: 10px;
     line-height: 1.5;
@@ -3079,7 +3117,7 @@
     .nelion-sidenav-btn { flex: 1; min-width: 140px; }
   }
 
-  /* Regime-Routing Pane */
+  /* Pfad-Routing Pane */
   .nelion-regime-conf {
     font-size: 12px; color: #444441; line-height: 1.6;
     padding: 12px 16px; background: var(--surface2);
@@ -3375,7 +3413,7 @@
   <div class="nelion-layout">
     <nav class="nelion-sidenav" id="nelionSideNav">
       <button class="nelion-sidenav-btn active" data-pane="layer" onclick="switchNelionPane('layer')">Layer-Modell</button>
-      <button class="nelion-sidenav-btn" data-pane="regime" onclick="switchNelionPane('regime')">Regime-Routing</button>
+      <button class="nelion-sidenav-btn" data-pane="regime" onclick="switchNelionPane('regime')">Pfad-Routing</button>
       <button class="nelion-sidenav-btn" data-pane="theorie" onclick="switchNelionPane('theorie')">Theorie-Legende</button>
     </nav>
 
@@ -3485,7 +3523,7 @@
           <dl>
             <dt>Was</dt><dd>Fehlende Erholungsstrukturen im System</dd>
             <dt>Gemessen</dt><dd>Survey F4 + Interview</dd>
-            <dt>Warum</dt><dd>Chronisches Defizit = Regime 3 Trigger — kein Einzelproblem, Systemfehler</dd>
+            <dt>Warum</dt><dd>Chronisches Defizit = Stabilisierungspfad Trigger — kein Einzelproblem, Systemfehler</dd>
           </dl>
         </div>
       </div>
@@ -3905,18 +3943,18 @@
   <div class="feature-card">
     <button class="feature-card-close" onclick="document.getElementById('regimeRefOverlay').classList.remove('open')">&times;</button>
     <div class="feature-card-title">Regime-Referenz + Routing</div>
-    <div class="regime-block"><div class="regime-name">Regime 1 — Optimierung</div><div class="regime-condition">L1 grün/gelb + L2 grün + L3 beliebig</div><div class="regime-lever">Hebel: L3-Anpassungen</div></div>
-    <div class="regime-block"><div class="regime-name">Regime 2 — Kalibrierung</div><div class="regime-condition">L1 grün/gelb + L2 gelb/rot + L3 grün/gelb</div><div class="regime-lever">Hebel: L2 vor L3</div></div>
-    <div class="regime-block"><div class="regime-name">Regime 2b — L3 erzeugt L2-Blockade</div><div class="regime-condition">L1 grün/gelb + L2 gelb/rot + L3 rot</div><div class="regime-lever">Erkennungssignal: "Wenn Struktur anders wäre — wäre L2-Problem weg?"<br>Hebel: L2 benennen → L3 fixen</div></div>
-    <div class="regime-block"><div class="regime-name">Regime 3 — Stabilisierung</div><div class="regime-condition">L1 rot ODER L1 gelb + L2 rot + WoT zu</div><div class="regime-lever">Hebel: L1 zuerst, immer</div></div>
+    <div class="regime-block"><div class="regime-name">Gestaltungspfad — Optimierung</div><div class="regime-condition">L1 grün/gelb + L2 grün + L3 beliebig</div><div class="regime-lever">Hebel: L3-Anpassungen</div></div>
+    <div class="regime-block"><div class="regime-name">Kulturpfad — Kalibrierung</div><div class="regime-condition">L1 grün/gelb + L2 gelb/rot + L3 grün/gelb</div><div class="regime-lever">Hebel: L2 vor L3</div></div>
+    <div class="regime-block"><div class="regime-name">Klärungspfad — L3 erzeugt L2-Blockade</div><div class="regime-condition">L1 grün/gelb + L2 gelb/rot + L3 rot</div><div class="regime-lever">Erkennungssignal: "Wenn Struktur anders wäre — wäre L2-Problem weg?"<br>Hebel: L2 benennen → L3 fixen</div></div>
+    <div class="regime-block"><div class="regime-name">Stabilisierungspfad — Stabilisierung</div><div class="regime-condition">L1 rot ODER L1 gelb + L2 rot + WoT zu</div><div class="regime-lever">Hebel: L1 zuerst, immer</div></div>
     <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border)">
       <div style="font-weight:600;font-size:13px;margin-bottom:8px">Routing-Logik</div>
       <div style="font-size:12px;color:var(--ink-mid);line-height:1.8">
-        L1 rot → Regime 3<br>
+        L1 rot → Stabilisierungspfad<br>
         L1 gelb + L2 rot → WoT-Check<br>
         L3 rot + L2 gelb/rot → 2b-Check<br>
-        L2 gelb/rot + L3 grün → Regime 2<br>
-        Sonst → Regime 1
+        L2 gelb/rot + L3 grün → Kulturpfad<br>
+        Sonst → Gestaltungspfad
       </div>
     </div>
   </div>
@@ -5639,10 +5677,12 @@ function renderScanPhase(num) {
 // Pro Scan-ID gecached per sessionStorage, dismiss-State per localStorage.
 
 const REGIME_BANNER_CONFIG = {
-  "1":  { color: "r1",  icon: "📋", label: "Regime 1",  text: "Strukturoptimierung. L3-Achsen im Fokus." },
-  "2":  { color: "r2",  icon: "⚠️", label: "Regime 2",  text: "L2 vor L3 adressieren. Psychological Safety + Immunity zuerst prüfen." },
-  "2b": { color: "r2b", icon: "⚠️", label: "Regime 2b", text: "L2 benennen, dann L3 formalisieren. Nicht umgekehrt." },
-  "3":  { color: "r3",  icon: "🔴", label: "Regime 3",  text: "L1 stabilisieren zuerst. Keine L3-Intervention bis Neurobiologische Kapazität stabil." },
+  "0":  { color: "r0",  icon: "⛔", label: "Alarmstufe Rot",  text: "Scan nicht möglich. Voraussetzungen nicht erfüllt — zuerst stabilisieren." },
+  "1":  { color: "r1",  icon: "📋", label: "Gestaltungspfad",  text: "Strukturoptimierung. L3-Achsen im Fokus." },
+  "2":  { color: "r2",  icon: "⚠️", label: "Kulturpfad",  text: "L2 vor L3 adressieren. Psychological Safety + Immunity zuerst prüfen." },
+  "2b": { color: "r2b", icon: "⚠️", label: "Klärungspfad", text: "L2 benennen, dann L3 formalisieren. Nicht umgekehrt." },
+  "3":  { color: "r3",  icon: "🔴", label: "Stabilisierungspfad",  text: "L1 stabilisieren zuerst. Keine L3-Intervention bis Neurobiologische Kapazität stabil." },
+  "4":  { color: "r4",  icon: "🚨", label: "Neuausrichtungspfad",  text: "Alle Layer kritisch. Fundamentale Neuausrichtung — externe Begleitung empfohlen." },
 };
 
 async function loadAndRenderScanRegimeBanner() {
@@ -5796,9 +5836,25 @@ function updateSetupMandatGate() {
   const all = a && b && c;
   const gate = document.getElementById("setupMandatGate");
   if (gate) {
-    gate.innerHTML = all
-      ? '<div class="gate-result gate-ok">✅ Mandat bestätigt — Scan kann starten.</div>'
-      : '<div class="gate-result gate-fail">⛔ Ausschlusskriterium aktiv — Scan nicht starten.</div>';
+    if (all) {
+      gate.innerHTML = '<div class="gate-result gate-ok">✅ Mandat bestätigt — Scan kann starten.</div>';
+    } else {
+      const missing = [];
+      if (!a) missing.push("Entscheider mit Mandat");
+      if (!b) missing.push("Unternehmen 5–100 Personen / Team mit Mandat");
+      if (!c) missing.push("Kein akuter Survival Mode");
+      gate.innerHTML = `
+        <div class="regime-banner regime-banner-r0" style="margin:0">
+          <span class="regime-banner-icon">⛔</span>
+          <div class="regime-banner-body">
+            <div class="regime-banner-label">Alarmstufe Rot — Scan nicht möglich</div>
+            <div class="regime-banner-text" style="margin-top:4px">
+              Voraussetzungen nicht erfüllt: ${escHtml(missing.join(", "))}.<br>
+              Empfehlung: Situation stabilisieren und in 8–12 Wochen neu einschätzen.
+            </div>
+          </div>
+        </div>`;
+    }
   }
   // Button bleibt aktiv — Validierung passiert beim Klick in saveSetupAndNext,
   // damit User eine klare Fehlermeldung sieht statt einem stummen disabled-Button.
@@ -6156,9 +6212,8 @@ function bindScanPhaseEvents(num) {
     if (typeof loadScanSurveySubmissions === "function") loadScanSurveySubmissions();
   } else if (num === 2) {
     ensureInterviewSlots().then(() => {
-      const mount = document.getElementById("interviewSlotsMount");
-      if (mount) mount.innerHTML = [1,2,3].map(renderInterviewSlot).join("");
-      wireInterviewAutoSave();
+      activeScanInterviewIdx = 1;
+      mountScanInterviews();
       updateKernCheck();
     });
   } else if (num === 3) {
@@ -6224,10 +6279,16 @@ async function saveAllInterviews() {
   for (let i = 1; i <= 3; i++) {
     const iv = scanInterviews[i - 1];
     if (!iv) continue;
+    const rolleEl = document.getElementById(`iv${i}Rolle`);
+    const notizEl = document.getElementById(`iv${i}Notizen`);
+    // Tab nicht im DOM mounted (nur ein Interview sichtbar): nicht überschreiben.
+    if (!rolleEl || !notizEl) continue;
+    const ungesagtesEl = document.getElementById(`iv${i}Ungesagtes`);
     const updates = {
-      rolle:     document.getElementById(`iv${i}Rolle`)?.value || "",
-      datum:     document.getElementById(`iv${i}Datum`)?.value || null,
-      notizen:   document.getElementById(`iv${i}Notizen`)?.value || "",
+      rolle:                rolleEl.value || "",
+      datum:                document.getElementById(`iv${i}Datum`)?.value || null,
+      notizen:              notizEl.value || "",
+      plan_b_nicht_gesagt:  ungesagtesEl ? (ungesagtesEl.value || "") : (iv.plan_b_nicht_gesagt || ""),
     };
     try {
       await fetch(`/api/scans/${currentScan.id}/interviews/${iv.id}`, {
@@ -6309,18 +6370,27 @@ async function saveAllMassnahmen() {
 }
 
 // ── PHASE 2: INTERVIEWS ─────────────────────────────────────────────────
+// Block B (2026-04-20): 3 Tabs nacheinander statt drei Blöcken untereinander.
+// Kernfragen als Referenz ausklappbar oben. Pro Interview: Status-Badge
+// (Ausstehend / Läuft / Abgeschlossen), Abschlussfrage "Ungesagtes"
+// (persistiert in plan_b_nicht_gesagt, keine neue Spalte nötig).
+
+let activeScanInterviewIdx = 1;
+
 function renderScanInterviews() {
   return `
     <div class="phase-header"><span class="phase-number">Phase 2</span><span class="phase-title">Interviews</span><span class="phase-time">Tag 2</span></div>
     <div class="phase-instruction">3 strukturierte Interviews durchführen. Kernfragen stellen, Omission Bias prüfen. Alle Felder werden automatisch gespeichert.</div>
 
-    <div class="scan-card">
-      <div class="scan-card-title">Kernfragen (während Interview anzeigen)</div>
-      <div class="kernfrage"><span class="kernfrage-num">Frage 1</span><br>"Was ist das teuerste ungelöste Problem gerade — in Zeit, Energie oder Geld?"</div>
-      <div class="kernfrage"><span class="kernfrage-num">Frage 2</span><br>"Was habt ihr in 12–18 Monaten versucht — und was ist geblieben?"</div>
-      <div class="kernfrage"><span class="kernfrage-num">Frage 3</span><br>"Wenn ich deinen Kollegen frage wie er unter Druck reagiert — was würde er sagen?"</div>
-      <div class="kernfrage" style="border-left-color:var(--green)"><span class="kernfrage-num">Abschluss</span><br>"Was würde sich ändern wenn das Problem morgen weg wäre?"</div>
-    </div>
+    <details class="scan-card" id="interviewKernfragenCollapse" open>
+      <summary class="scan-card-title" style="cursor:pointer;user-select:none">Kernfragen (während Interview anzeigen) — ein-/ausklappen</summary>
+      <div style="margin-top:10px">
+        <div class="kernfrage"><span class="kernfrage-num">Frage 1</span><br>"Was ist das teuerste ungelöste Problem gerade — in Zeit, Energie oder Geld?"</div>
+        <div class="kernfrage"><span class="kernfrage-num">Frage 2</span><br>"Was habt ihr in 12–18 Monaten versucht — und was ist geblieben?"</div>
+        <div class="kernfrage"><span class="kernfrage-num">Frage 3</span><br>"Wenn ich deinen Kollegen frage wie er unter Druck reagiert — was würde er sagen?"</div>
+        <div class="kernfrage" style="border-left-color:var(--green)"><span class="kernfrage-num">Abschluss</span><br>"Was würde sich ändern wenn das Problem morgen weg wäre?"</div>
+      </div>
+    </details>
 
     <div id="interviewSlotsMount">
       <div style="font-size:13px;color:var(--ink-mute);padding:12px">Lade Interview-Slots…</div>
@@ -6333,13 +6403,57 @@ function renderScanInterviews() {
   `;
 }
 
+// Status je Interview: Rolle gesetzt + Notizen >= 50 Zeichen → Abgeschlossen.
+function getInterviewStatus(i) {
+  const iv = (scanInterviews && scanInterviews[i - 1]) || {};
+  const rolleSet = !!(iv.rolle && String(iv.rolle).trim());
+  const notizenLen = (iv.notizen || "").length;
+  if (rolleSet && notizenLen >= 50) return { key: "done", label: "Abgeschlossen" };
+  if (rolleSet || notizenLen > 0) return { key: "run", label: "Läuft" };
+  return { key: "pending", label: "Ausstehend" };
+}
+
+function renderInterviewTabs() {
+  let html = `<div class="interview-tabs">`;
+  for (let i = 1; i <= 3; i++) {
+    const active = i === activeScanInterviewIdx;
+    const st = getInterviewStatus(i);
+    html += `<button type="button" class="interview-tab${active ? ' active' : ''}" onclick="setActiveInterview(${i})">Interview ${i}<span class="interview-status-badge interview-status-${st.key}">${escHtml(st.label)}</span></button>`;
+  }
+  html += `</div>`;
+  return html;
+}
+
+function mountScanInterviews() {
+  const mount = document.getElementById("interviewSlotsMount");
+  if (!mount) return;
+  mount.innerHTML = renderInterviewTabs() + renderInterviewSlot(activeScanInterviewIdx);
+  wireInterviewAutoSave();
+}
+
+async function setActiveInterview(i) {
+  if (i === activeScanInterviewIdx) return;
+  try { await saveAllInterviews(); } catch {}
+  activeScanInterviewIdx = i;
+  mountScanInterviews();
+}
+
 function renderInterviewSlot(num) {
   const iv = (scanInterviews && scanInterviews[num - 1]) || {};
   const bias = (iv.omission_bias_checks && iv.omission_bias_checks[0]) || {};
   const datumVal = iv.datum ? String(iv.datum).slice(0, 16) : "";
+  const rolleLabel = iv.rolle === "entscheider" ? "CEO"
+                   : iv.rolle === "fuehrungskraft" ? "FK"
+                   : iv.rolle === "operativ" ? "Operativ"
+                   : "—";
+  const st = getInterviewStatus(num);
   return `
     <div class="interview-card" id="interview${num}">
-      <div class="interview-header"><span class="interview-num">${num}</span><span class="interview-title">Interview ${num}</span></div>
+      <div class="interview-header">
+        <span class="interview-num">${num}</span>
+        <span class="interview-title">Interview ${num} — ${escHtml(rolleLabel)}</span>
+        <span class="interview-status-badge interview-status-${st.key}" style="margin-left:auto">${escHtml(st.label)}</span>
+      </div>
       <div class="interview-fields">
         <div class="form-group">
           <label class="form-label pflicht">Rolle</label>
@@ -6363,6 +6477,11 @@ function renderInterviewSlot(num) {
       ${renderOmissionBias(num, bias)}
       <div class="scan-card-title" style="margin-top:12px">Transkript</div>
       ${renderTranskriptUpload(num)}
+      <div class="form-group" style="margin-top:12px">
+        <label class="form-label">Abschlussfrage — Ungesagtes</label>
+        <div style="font-size:11px;color:var(--ink-mute);margin-bottom:4px">"Bevor wir abschliessen — gibt es etwas das du während unseres Gesprächs gedacht aber noch nicht gesagt hast?"</div>
+        <textarea class="form-input" id="iv${num}Ungesagtes" rows="3" placeholder="Was noch nicht gesagt wurde…">${escHtml(iv.plan_b_nicht_gesagt || "")}</textarea>
+      </div>
     </div>
   `;
 }
@@ -6430,13 +6549,15 @@ function renderScanErsteEinschaetzung() {
     <div class="scan-card" style="margin-top:12px">
       <div class="scan-card-title">Regime</div>
       <div class="form-group">
-        <label class="form-label">Regime-Empfehlung</label>
+        <label class="form-label">Pfad-Empfehlung</label>
         <select class="form-input" id="befundRegime">
           <option value=""   ${regime===""   ? "selected" : ""}>— wählen —</option>
-          <option value="1"  ${regime==="1"  ? "selected" : ""}>Regime 1 — Optimierung</option>
-          <option value="2"  ${regime==="2"  ? "selected" : ""}>Regime 2 — Kalibrierung</option>
-          <option value="2b" ${regime==="2b" ? "selected" : ""}>Regime 2b — L3 erzeugt L2-Blockade</option>
-          <option value="3"  ${regime==="3"  ? "selected" : ""}>Regime 3 — Stabilisierung</option>
+          <option value="0"  ${regime==="0"  ? "selected" : ""}>Alarmstufe Rot — Scan nicht möglich</option>
+          <option value="1"  ${regime==="1"  ? "selected" : ""}>Gestaltungspfad — Optimierung</option>
+          <option value="2"  ${regime==="2"  ? "selected" : ""}>Kulturpfad — Kalibrierung</option>
+          <option value="2b" ${regime==="2b" ? "selected" : ""}>Klärungspfad — L3 erzeugt L2-Blockade</option>
+          <option value="3"  ${regime==="3"  ? "selected" : ""}>Stabilisierungspfad — Stabilisierung</option>
+          <option value="4"  ${regime==="4"  ? "selected" : ""}>Neuausrichtungspfad — Fundamentale Neuausrichtung</option>
         </select>
       </div>
       <div class="form-group" style="margin-top:8px">
@@ -6899,7 +7020,7 @@ function toggleNelionAxis(headerEl, bodyId) {
   if (headerEl) headerEl.classList.toggle("open", open);
 }
 
-// NELION-Tab: Pane-Switch (Layer-Modell / Regime-Routing / Theorie-Legende)
+// NELION-Tab: Pane-Switch (Layer-Modell / Pfad-Routing / Theorie-Legende)
 function switchNelionPane(pane) {
   document.querySelectorAll(".nelion-sidenav-btn").forEach(b => {
     b.classList.toggle("active", b.dataset.pane === pane);
@@ -6922,7 +7043,7 @@ function toggleNelionRoi(btn) {
   btn.classList.toggle("open", open);
 }
 
-// NELION-Tab: Regime-Routing Simulation State + Logik
+// NELION-Tab: Pfad-Routing Simulation State + Logik
 const _nelionRegime = { l1a: null, l1b: null, dauer: null };
 function setNelionRegime(step, value, btn) {
   _nelionRegime[step] = value;
@@ -6949,18 +7070,18 @@ function renderNelionRegimeResult() {
   const l1 = _worstAmpel(l1a, l1b);
   let title = "", text = "";
   if (l1 === "rot") {
-    title = "Regime 3 — Stabilisierung";
+    title = "Stabilisierungspfad — Stabilisierung";
     text = "L1 rot = Gate. Keine L3-Intervention solange die Neurobiologische Kapazität nicht stabilisiert ist. Priorität: Entlastung, Erholung, Reduktion.";
   } else if (l1 === "gelb") {
-    title = "Regime 2 — Psychologische Klärung";
+    title = "Kulturpfad — Psychologische Klärung";
     text = "L1 gelb → Wissensblockaden (L2) prüfen und adressieren, bevor strukturelle Interventionen wirken können.";
   } else {
-    title = "Regime 1 — Strukturoptimierung";
+    title = "Gestaltungspfad — Strukturoptimierung";
     text = "L1 grün → primärer Hebel ist L3 (Strukturelle Reibung). Prozesse, Entscheidungsarchitektur, Anreize.";
   }
   let warn = "";
   if (l1 === "gelb" && dauer === "chronisch") {
-    warn = `<div class="nelion-regime-warn">⚠️ Gelb seit über 3 Monaten = Regime 3 Risiko. Beobachten und bei nächster Einschätzung neu prüfen.</div>`;
+    warn = `<div class="nelion-regime-warn">⚠️ Gelb seit über 3 Monaten = Stabilisierungspfad Risiko. Beobachten und bei nächster Einschätzung neu prüfen.</div>`;
   }
   out.innerHTML = `
     <div class="nelion-regime-result">
@@ -7103,7 +7224,7 @@ function renderFuenfKernCheck() {
       <div class="scan-card-title">Befund-Qualitäts-Check — vor Export</div>
       <div class="kompass-check"><input type="checkbox" class="kern-cb" onchange="updateKernCheck()"><div><div class="kompass-check-label">Primärer Friction-Layer klar benannt? (L1 / L2 / L3)</div></div></div>
       <div class="kompass-check"><input type="checkbox" class="kern-cb" onchange="updateKernCheck()"><div><div class="kompass-check-label">Jeder Befund-Punkt hat mindestens ein direktes Zitat oder eine Beobachtung als Evidenz?</div></div></div>
-      <div class="kompass-check"><input type="checkbox" class="kern-cb" onchange="updateKernCheck()"><div><div class="kompass-check-label">Regime-Empfehlung (1 / 2 / 2b / 3) ist begründet?</div></div></div>
+      <div class="kompass-check"><input type="checkbox" class="kern-cb" onchange="updateKernCheck()"><div><div class="kompass-check-label">Pfad-Empfehlung (1 / 2 / 2b / 3) ist begründet?</div></div></div>
       <div class="kompass-check"><input type="checkbox" class="kern-cb" onchange="updateKernCheck()"><div><div class="kompass-check-label">3 Sofortmassnahmen sind konkret und umsetzbar formuliert?</div></div></div>
       <div class="kompass-check"><input type="checkbox" class="kern-cb" onchange="updateKernCheck()"><div><div class="kompass-check-label">L1 als Gate geprüft — keine L3-Intervention bei rotem L1?</div></div></div>
       <div class="kern-check-counter" id="kernCounter">0 von 5 Checks</div>
@@ -7136,17 +7257,17 @@ function renderMrb02Tools() {
     <div class="mrb-tools-panel" style="margin-top:12px">
       <div class="scan-card-title">MRB-02 Lite — Operative Tools</div>
       <div id="mrbToolsContent">
-        <div style="font-size:12px;color:var(--ink-mute);margin-bottom:8px">Tools werden nach Regime-Routing angezeigt. Alle Regime:</div>
-        <div style="font-weight:500;font-size:12px;margin-top:10px;color:var(--red)">Regime 3 — Stabilisierung</div>
+        <div style="font-size:12px;color:var(--ink-mute);margin-bottom:8px">Tools werden nach Pfad-Routing angezeigt. Alle Regime:</div>
+        <div style="font-weight:500;font-size:12px;margin-top:10px;color:var(--red)">Stabilisierungspfad — Stabilisierung</div>
         <div class="mrb-tool-item"><input type="checkbox" class="mrb-cb"><div class="mrb-tool-name">L1-Stabilisierungs-Check</div><div class="mrb-tool-time">30 Min</div></div>
         <div class="mrb-tool-item"><input type="checkbox" class="mrb-cb"><div class="mrb-tool-name">Minimale L3-Anker-Intervention</div><div class="mrb-tool-time">20 Min</div></div>
-        <div style="font-weight:500;font-size:12px;margin-top:10px;color:var(--yellow)">Regime 2b — L3 erzeugt L2-Blockade</div>
+        <div style="font-weight:500;font-size:12px;margin-top:10px;color:var(--yellow)">Klärungspfad — L3 erzeugt L2-Blockade</div>
         <div class="mrb-tool-item"><input type="checkbox" class="mrb-cb"><div class="mrb-tool-name">L3→L2 Kausaldiagnose</div><div class="mrb-tool-time">30 Min</div></div>
         <div class="mrb-tool-item"><input type="checkbox" class="mrb-cb"><div class="mrb-tool-name">Incentive-Audit Lite</div><div class="mrb-tool-time">15 Min</div></div>
-        <div style="font-weight:500;font-size:12px;margin-top:10px;color:var(--ink-mid)">Regime 2 — Kalibrierung</div>
+        <div style="font-weight:500;font-size:12px;margin-top:10px;color:var(--ink-mid)">Kulturpfad — Kalibrierung</div>
         <div class="mrb-tool-item"><input type="checkbox" class="mrb-cb"><div class="mrb-tool-name">ITC Quick-Mapping</div><div class="mrb-tool-time">30-45 Min</div></div>
         <div class="mrb-tool-item"><input type="checkbox" class="mrb-cb"><div class="mrb-tool-name">CLT-Audit Lite</div><div class="mrb-tool-time">10 Min</div></div>
-        <div style="font-weight:500;font-size:12px;margin-top:10px;color:var(--green)">Regime 1 — Optimierung</div>
+        <div style="font-weight:500;font-size:12px;margin-top:10px;color:var(--green)">Gestaltungspfad — Optimierung</div>
         <div class="mrb-tool-item"><input type="checkbox" class="mrb-cb"><div class="mrb-tool-name">Leverage Point Scan</div><div class="mrb-tool-time">45 Min</div></div>
       </div>
     </div>
@@ -7212,7 +7333,7 @@ function renderHypothesenZusammenfassung() {
       <div class="disclosure-content" id="theorieBasisDisclosure">
         <div class="theorie-item">
           <div class="theorie-title">Dynamic Systems Theory <span class="theorie-meta">(Thelen &amp; Smith, 1994 ★★☆)</span></div>
-          <div class="theorie-text">Systeme fallen ohne Intervention in denselben Attraktor zurück. Regime-Routing verhindert das.</div>
+          <div class="theorie-text">Systeme fallen ohne Intervention in denselben Attraktor zurück. Pfad-Routing verhindert das.</div>
         </div>
         <div class="theorie-item">
           <div class="theorie-title">Sequenzierungs-Axiom <span class="theorie-meta">(L0 Constitution)</span></div>
@@ -7341,12 +7462,22 @@ function renderPhase4SplitFields() {
 // State: L1-Status → L2-Status → (ggf. Immunity) → Regime-Ergebnis.
 // Reset clear, "Regime speichern" persistiert in consultations.hyp_regime.
 
-let simulationState = { l1: null, l2: null, immunity: null };
+let simulationState = { l1: null, l2: null, immunity: null, l3crit: null };
 
 const KASKADEN_REGIMES = {
+  "0": {
+    label: "Alarmstufe Rot — Scan nicht möglich", color: "r0",
+    erklaerung: "Das System kämpft ums Überleben. Ein Scan würde jetzt nichts bringen — zuerst muss stabilisiert werden.",
+    basis: "Mandat-Check (NELION L0 Constitution) · Voraussetzungs-Gate",
+    bedeutet: [
+      "Voraussetzungen sind nicht erfüllt",
+      "Situation stabilisieren, dann neu einschätzen",
+      "Kein Routing — direkte Anzeige",
+    ],
+  },
   "1": {
-    label: "Regime 1 — Strukturoptimierung (Strukturelle Reibung — L3)", color: "r1",
-    erklaerung: "System stabil, psychologische Muster unauffällig. Strukturelle Friction ist der primäre Hebel — höchste Hebelwirkung hier.",
+    label: "Gestaltungspfad — Strukturoptimierung (Strukturelle Reibung — L3)", color: "r1",
+    erklaerung: "Das System ist bereit. Strukturelle Friction ist der einzige Hebel — und der sitzt jetzt freigespielt.",
     basis: "Meadows Leverage Points (★★★) · Requisite Variety (Ashby ★★★)",
     bedeutet: [
       "Prozesse und Entscheidungswege optimieren",
@@ -7355,8 +7486,8 @@ const KASKADEN_REGIMES = {
     ],
   },
   "2": {
-    label: "Regime 2 — Psychologische Klärung (Wissensblockaden — L2)", color: "r2",
-    erklaerung: "Strukturelle Massnahmen greifen nicht solange psychologische Muster aktiv sind. Vertrauen, Rollen und Kommunikation zuerst klären.",
+    label: "Kulturpfad — Psychologische Klärung (Wissensblockaden — L2)", color: "r2",
+    erklaerung: "Psychologische Muster verhindern dass strukturelle Lösungen greifen. Vertrauen und Klarheit kommen zuerst.",
     basis: "Immunity to Change (Kegan & Lahey ★★★) · Psychological Safety (Edmondson ★★★)",
     bedeutet: [
       "L2-Muster benennen und adressieren",
@@ -7365,9 +7496,9 @@ const KASKADEN_REGIMES = {
     ],
   },
   "2b": {
-    label: "Regime 2b — Struktur benennen, dann formalisieren (Wissensblockaden + Strukturelle Reibung — L2+L3)", color: "r2b",
-    erklaerung: "Ein strukturelles Versagen erzeugt psychologische Blockaden. L2 zuerst benennen, dann L3 formalisieren — sonst wird die neue Struktur informell absorbiert.",
-    basis: "Double-Loop Learning (Argyris ★★★) · NELION L0 Constitution Regime 2b",
+    label: "Klärungspfad — Struktur benennen, dann formalisieren (Wissensblockaden + Strukturelle Reibung — L2+L3)", color: "r2b",
+    erklaerung: "Eine aufgesetzte Struktur hat Blockaden erzeugt. Was ungeklärt ist muss benannt werden — dann kann die Struktur wirklich greifen.",
+    basis: "Double-Loop Learning (Argyris ★★★) · NELION L0 Constitution Klärungspfad",
     bedeutet: [
       "Blockade benennen: 'Die Struktur macht das schwierig'",
       "Neue Struktur einführen",
@@ -7375,8 +7506,8 @@ const KASKADEN_REGIMES = {
     ],
   },
   "3": {
-    label: "Regime 3 — Stabilisierung (Neurobiologische Kapazität — L1)", color: "r3",
-    erklaerung: "Das System ist biologisch erschöpft. Interventionen greifen nicht wenn Menschen im Threat-State operieren. Erst stabilisieren, dann verändern.",
+    label: "Stabilisierungspfad — Stabilisierung (Neurobiologische Kapazität — L1)", color: "r3",
+    erklaerung: "Die biologische Erschöpfung blockiert alles andere. Bevor etwas verändert wird, muss das System atmen können.",
     basis: "Polyvagal Theory (Porges ★★★) · Sequenzierungs-Axiom (L0) · Dynamic Systems Theory (Thelen ★★☆)",
     bedeutet: [
       "Keine Workshops oder Prozess-Redesigns jetzt",
@@ -7384,10 +7515,23 @@ const KASKADEN_REGIMES = {
       "Dann: erneute Einschätzung",
     ],
   },
+  "4": {
+    label: "Neuausrichtungspfad — Fundamentale Neuausrichtung (L1+L2+L3 kritisch)", color: "r4",
+    erklaerung: "Alle Ebenen sind kritisch. Kein einzelner Eingriff reicht — das System braucht einen fundamentalen Neustart.",
+    basis: "Dynamic Systems Theory (Thelen ★★☆) · Requisite Variety (Ashby ★★★)",
+    bedeutet: [
+      "Externe Begleitung organisieren",
+      "Parallele Intervention auf allen Ebenen",
+      "Einzelne Eingriffe reichen nicht",
+    ],
+  },
 };
 
 function determineKaskadenRegime(s) {
-  if (s.l1 === "rot") return "3";
+  if (s.l1 === "rot") {
+    if (s.l2 === "hoch" && s.l3crit === "dominant") return "4";
+    return "3";
+  }
   if (s.l1 === "gelb") {
     if (s.l2 === "hoch") return "2";
     if (s.l2 === "ok") {
@@ -7407,21 +7551,21 @@ function initKaskadenSimulation() {
   const root = document.getElementById("kaskadenSimulationRoot");
   if (!root) return;
   if (root.dataset.initialized !== "1") {
-    simulationState = { l1: null, l2: null, immunity: null };
+    simulationState = { l1: null, l2: null, immunity: null, l3crit: null };
     root.dataset.initialized = "1";
     renderKaskadenSimulation();
   }
 }
 
 function resetKaskadenSimulation() {
-  simulationState = { l1: null, l2: null, immunity: null };
+  simulationState = { l1: null, l2: null, immunity: null, l3crit: null };
   renderKaskadenSimulation();
 }
 
 function setKaskadenStep(field, value) {
   simulationState[field] = value;
-  if (field === "l1") { simulationState.l2 = null; simulationState.immunity = null; }
-  if (field === "l2") { simulationState.immunity = null; }
+  if (field === "l1") { simulationState.l2 = null; simulationState.immunity = null; simulationState.l3crit = null; }
+  if (field === "l2") { simulationState.immunity = null; simulationState.l3crit = null; }
   renderKaskadenSimulation();
 }
 
@@ -7456,7 +7600,27 @@ function renderKaskadenSimulation() {
     ],
     (v) => `setKaskadenStep('l1', '${v}')`);
 
-  if (s.l1 === "gelb") {
+  if (s.l1 === "rot") {
+    html += buildSimStep(
+      "Sind psychologische Muster zusätzlich sichtbar? (Wissensblockaden — L2)",
+      s.l2,
+      [
+        { v: "hoch", label: "Ja — Muster sichtbar", cls: "r2" },
+        { v: "ok", label: "Nein — unauffällig", cls: "r1" },
+      ],
+      (v) => `setKaskadenStep('l2', '${v}')`,
+      "Prüft R4-Trigger: wenn L1 rot UND L2 hoch UND L3 dominant zusammentreffen, liegt Neuausrichtungspfad vor.");
+    if (s.l2 === "hoch") {
+      html += buildSimStep(
+        "Ist strukturelle Reibung ebenfalls dominant? (Strukturelle Reibung — L3)",
+        s.l3crit,
+        [
+          { v: "dominant", label: "Ja — L3 dominant", cls: "r4" },
+          { v: "ok", label: "Nein — L3 nicht dominant", cls: "r3" },
+        ],
+        (v) => `setKaskadenStep('l3crit', '${v}')`);
+    }
+  } else if (s.l1 === "gelb") {
     html += buildSimStep(
       "Sind psychologische Muster sichtbar? (Wissensblockaden — L2)",
       s.l2,
@@ -11147,15 +11311,15 @@ function printTriangulationMatrix() {
   // Routing-Text (plain, keine HTML tags — wie Survey-Routing-Logik)
   let routingText;
   if (l1Combined === "rot") {
-    routingText = "Regime 3 — L1 stabilisieren, keine L3-Intervention.";
+    routingText = "Stabilisierungspfad — L1 stabilisieren, keine L3-Intervention.";
   } else if (l3Combined === "rot" && l2ImmunityRot) {
-    routingText = "Regime 2b — Immunity durchbrechen, dann L3 formalisieren.";
+    routingText = "Klärungspfad — Immunity durchbrechen, dann L3 formalisieren.";
   } else if (l1Combined === "gelb" && l2Combined === "rot") {
-    routingText = "Regime 2 — L2 vor L3 adressieren.";
+    routingText = "Kulturpfad — L2 vor L3 adressieren.";
   } else if (l3Combined === "rot") {
-    routingText = "Regime 1 — Strukturoptimierung priorisieren.";
+    routingText = "Gestaltungspfad — Strukturoptimierung priorisieren.";
   } else if (l2Combined === "rot") {
-    routingText = "Regime 2 — L2 priorisieren.";
+    routingText = "Kulturpfad — L2 priorisieren.";
   } else {
     routingText = "Noch nicht genug rote Ampeln für eindeutiges Routing.";
   }
@@ -11535,18 +11699,18 @@ function computeFrictionRanking() {
 function routingForPoint(layer, wert) {
   if (layer === "L1" || layer === "L1b") {
     return wert === "rot"
-      ? "Regime 3 — biologisch zuerst. Keine L3-Intervention bis L1 stabil."
-      : "Regime 2 — biologische Kapazität monitoren, psychologisch begleiten.";
+      ? "Stabilisierungspfad — biologisch zuerst. Keine L3-Intervention bis L1 stabil."
+      : "Kulturpfad — biologische Kapazität monitoren, psychologisch begleiten.";
   }
   if (layer === "L2") {
     return wert === "rot"
-      ? "Regime 2 — psychologisch vor strukturell. L2-Muster benennen."
-      : "Regime 2 — psychologische Dynamik im Interview schärfen.";
+      ? "Kulturpfad — psychologisch vor strukturell. L2-Muster benennen."
+      : "Kulturpfad — psychologische Dynamik im Interview schärfen.";
   }
   if (layer === "L3") {
     return wert === "rot"
-      ? "Regime 1 — strukturelle Intervention. Entscheidungsarchitektur priorisieren."
-      : "Regime 1 — strukturelle Lücke markieren, Eskalation vorbereiten.";
+      ? "Gestaltungspfad — strukturelle Intervention. Entscheidungsarchitektur priorisieren."
+      : "Gestaltungspfad — strukturelle Lücke markieren, Eskalation vorbereiten.";
   }
   return "— Regime offen —";
 }
@@ -11562,19 +11726,19 @@ function computeRoutingEmpfehlung() {
   const immunityRot = getBestAmpel("L2", "Immunity-Muster") === "rot";
 
   if (l1Rot) {
-    return { regime: "Regime 3", text: "L1 ist rot — biologische Kapazität stabilisieren, keine L3-Intervention." };
+    return { regime: "Stabilisierungspfad", text: "L1 ist rot — biologische Kapazität stabilisieren, keine L3-Intervention." };
   }
   if (l3Rot && immunityRot) {
-    return { regime: "Regime 2b", text: "L3 rot + Immunity-Muster rot — Immunity durchbrechen, dann L3 formalisieren." };
+    return { regime: "Klärungspfad", text: "L3 rot + Immunity-Muster rot — Immunity durchbrechen, dann L3 formalisieren." };
   }
   if (l1Gelb && l2Rot) {
-    return { regime: "Regime 2", text: "L1 gelb, L2 rot — psychologisch vor strukturell." };
+    return { regime: "Kulturpfad", text: "L1 gelb, L2 rot — psychologisch vor strukturell." };
   }
   if (l3Rot) {
-    return { regime: "Regime 1", text: "L3 dominant rot — strukturelle Intervention priorisieren." };
+    return { regime: "Gestaltungspfad", text: "L3 dominant rot — strukturelle Intervention priorisieren." };
   }
   if (l2Rot) {
-    return { regime: "Regime 2", text: "L2 rot — psychologische Dynamik adressieren." };
+    return { regime: "Kulturpfad", text: "L2 rot — psychologische Dynamik adressieren." };
   }
   return { regime: "—", text: "Noch nicht genug rote/gelbe Ampeln für eine Routing-Empfehlung." };
 }
@@ -12615,7 +12779,7 @@ function evaluateAdaErrorBanners() {
     }
     if (l1Rot) break;
   }
-  if (l1Rot) setAdaBanner("l1-rot", "⚠️ L1 rot — Regime 3. Kein L3-Schritt bis L1 stabil.");
+  if (l1Rot) setAdaBanner("l1-rot", "⚠️ L1 rot — Stabilisierungspfad. Kein L3-Schritt bis L1 stabil.");
   else clearAdaBanner("l1-rot");
 
   // Hypothesen-Banner aus alter Phase 5 entfernt (Legacy-Cleanup 2026-04-17).
