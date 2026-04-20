@@ -1333,6 +1333,7 @@ const TALLY_F_TO_AXIS = {
   F2:  { layer: "L1",  achse: "Energie-Status" },           // Energiereserven
   F3:  { layer: "L1b", achse: "Anforderungs-Ressourcen-Ungleichgewicht" }, // Strukturelle Ueberlastung
   F4:  { layer: "L1b", achse: "Erholungsstruktur" },        // Regenerationsdefizit (Erholung)
+  F4b: { layer: "L1b", achse: "Schlafqualität" },           // Regenerationsdefizit (Schlaf) — A/B/C/D Letter-Scoring
   F5:  { layer: "L2",  achse: "Psychological Safety" },     // Selbstzensur
   F6:  { layer: "L2",  achse: "Immunity-Muster" },          // Veraenderungsresistenz
   F7:  { layer: "L2",  achse: "Attribution Style" },        // Verantwortungsvermeidung
@@ -1375,6 +1376,28 @@ function extractTallyNumber(field) {
         if (m) return Number(m[1]);
       }
     }
+  }
+  return null;
+}
+
+// F4b (Schlafqualität) nutzt A/B/C/D-Multiple-Choice statt Linear Scale.
+// A=Gut→9 (gruen), B=Gemischt→6 (gelb), C=Schlecht→3 (rot), D=Sehr schlecht→1 (rot).
+const F4B_LETTER_TO_SCORE = { A: 9, B: 6, C: 3, D: 1 };
+
+function extractLetterScore(field) {
+  let v = field?.value;
+  if (Array.isArray(v) && v.length > 0) v = v[0];
+  if (field?.options && Array.isArray(field.options)) {
+    const opt = field.options.find(o => o.id === v || o.value === v);
+    if (opt) {
+      const txt = String(opt.text ?? opt.value ?? "").trim();
+      const letter = txt.charAt(0).toUpperCase();
+      if (F4B_LETTER_TO_SCORE[letter] != null) return F4B_LETTER_TO_SCORE[letter];
+    }
+  }
+  if (typeof v === "string") {
+    const letter = v.trim().charAt(0).toUpperCase();
+    if (F4B_LETTER_TO_SCORE[letter] != null) return F4B_LETTER_TO_SCORE[letter];
   }
   return null;
 }
@@ -1429,13 +1452,21 @@ function processTallyPayload(payload) {
 
   for (const f of fields) {
     const label = (f.label || f.title || f.key || "");
-    const m = label.match(/F(\d{1,2})\b/i);
-    if (!m) continue;
-    const fNum = parseInt(m[1], 10);
-    const fKey = `F${fNum}`;
+    // F-Nummer mit optionalem "b"-Suffix (F4b); Fallback: Label "Schlafqualität" → F4b
+    const m = label.match(/F(\d{1,2})(b?)\b/i);
+    let fKey;
+    if (m) {
+      fKey = `F${parseInt(m[1], 10)}${(m[2] || "").toLowerCase()}`;
+    } else if (/schlafqualit[äa]t/i.test(label)) {
+      fKey = "F4b";
+    } else {
+      continue;
+    }
     if (!TALLY_F_TO_AXIS[fKey]) continue;
-    const raw = extractTallyNumber(f);
-    const score = normalizeTallyScore(raw);
+    // F4b: Letter-Scoring (A/B/C/D). Alle anderen: Linear Scale 1-10.
+    const score = fKey === "F4b"
+      ? extractLetterScore(f)
+      : normalizeTallyScore(extractTallyNumber(f));
     if (score == null) continue;
     scores[fKey] = score;
     ampeln[fKey] = tallyScoreToAmpel(score);
