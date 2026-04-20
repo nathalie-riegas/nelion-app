@@ -3069,6 +3069,53 @@
   .nelion-axis-body dt:first-child { margin-top: 0; }
   .nelion-axis-body dd { margin: 2px 0 0 0; }
 
+  /* Sub-Layer-Blöcke (Block B — 2026-04-20): La / Lb nebeneinander.
+     Jeder Layer splittet in zwei Perspektiven mit je 2 Sub-Achsen. */
+  .nelion-sublayer-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    margin-top: 10px;
+  }
+  @media (max-width: 780px) {
+    .nelion-sublayer-grid { grid-template-columns: 1fr; }
+  }
+  .nelion-sublayer {
+    border: 1px solid; border-radius: 8px;
+    padding: 10px 12px 12px 12px;
+  }
+  .nelion-sublayer-header {
+    font-size: 13px; font-weight: 600;
+    margin-bottom: 4px; line-height: 1.35;
+  }
+  .nelion-sublayer-perspective {
+    font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--ink-mute); margin-bottom: 10px; font-weight: 500;
+  }
+  /* L1 — Teal */
+  .nelion-sublayer-l1a { background: #E1F5EE; border-color: #9FE1CB; }
+  .nelion-sublayer-l1a .nelion-sublayer-header { color: #0F6E56; }
+  .nelion-sublayer-l1b { background: rgba(93,202,165,0.20); border-color: #0F6E56; }
+  .nelion-sublayer-l1b .nelion-sublayer-header { color: #0F6E56; }
+  /* L2 — Indigo */
+  .nelion-sublayer-l2a { background: #EEEDFE; border-color: #AFA9EC; }
+  .nelion-sublayer-l2a .nelion-sublayer-header { color: #534AB7; }
+  .nelion-sublayer-l2b { background: rgba(83,74,183,0.20); border-color: #534AB7; }
+  .nelion-sublayer-l2b .nelion-sublayer-header { color: #534AB7; }
+  /* L3 — Amber */
+  .nelion-sublayer-l3a { background: #FAEEDA; border-color: #FAC775; }
+  .nelion-sublayer-l3a .nelion-sublayer-header { color: #BA7517; }
+  .nelion-sublayer-l3b { background: rgba(186,117,23,0.20); border-color: #BA7517; }
+  .nelion-sublayer-l3b .nelion-sublayer-header { color: #BA7517; }
+  /* Sub-Achsen innerhalb Sub-Layer-Block — weisser Hintergrund fuer Kontrast */
+  .nelion-sublayer .nelion-axis {
+    margin-top: 8px; background: rgba(255,255,255,0.75);
+  }
+  .nelion-sublayer .nelion-axis-header {
+    background: rgba(255,255,255,0.85);
+  }
+  .nelion-sublayer .nelion-axis-header:hover {
+    background: #fff;
+  }
+
   .nelion-footer {
     margin-top: 28px; padding-top: 16px;
     border-top: 1px solid var(--border);
@@ -3469,63 +3516,73 @@
       <h4>Warum relevant</h4>
       <p>L1 ist das Gate: solange das System im Threat-State ist, ist jede andere Intervention verschwendetes Budget.</p>
 
+      <div class="nelion-sublayer-grid">
+        <div class="nelion-sublayer nelion-sublayer-l1a">
+          <div class="nelion-sublayer-header">L1a — Individuelle Biologische Kapazität</div>
+          <div class="nelion-sublayer-perspective">Perspektive: Individuum</div>
+
+          <div class="nelion-axis">
+            <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL1Ax1')">
+              <span>Individuelle Energiereserven</span><span class="nelion-axis-arrow">▼</span>
+            </div>
+            <div class="nelion-axis-body" id="nelionL1Ax1">
+              <dl>
+                <dt>Was</dt><dd>Verfügbare kognitive und physische Energie der Person</dd>
+                <dt>Gemessen</dt><dd>Survey F2 + Interview</dd>
+                <dt>Warum</dt><dd>Entscheidungsqualität sinkt mit sinkender Energie (Decision Fatigue ★★★)</dd>
+              </dl>
+            </div>
+          </div>
+
+          <div class="nelion-axis">
+            <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL1Ax2')">
+              <span>Neurobiologische Last</span><span class="nelion-axis-arrow">▼</span>
+            </div>
+            <div class="nelion-axis-body" id="nelionL1Ax2">
+              <dl>
+                <dt>Was</dt><dd>Akkumulierte biologische Stressbelastung</dd>
+                <dt>Gemessen</dt><dd>Survey F1 + Interview</dd>
+                <dt>Warum</dt><dd>Allostatic Load als stiller Leistungskiller (McEwen ★★★)</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+
+        <div class="nelion-sublayer nelion-sublayer-l1b">
+          <div class="nelion-sublayer-header">L1b — Strukturell verursachte Erschöpfung</div>
+          <div class="nelion-sublayer-perspective">Perspektive: Organisation</div>
+
+          <div class="nelion-axis">
+            <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL1Ax3')">
+              <span>Strukturelle Überlastung</span><span class="nelion-axis-arrow">▼</span>
+            </div>
+            <div class="nelion-axis-body" id="nelionL1Ax3">
+              <dl>
+                <dt>Was</dt><dd>Systemisch verursachte Überlastung — Designfehler, nicht Personenproblem</dd>
+                <dt>Gemessen</dt><dd>Survey F3 + Interview</dd>
+                <dt>Warum</dt><dd>Unterscheidet individuelle von struktureller Erschöpfung</dd>
+              </dl>
+            </div>
+          </div>
+
+          <div class="nelion-axis">
+            <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL1Ax4')">
+              <span>Regenerationsdefizit</span><span class="nelion-axis-arrow">▼</span>
+            </div>
+            <div class="nelion-axis-body" id="nelionL1Ax4">
+              <dl>
+                <dt>Was</dt><dd>Fehlende Erholungsstrukturen im System</dd>
+                <dt>Gemessen</dt><dd>Survey F4 + F13 (Schlafqualität) + Interview</dd>
+                <dt>Warum</dt><dd>Chronisches Defizit = Stabilisierungspfad-Trigger</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="nelion-roi-box">
         <div class="nelion-roi-box-title">Business-Impact</div>
-        Burnout kostet 1.5–3× Jahresgehalt (Ausfall, Vertretung, Wiedereingliederung). L1 früh erkennen = Frühwarnsystem. Fehldiagnose als Motivationsproblem = typische Fehlinvestition von CHF 20'000+ in Teambuilding ohne Wirkung. Führungskräfte im Threat-State treffen nachweislich schlechtere Entscheidungen (Decision Fatigue ★★★).
-      </div>
-
-      <h4>Vier Achsen</h4>
-
-      <div class="nelion-axis">
-        <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL1Ax1')">
-          <span>L1a — Energiereserven</span><span class="nelion-axis-arrow">▼</span>
-        </div>
-        <div class="nelion-axis-body" id="nelionL1Ax1">
-          <dl>
-            <dt>Was</dt><dd>Verfügbare kognitive und physische Energie</dd>
-            <dt>Gemessen</dt><dd>Survey F2 + Interview</dd>
-            <dt>Warum</dt><dd>Entscheidungsqualität sinkt mit sinkender Energie (Decision Fatigue ★★★)</dd>
-          </dl>
-        </div>
-      </div>
-
-      <div class="nelion-axis">
-        <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL1Ax2')">
-          <span>L1a — Neurobiologische Last</span><span class="nelion-axis-arrow">▼</span>
-        </div>
-        <div class="nelion-axis-body" id="nelionL1Ax2">
-          <dl>
-            <dt>Was</dt><dd>Akkumulierte biologische Stressbelastung</dd>
-            <dt>Gemessen</dt><dd>Survey F1 + Interview</dd>
-            <dt>Warum</dt><dd>Allostatic Load als stiller Leistungskiller — oft unsichtbar bis Ausfall</dd>
-          </dl>
-        </div>
-      </div>
-
-      <div class="nelion-axis">
-        <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL1Ax3')">
-          <span>L1b — Strukturelle Überlastung</span><span class="nelion-axis-arrow">▼</span>
-        </div>
-        <div class="nelion-axis-body" id="nelionL1Ax3">
-          <dl>
-            <dt>Was</dt><dd>Systemisch verursachte Überlastung (Designfehler, nicht Personenproblem)</dd>
-            <dt>Gemessen</dt><dd>Survey F3 + Interview</dd>
-            <dt>Warum</dt><dd>Unterscheidet individuelle von struktureller Erschöpfung — entscheidend für Intervention</dd>
-          </dl>
-        </div>
-      </div>
-
-      <div class="nelion-axis">
-        <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL1Ax4')">
-          <span>L1b — Regenerationsdefizit</span><span class="nelion-axis-arrow">▼</span>
-        </div>
-        <div class="nelion-axis-body" id="nelionL1Ax4">
-          <dl>
-            <dt>Was</dt><dd>Fehlende Erholungsstrukturen im System</dd>
-            <dt>Gemessen</dt><dd>Survey F4 + Interview</dd>
-            <dt>Warum</dt><dd>Chronisches Defizit = Stabilisierungspfad Trigger — kein Einzelproblem, Systemfehler</dd>
-          </dl>
-        </div>
+        Burnout kostet 1.5–3× Jahresgehalt. L1 früh erkennen = Frühwarnsystem. Fehldiagnose als Motivationsproblem = CHF 20'000+ Teambuilding ohne Wirkung. Führungskräfte im Threat-State treffen nachweislich schlechtere Entscheidungen (Decision Fatigue ★★★).
       </div>
     </div>
   </div>
@@ -3550,63 +3607,77 @@
       <h4>Warum relevant</h4>
       <p>L2-Muster sind unsichtbar aber kostspielig: Feedback wird nicht gegeben, Probleme nicht benannt, Verantwortung abgewälzt.</p>
 
+      <div class="nelion-sublayer-grid">
+        <div class="nelion-sublayer nelion-sublayer-l2a">
+          <div class="nelion-sublayer-header">L2a — Selbstbezogene Blockaden</div>
+          <div class="nelion-sublayer-perspective">Perspektive: Individuum</div>
+
+          <div class="nelion-axis">
+            <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL2Ax1')">
+              <span>Selbstzensur</span><span class="nelion-axis-arrow">▼</span>
+            </div>
+            <div class="nelion-axis-body" id="nelionL2Ax1">
+              <dl>
+                <dt>Theorie</dt><dd>Psychological Safety — Edmondson ★★★</dd>
+                <dt>Was</dt><dd>Werden Probleme offen benannt?</dd>
+                <dt>Gemessen</dt><dd>Survey F5 + Interview</dd>
+                <dt>Warum</dt><dd>Unsichtbare Probleme können nicht gelöst werden</dd>
+              </dl>
+            </div>
+          </div>
+
+          <div class="nelion-axis">
+            <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL2Ax4')">
+              <span>Irritabilität</span><span class="nelion-axis-arrow">▼</span>
+            </div>
+            <div class="nelion-axis-body" id="nelionL2Ax4">
+              <dl>
+                <dt>Theorie</dt><dd>Threat-State</dd>
+                <dt>Was</dt><dd>Ist die Person im Abwehrmodus?</dd>
+                <dt>Gemessen</dt><dd>Survey F8 + Interview</dd>
+                <dt>Warum</dt><dd>Erhöhte Reizbarkeit = L1/L2-Grenzbereich, Alarm-Signal</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+
+        <div class="nelion-sublayer nelion-sublayer-l2b">
+          <div class="nelion-sublayer-header">L2b — Beziehungsbezogene Blockaden</div>
+          <div class="nelion-sublayer-perspective">Perspektive: Interaktion</div>
+
+          <div class="nelion-axis">
+            <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL2Ax2')">
+              <span>Veränderungsresistenz</span><span class="nelion-axis-arrow">▼</span>
+            </div>
+            <div class="nelion-axis-body" id="nelionL2Ax2">
+              <dl>
+                <dt>Theorie</dt><dd>Immunity to Change — Kegan & Lahey ★★★</dd>
+                <dt>Was</dt><dd>Warum scheitern Veränderungen trotz gutem Willen?</dd>
+                <dt>Gemessen</dt><dd>Survey F6 + Interview</dd>
+                <dt>Warum</dt><dd>Verborgene Annahmen blockieren echten Wandel</dd>
+              </dl>
+            </div>
+          </div>
+
+          <div class="nelion-axis">
+            <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL2Ax3')">
+              <span>Verantwortungsvermeidung</span><span class="nelion-axis-arrow">▼</span>
+            </div>
+            <div class="nelion-axis-body" id="nelionL2Ax3">
+              <dl>
+                <dt>Theorie</dt><dd>Attribution Style — Seligman ★★★</dd>
+                <dt>Was</dt><dd>Wem wird Ursache zugeschrieben?</dd>
+                <dt>Gemessen</dt><dd>Survey F7 + Interview</dd>
+                <dt>Warum</dt><dd>Externe Attribution verhindert Lernschleifen</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="nelion-roi-box">
         <div class="nelion-roi-box-title">Business-Impact</div>
-        Teams mit niedriger Psychological Safety haben messbar höhere Fehlerquoten und schlechtere Projektergebnisse (Edmondson, Google Project Aristotle). Veränderungsresistenz ist der häufigste Grund warum Reorganisationen scheitern — trotz korrekter L3-Strukturen.
-      </div>
-
-      <h4>Vier Achsen</h4>
-
-      <div class="nelion-axis">
-        <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL2Ax1')">
-          <span>Selbstzensur (Psychological Safety)</span><span class="nelion-axis-arrow">▼</span>
-        </div>
-        <div class="nelion-axis-body" id="nelionL2Ax1">
-          <dl>
-            <dt>Was</dt><dd>Werden Probleme offen benannt?</dd>
-            <dt>Gemessen</dt><dd>Survey F5 + Interview</dd>
-            <dt>Warum</dt><dd>Unsichtbare Probleme können nicht gelöst werden</dd>
-          </dl>
-        </div>
-      </div>
-
-      <div class="nelion-axis">
-        <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL2Ax2')">
-          <span>Veränderungsresistenz (Immunity to Change)</span><span class="nelion-axis-arrow">▼</span>
-        </div>
-        <div class="nelion-axis-body" id="nelionL2Ax2">
-          <dl>
-            <dt>Was</dt><dd>Warum scheitern Veränderungen trotz gutem Willen?</dd>
-            <dt>Gemessen</dt><dd>Survey F6 + Interview</dd>
-            <dt>Warum</dt><dd>Verborgene Annahmen blockieren echten Wandel — auch bei motivierten Menschen</dd>
-          </dl>
-        </div>
-      </div>
-
-      <div class="nelion-axis">
-        <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL2Ax3')">
-          <span>Verantwortungsvermeidung (Attribution Style)</span><span class="nelion-axis-arrow">▼</span>
-        </div>
-        <div class="nelion-axis-body" id="nelionL2Ax3">
-          <dl>
-            <dt>Was</dt><dd>Wem wird Ursache zugeschrieben?</dd>
-            <dt>Gemessen</dt><dd>Survey F7 + Interview</dd>
-            <dt>Warum</dt><dd>Externe Attribution verhindert Lernschleifen und Eigenverantwortung</dd>
-          </dl>
-        </div>
-      </div>
-
-      <div class="nelion-axis">
-        <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL2Ax4')">
-          <span>Irritabilität (Threat-State)</span><span class="nelion-axis-arrow">▼</span>
-        </div>
-        <div class="nelion-axis-body" id="nelionL2Ax4">
-          <dl>
-            <dt>Was</dt><dd>Ist das Team im Abwehrmodus?</dd>
-            <dt>Gemessen</dt><dd>Survey F8 + Interview</dd>
-            <dt>Warum</dt><dd>Erhöhte Reizbarkeit = L1/L2-Grenzbereich, Alarm-Signal für systemische Überlastung</dd>
-          </dl>
-        </div>
+        Teams mit niedriger Psychological Safety haben messbar höhere Fehlerquoten (Edmondson, Google Project Aristotle). Veränderungsresistenz ist der häufigste Grund warum Reorganisationen scheitern — trotz korrekter L3-Strukturen.
       </div>
     </div>
   </div>
@@ -3631,63 +3702,77 @@
       <h4>Warum relevant</h4>
       <p>L3 ist der häufigste Einstieg — aber oft der falsche. Strukturen optimieren wenn L1/L2 nicht adressiert sind: Budget weg, Zustand wie vorher.</p>
 
+      <div class="nelion-sublayer-grid">
+        <div class="nelion-sublayer nelion-sublayer-l3a">
+          <div class="nelion-sublayer-header">L3a — Entscheidungsebene</div>
+          <div class="nelion-sublayer-perspective">Perspektive: Steuerung</div>
+
+          <div class="nelion-axis">
+            <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL3Ax1')">
+              <span>Fehlentscheidungskosten</span><span class="nelion-axis-arrow">▼</span>
+            </div>
+            <div class="nelion-axis-body" id="nelionL3Ax1">
+              <dl>
+                <dt>Theorie</dt><dd>Entscheidungsarchitektur — Requisite Variety, Ashby ★★★</dd>
+                <dt>Was</dt><dd>Wie klar sind Entscheidungswege und -befugnisse?</dd>
+                <dt>Gemessen</dt><dd>Survey F9 + Interview</dd>
+                <dt>Warum</dt><dd>Unklare Entscheidungswege = Lähmung oder Chaos</dd>
+              </dl>
+            </div>
+          </div>
+
+          <div class="nelion-axis">
+            <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL3Ax2')">
+              <span>Dysfunktionale Anreize</span><span class="nelion-axis-arrow">▼</span>
+            </div>
+            <div class="nelion-axis-body" id="nelionL3Ax2">
+              <dl>
+                <dt>Theorie</dt><dd>Incentive-Struktur — Goodhart's Law ★★★</dd>
+                <dt>Was</dt><dd>Was wird tatsächlich belohnt — informell?</dd>
+                <dt>Gemessen</dt><dd>Survey F10 + Interview</dd>
+                <dt>Warum</dt><dd>Formale Ziele ≠ echte Anreize = Goodhart's Law</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+
+        <div class="nelion-sublayer nelion-sublayer-l3b">
+          <div class="nelion-sublayer-header">L3b — Informationsebene</div>
+          <div class="nelion-sublayer-perspective">Perspektive: Fluss</div>
+
+          <div class="nelion-axis">
+            <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL3Ax3')">
+              <span>Verantwortungsvakuum</span><span class="nelion-axis-arrow">▼</span>
+            </div>
+            <div class="nelion-axis-body" id="nelionL3Ax3">
+              <dl>
+                <dt>Theorie</dt><dd>Strukturelle Ambiguität — March & Olsen ★★★</dd>
+                <dt>Was</dt><dd>Gibt es ungeklärte Verantwortlichkeiten?</dd>
+                <dt>Gemessen</dt><dd>Survey F11 + Interview</dd>
+                <dt>Warum</dt><dd>Vakuum = niemand oder alle gleichzeitig zuständig</dd>
+              </dl>
+            </div>
+          </div>
+
+          <div class="nelion-axis">
+            <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL3Ax4')">
+              <span>Informationsblockaden</span><span class="nelion-axis-arrow">▼</span>
+            </div>
+            <div class="nelion-axis-body" id="nelionL3Ax4">
+              <dl>
+                <dt>Theorie</dt><dd>Informationsfluss — Dunbar's Number ★★★</dd>
+                <dt>Was</dt><dd>Kommen relevante Informationen an wo sie gebraucht werden?</dd>
+                <dt>Gemessen</dt><dd>Survey F12 + Interview</dd>
+                <dt>Warum</dt><dd>Blockaden erzeugen Silos und Doppelarbeit</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="nelion-roi-box">
         <div class="nelion-roi-box-title">Business-Impact</div>
-        Unklare Entscheidungswege kosten nachweislich 20–40% der verfügbaren Führungszeit (McKinsey Org Research). Meetings ohne Ergebnis, doppelte Arbeit und Silos sind direkt quantifizierbar in Stunden × Stundensatz. L3-Friction ist oft das teuerste Problem — und das am einfachsten behebbare wenn L1/L2 stabil sind.
-      </div>
-
-      <h4>Vier Achsen</h4>
-
-      <div class="nelion-axis">
-        <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL3Ax1')">
-          <span>Fehlentscheidungskosten (Entscheidungsarchitektur)</span><span class="nelion-axis-arrow">▼</span>
-        </div>
-        <div class="nelion-axis-body" id="nelionL3Ax1">
-          <dl>
-            <dt>Was</dt><dd>Wie klar sind Entscheidungswege und -befugnisse?</dd>
-            <dt>Gemessen</dt><dd>Survey F9 + Interview</dd>
-            <dt>Warum</dt><dd>Unklare Entscheidungswege = Lähmung oder Chaos — beides kostet messbar Zeit</dd>
-          </dl>
-        </div>
-      </div>
-
-      <div class="nelion-axis">
-        <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL3Ax2')">
-          <span>Dysfunktionale Anreize (Incentive-Struktur)</span><span class="nelion-axis-arrow">▼</span>
-        </div>
-        <div class="nelion-axis-body" id="nelionL3Ax2">
-          <dl>
-            <dt>Was</dt><dd>Was wird tatsächlich belohnt — informell?</dd>
-            <dt>Gemessen</dt><dd>Survey F10 + Interview</dd>
-            <dt>Warum</dt><dd>Formale Ziele ≠ echte Anreize = Goodhart's Law in Aktion</dd>
-          </dl>
-        </div>
-      </div>
-
-      <div class="nelion-axis">
-        <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL3Ax3')">
-          <span>Verantwortungsvakuum (Strukturelle Ambiguität)</span><span class="nelion-axis-arrow">▼</span>
-        </div>
-        <div class="nelion-axis-body" id="nelionL3Ax3">
-          <dl>
-            <dt>Was</dt><dd>Gibt es ungeklärte Verantwortlichkeiten?</dd>
-            <dt>Gemessen</dt><dd>Survey F11 + Interview</dd>
-            <dt>Warum</dt><dd>Vakuum = entweder niemand kümmert sich oder alle übereinander — beide Varianten teuer</dd>
-          </dl>
-        </div>
-      </div>
-
-      <div class="nelion-axis">
-        <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL3Ax4')">
-          <span>Informationsblockaden (Informationsfluss)</span><span class="nelion-axis-arrow">▼</span>
-        </div>
-        <div class="nelion-axis-body" id="nelionL3Ax4">
-          <dl>
-            <dt>Was</dt><dd>Kommen relevante Informationen an wo sie gebraucht werden?</dd>
-            <dt>Gemessen</dt><dd>Survey F12 + Interview</dd>
-            <dt>Warum</dt><dd>Informationsblockaden erzeugen Silos, Doppelarbeit und Fehlentscheidungen</dd>
-          </dl>
-        </div>
+        Unklare Entscheidungswege kosten 20–40% der verfügbaren Führungszeit (McKinsey). Meetings ohne Ergebnis, Doppelarbeit und Silos sind direkt quantifizierbar. L3-Friction ist oft das teuerste Problem — und das am einfachsten behebbare wenn L1/L2 stabil sind.
       </div>
     </div>
   </div>
@@ -6285,10 +6370,12 @@ async function saveAllInterviews() {
     if (!rolleEl || !notizEl) continue;
     const ungesagtesEl = document.getElementById(`iv${i}Ungesagtes`);
     const updates = {
-      rolle:                rolleEl.value || "",
-      datum:                document.getElementById(`iv${i}Datum`)?.value || null,
-      notizen:              notizEl.value || "",
-      plan_b_nicht_gesagt:  ungesagtesEl ? (ungesagtesEl.value || "") : (iv.plan_b_nicht_gesagt || ""),
+      rolle:      rolleEl.value || "",
+      datum:      document.getElementById(`iv${i}Datum`)?.value || null,
+      notizen:    notizEl.value || "",
+      // Migration 022: eigene Spalte "ungesagtes". Server strippt bei
+      // fehlender Migration gracefully und speichert den Rest.
+      ungesagtes: ungesagtesEl ? (ungesagtesEl.value || "") : (iv.ungesagtes || iv.plan_b_nicht_gesagt || ""),
     };
     try {
       await fetch(`/api/scans/${currentScan.id}/interviews/${iv.id}`, {
@@ -6480,7 +6567,7 @@ function renderInterviewSlot(num) {
       <div class="form-group" style="margin-top:12px">
         <label class="form-label">Abschlussfrage — Ungesagtes</label>
         <div style="font-size:11px;color:var(--ink-mute);margin-bottom:4px">"Bevor wir abschliessen — gibt es etwas das du während unseres Gesprächs gedacht aber noch nicht gesagt hast?"</div>
-        <textarea class="form-input" id="iv${num}Ungesagtes" rows="3" placeholder="Was noch nicht gesagt wurde…">${escHtml(iv.plan_b_nicht_gesagt || "")}</textarea>
+        <textarea class="form-input" id="iv${num}Ungesagtes" rows="3" placeholder="Was noch nicht gesagt wurde…">${escHtml(iv.ungesagtes || iv.plan_b_nicht_gesagt || "")}</textarea>
       </div>
     </div>
   `;
@@ -6576,6 +6663,18 @@ function renderScanErsteEinschaetzung() {
       ${renderMassnahmeSlot(1)}
       ${renderMassnahmeSlot(2)}
       ${renderMassnahmeSlot(3)}
+    </div>
+
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title">Pfad-Empfehlung</div>
+      <div style="font-size:12px;color:var(--ink-mute);margin-bottom:12px">★★☆ bis ★★★ — Claude berechnet aus Survey-Ampeln + Interview-Daten. Konfidenz steigt mit Anzahl Quellen.</div>
+
+      <div class="btn-row" style="margin-bottom:12px">
+        <button class="btn btn-primary" id="btnPfadScan" onclick="generatePfadEmpfehlungScan()">Pfad berechnen</button>
+        <span id="pfadScanStatus" style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);align-self:center"></span>
+      </div>
+
+      <div class="hyp-output${s.pfad_empfehlung ? ' has-content' : ''}" id="pfadScanOutput">${s.pfad_empfehlung ? renderMarkdownToHtml(s.pfad_empfehlung) : '<div class="hyp-output-empty">Noch keine Pfad-Empfehlung. Claude berechnet aus Ampeln + Interview-Notizen + Omission-Bias-Flags + Arbeitshypothese.</div>'}</div>
     </div>
 
     ${renderFuenfKernCheck()}
@@ -7315,6 +7414,18 @@ function renderHypothesenZusammenfassung() {
       <div class="hyp-output${saved ? ' has-content' : ''}" id="hypOutput">${saved ? renderMarkdownToHtml(saved) : '<div class="hyp-output-empty">Noch keine Hypothesen generiert. Klick auf "Hypothesen generieren" — Claude analysiert alle Notizen + Signale und liefert Haupthypothese, zwei Alternativen, Evidenz und eine empfohlene erste Scan-Frage.</div>'}</div>
     </div>
 
+    <div class="scan-card" style="margin-top:16px">
+      <div class="scan-card-title">Pfad-Empfehlung</div>
+      <div style="font-size:12px;color:var(--ink-mute);margin-bottom:12px">★☆☆ — Claude schätzt aus Gesprächsnotizen. Einzelquelle, schwache Hypothese. Validierung erst nach Survey + 3 Interviews.</div>
+
+      <div class="btn-row" style="margin-bottom:12px">
+        <button class="btn btn-primary" id="btnPfadErstgespraech" onclick="generatePfadEmpfehlungErstgespraech()">Pfad einschätzen</button>
+        <span id="pfadErstgespraechStatus" style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);align-self:center"></span>
+      </div>
+
+      <div class="hyp-output${(currentConsultation && currentConsultation.pfad_empfehlung) ? ' has-content' : ''}" id="pfadErstgespraechOutput">${(currentConsultation && currentConsultation.pfad_empfehlung) ? renderMarkdownToHtml(currentConsultation.pfad_empfehlung) : '<div class="hyp-output-empty">Noch keine Pfad-Empfehlung. Claude schätzt aus allen Phase-1–5-Notizen den wahrscheinlichsten Pfad ein.</div>'}</div>
+    </div>
+
     <div class="disclosure-block" style="margin-top:12px">
       <button class="disclosure-toggle" type="button" onclick="toggleDisclosure('kaskadenRoutingDisclosure', this); setTimeout(initKaskadenSimulation, 50);">
         <span class="disclosure-title">Kaskaden-Routing Simulation</span>
@@ -7786,6 +7897,139 @@ async function generateHypothesen() {
     console.error("generateHypothesen:", e.message);
   }
   if (btn) { btn.disabled = false; btn.textContent = "Hypothesen neu generieren"; }
+}
+
+// ── ERSTGESPRÄCH PHASE 5: PFAD-EMPFEHLUNG (Block A1 — 2026-04-20) ─────────
+// Claude schätzt aus allen Phase-Notizen den wahrscheinlichsten Pfad ein.
+// Einzelquelle, ★☆☆ Konfidenz. Persistiert in consultations.pfad_empfehlung.
+async function generatePfadEmpfehlungErstgespraech() {
+  const btn = document.getElementById("btnPfadErstgespraech");
+  const status = document.getElementById("pfadErstgespraechStatus");
+  const output = document.getElementById("pfadErstgespraechOutput");
+  if (!currentConsultation) { alert("Keine aktive Session."); return; }
+  if (btn) { btn.disabled = true; btn.textContent = "Schätze…"; }
+  if (status) status.textContent = "Claude analysiert (10–20s)…";
+  try {
+    const transkriptAnalyse = currentConsultation.transkript_analyse && currentConsultation.transkript_analyse.text
+      ? currentConsultation.transkript_analyse.text : "";
+    const abschlussBlock = [
+      currentConsultation.phase5_notes || "",
+      currentConsultation.phase5_ungesagtes ? "\n\n— Ungesagtes —\n" + currentConsultation.phase5_ungesagtes : "",
+      transkriptAnalyse ? "\n\n— Transkript-Analyse —\n" + transkriptAnalyse : "",
+    ].join("");
+    const payload = {
+      person_name: currentContact ? currentContact.name : "",
+      phase_notes: {
+        sync:      currentConsultation.phase1_notes || "",
+        scan:      currentConsultation.phase2_notes || "",
+        spiegeln:  currentConsultation.phase3_notes || "",
+        slice:     [
+          currentConsultation.phase4_schritt ? "Schritt: " + currentConsultation.phase4_schritt : "",
+          currentConsultation.phase4_idealzustand ? "Idealzustand: " + currentConsultation.phase4_idealzustand : "",
+          !currentConsultation.phase4_schritt && !currentConsultation.phase4_idealzustand ? (currentConsultation.phase4_notes || "") : "",
+        ].filter(Boolean).join("\n\n"),
+        abschluss: abschlussBlock,
+      },
+    };
+    const r = await fetch("/api/ada/pfad-empfehlung-erstgespraech", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await r.json();
+    if (!r.ok || data.error) throw new Error(data.error || `HTTP ${r.status}`);
+    const text = data.text || "";
+    if (output) {
+      output.innerHTML = renderMarkdownToHtml(text);
+      output.classList.add("has-content");
+    }
+    currentConsultation.pfad_empfehlung = text;
+    try {
+      await fetch(`/api/consultations/${currentConsultation.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pfad_empfehlung: text }),
+      });
+    } catch {}
+    if (status) status.textContent = "✓ Eingeschätzt.";
+  } catch (e) {
+    if (status) status.textContent = "✗ Fehler: " + e.message;
+    console.error("generatePfadEmpfehlungErstgespraech:", e.message);
+  }
+  if (btn) { btn.disabled = false; btn.textContent = "Pfad neu einschätzen"; }
+}
+
+// ── SCAN PHASE 3: PFAD-EMPFEHLUNG (Block A2 — 2026-04-20) ─────────────────
+// Claude berechnet aus Ampeln + Interviews + Omission-Bias den Pfad.
+// ★★☆ bis ★★★ Konfidenz. Persistiert in scans.pfad_empfehlung.
+async function generatePfadEmpfehlungScan() {
+  const btn = document.getElementById("btnPfadScan");
+  const status = document.getElementById("pfadScanStatus");
+  const output = document.getElementById("pfadScanOutput");
+  if (!currentScan) { alert("Kein aktiver Scan."); return; }
+  if (btn) { btn.disabled = true; btn.textContent = "Berechne…"; }
+  if (status) status.textContent = "Claude analysiert (15–30s)…";
+  try {
+    // Ampeln laden (alle 12 Achsen über alle Phasen)
+    const ampelnR = await fetch(`/api/scans/${currentScan.id}/ampeln`);
+    const ampelnRaw = ampelnR.ok ? await ampelnR.json() : [];
+    // Dedup auf layer+achse (neueste Phase gewinnt)
+    const byKey = {};
+    for (const a of (ampelnRaw || [])) {
+      const k = `${a.layer}|${a.achse}`;
+      byKey[k] = { layer: a.layer, achse: a.achse, wert: a.wert };
+    }
+    const ampeln = Object.values(byKey);
+
+    // Interview-Notizen + Omission-Bias aus scanInterviews
+    const interview_notizen = [];
+    const omission_flags = [];
+    for (let i = 0; i < 3; i++) {
+      const iv = (scanInterviews && scanInterviews[i]) || null;
+      if (!iv) continue;
+      interview_notizen.push({
+        rolle:   iv.rolle || "",
+        notizen: iv.notizen || "",
+      });
+      const bias = (iv.omission_bias_checks && iv.omission_bias_checks[0]) || {};
+      omission_flags.push({
+        biologische_last:     !!bias.biologische_last,
+        systemsprache:        !!bias.systemsprache,
+        geschuetzte_kollegen: !!bias.geschuetzte_kollegen,
+        antrieb_gefragt:      !!bias.antrieb_gefragt,
+        ton_wechsel:          !!bias.ton_wechsel,
+      });
+    }
+
+    const payload = {
+      kunde_name:       currentScan.kunde_name || "",
+      ampeln,
+      interview_notizen,
+      omission_flags,
+      arbeitshypothese: currentScan.arbeitshypothese || "",
+    };
+    const r = await fetch("/api/ada/pfad-empfehlung-scan", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await r.json();
+    if (!r.ok || data.error) throw new Error(data.error || `HTTP ${r.status}`);
+    const text = data.text || "";
+    if (output) {
+      output.innerHTML = renderMarkdownToHtml(text);
+      output.classList.add("has-content");
+    }
+    currentScan.pfad_empfehlung = text;
+    try {
+      await patchScan({ pfad_empfehlung: text });
+    } catch {}
+    if (status) status.textContent = "✓ Berechnet.";
+  } catch (e) {
+    if (status) status.textContent = "✗ Fehler: " + e.message;
+    console.error("generatePfadEmpfehlungScan:", e.message);
+  }
+  if (btn) { btn.disabled = false; btn.textContent = "Pfad neu berechnen"; }
 }
 
 // ── ERSTGESPRÄCH PHASE 5: TRANSKRIPT-UPLOAD + CLAUDE-ANALYSE ──────────────

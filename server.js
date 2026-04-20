@@ -670,6 +670,8 @@ app.patch("/api/consultations/:id", async (req, res) => {
     "completed",
     "hyp_generated",
     "hyp_regime",
+    // Migration 022 — automatische Pfad-Empfehlung
+    "pfad_empfehlung",
   ];
   const updates = {};
   for (const key of allowed) {
@@ -686,6 +688,7 @@ app.patch("/api/consultations/:id", async (req, res) => {
     "phase5_ungesagtes",
     "unternehmen", "abteilung", "phase0_notiz",
     "transkript_analyse", "transkript_text",
+    "pfad_empfehlung",
   ];
   let { data, error } = await supabase
     .from("consultations").update(updates).eq("id", req.params.id).select().single();
@@ -760,6 +763,8 @@ app.patch("/api/scans/:id", async (req, res) => {
     "respondent_ceo_verschickt", "respondent_fk_verschickt", "respondent_op_verschickt",
     // Migration 020
     "regime_begruendung",
+    // Migration 022 — automatische Pfad-Empfehlung
+    "pfad_empfehlung",
   ];
   const updates = {};
   for (const key of allowed) {
@@ -785,6 +790,9 @@ app.patch("/api/scans/:id", async (req, res) => {
   const MIGRATION_020_COLS = [
     "regime_begruendung",
   ];
+  const MIGRATION_022_COLS = [
+    "pfad_empfehlung",
+  ];
   async function tryUpdate(u) {
     return supabase.from("scans").update(u).eq("id", req.params.id).select().single();
   }
@@ -794,13 +802,15 @@ app.patch("/api/scans/:id", async (req, res) => {
     const m017 = MIGRATION_017_COLS.some(c => msg.includes(c));
     const m015 = MIGRATION_015_COLS.some(c => msg.includes(c));
     const m020 = MIGRATION_020_COLS.some(c => msg.includes(c));
-    if (m017 || m015 || m020) {
+    const m022 = MIGRATION_022_COLS.some(c => msg.includes(c));
+    if (m017 || m015 || m020 || m022) {
       const stripped = { ...updates };
       if (m017) for (const c of MIGRATION_017_COLS) delete stripped[c];
       if (m015) for (const c of MIGRATION_015_COLS) delete stripped[c];
       if (m020) for (const c of MIGRATION_020_COLS) delete stripped[c];
+      if (m022) for (const c of MIGRATION_022_COLS) delete stripped[c];
       if (Object.keys(stripped).length === 0) {
-        return res.status(500).json({ error: "Migration 015, 017 oder 020 nötig (scans neue Spalten)" });
+        return res.status(500).json({ error: "Migration 015, 017, 020 oder 022 nötig (scans neue Spalten)" });
       }
       const r2 = await tryUpdate(stripped);
       if (r2.error) return res.status(500).json({ error: r2.error.message });
@@ -877,6 +887,8 @@ app.patch("/api/scans/:sid/interviews/:iid", async (req, res) => {
     "notizen", "plan_b_aktiv",
     "plan_b_wichtigste_aussage", "plan_b_ton_wechsel",
     "plan_b_nicht_gesagt", "plan_b_layer",
+    // Migration 022 — eigene Spalte fuer Interview-Abschlussfrage "Ungesagtes".
+    "ungesagtes",
   ];
   const updates = {};
   for (const key of allowed) {
@@ -885,9 +897,26 @@ app.patch("/api/scans/:sid/interviews/:iid", async (req, res) => {
   if (Object.keys(updates).length === 0) {
     return res.status(400).json({ error: "Keine Felder zum Update" });
   }
-  const { data, error } = await supabase
+  // Graceful-Fallback: wenn Migration 022 noch nicht ausgefuehrt wurde,
+  // strippe "ungesagtes" und versuche erneut. Datensatz bleibt speicherbar.
+  const MIGRATION_022_COLS = ["ungesagtes"];
+  let { data, error } = await supabase
     .from("interviews").update(updates).eq("id", req.params.iid).select().single();
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) {
+    const msg = error.message || "";
+    if (MIGRATION_022_COLS.some(c => msg.includes(c))) {
+      const stripped = { ...updates };
+      for (const c of MIGRATION_022_COLS) delete stripped[c];
+      if (Object.keys(stripped).length === 0) {
+        return res.status(500).json({ error: "Migration 022 nötig (interviews.ungesagtes fehlt)" });
+      }
+      const r2 = await supabase
+        .from("interviews").update(stripped).eq("id", req.params.iid).select().single();
+      if (r2.error) return res.status(500).json({ error: r2.error.message });
+      return res.json(r2.data);
+    }
+    return res.status(500).json({ error: error.message });
+  }
   res.json(data);
 });
 
@@ -2088,6 +2117,168 @@ Bitte liefere die strukturierte Analyse.`;
         continue;
       }
       console.error("Transkript-Analyse error:", e.message);
+      const userErr = isOverloaded
+        ? "Claude ist gerade überlastet. Bitte in 30 Sekunden nochmal versuchen."
+        : isRateLimit
+        ? "Zu viele Anfragen. Bitte kurz warten."
+        : "ADA-Fehler: " + e.message;
+      return res.status(500).json({ error: userErr });
+    }
+  }
+});
+
+// ─── ADA PFAD-EMPFEHLUNG (Erstgespräch Phase 5) ───────────────────────────
+// Schätzt den wahrscheinlichsten Pfad aus den Erstgespräch-Notizen ab.
+// Konfidenz: ★☆☆ (Einzelquelle, schwache Hypothese).
+// Endergebnis wird in consultations.pfad_empfehlung persistiert (Frontend).
+app.post("/api/ada/pfad-empfehlung-erstgespraech", async (req, res) => {
+  if (!anthropic) return res.status(503).json({ error: "ANTHROPIC_API_KEY nicht konfiguriert" });
+  const { person_name, phase_notes } = req.body || {};
+  const notes = phase_notes || {};
+
+  const notesBlock =
+`Phase 1 (Sync):
+${(notes.sync || "— keine Notizen —").trim()}
+
+Phase 2 (Scan):
+${(notes.scan || "— keine Notizen —").trim()}
+
+Phase 3 (Spiegeln):
+${(notes.spiegeln || "— keine Notizen —").trim()}
+
+Phase 4 (Slice + Idealzustand):
+${(notes.slice || "— keine Notizen —").trim()}
+
+Phase 5 (Abschluss):
+${(notes.abschluss || "— keine Notizen —").trim()}`;
+
+  const systemPrompt = `Du bist NELION Friction Diagnostics.
+Analysiere diese Erstgespräch-Notizen und schätze den wahrscheinlichsten Pfad ein.
+
+Verfügbare Pfade:
+- Alarmstufe Rot: Scan nicht möglich, System im Überlebensmodus
+- Stabilisierungspfad: L1 dominant, biologische Erschöpfung
+- Kulturpfad: L2 dominant, psychologische Blockaden
+- Klärungspfad: L3 hat L2-Blockaden erzeugt, Sequenz entscheidend
+- Gestaltungspfad: L3 direkt, System stabil
+- Neuausrichtungspfad: alle Layer kritisch, fundamentaler Reset
+
+Ausgabe (Markdown, deutsch, max. 150 Wörter):
+1. **Empfohlener Pfad** — Name + 1 Satz Begründung
+2. **Konfidenz** — ★☆☆ (Einzelquelle)
+3. **Stärkste Evidenz** — direktes Zitat oder Paraphrase aus den Notizen
+4. **Im Scan zu prüfen** — 2–3 konkrete Punkte`;
+
+  const userMsg = `Klient${person_name ? ": " + person_name : ""}.
+
+${notesBlock}
+
+Bitte liefere die strukturierte Pfad-Empfehlung.`;
+
+  const maxRetries = 3;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await anthropic.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1024,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userMsg }],
+      });
+      const text = response.content.filter(c => c.type === "text").map(c => c.text).join("");
+      return res.json({ text });
+    } catch (e) {
+      const isOverloaded = e.status === 529 || (e.message && e.message.includes("529"));
+      const isRateLimit = e.status === 429;
+      if ((isOverloaded || isRateLimit) && attempt < maxRetries) {
+        await new Promise(r => setTimeout(r, attempt * 2000));
+        continue;
+      }
+      console.error("Pfad-Empfehlung Erstgespraech error:", e.message);
+      const userErr = isOverloaded
+        ? "Claude ist gerade überlastet. Bitte in 30 Sekunden nochmal versuchen."
+        : isRateLimit
+        ? "Zu viele Anfragen. Bitte kurz warten."
+        : "ADA-Fehler: " + e.message;
+      return res.status(500).json({ error: userErr });
+    }
+  }
+});
+
+// ─── ADA PFAD-EMPFEHLUNG (Friction Scan Phase 3) ──────────────────────────
+// Berechnet den Pfad aus Survey-Ampeln + Interview-Notizen + Omission Bias.
+// Konfidenz: ★★☆ bis ★★★, steigt mit Anzahl Datenquellen.
+// Endergebnis wird in scans.pfad_empfehlung persistiert (Frontend).
+app.post("/api/ada/pfad-empfehlung-scan", async (req, res) => {
+  if (!anthropic) return res.status(503).json({ error: "ANTHROPIC_API_KEY nicht konfiguriert" });
+  const { ampeln, interview_notizen, omission_flags, arbeitshypothese, kunde_name } = req.body || {};
+
+  const ampelnBlock = Array.isArray(ampeln) && ampeln.length > 0
+    ? ampeln.map(a => `- ${a.layer} ${a.achse}: ${a.wert}`).join("\n")
+    : "— keine Ampeln verfügbar —";
+
+  const interviewBlock = Array.isArray(interview_notizen) && interview_notizen.length > 0
+    ? interview_notizen.map((iv, i) =>
+        `Interview ${i + 1}${iv.rolle ? " (" + iv.rolle + ")" : ""}:\n${(iv.notizen || "— keine Notizen —").trim()}`
+      ).join("\n\n")
+    : "— keine Interviews verfügbar —";
+
+  const omissionBlock = Array.isArray(omission_flags) && omission_flags.length > 0
+    ? omission_flags.map((f, i) => `Interview ${i + 1}: ${Object.entries(f).filter(([, v]) => v === true).map(([k]) => k).join(", ") || "— keine Flags —"}`).join("\n")
+    : "— keine Omission-Bias-Flags —";
+
+  const systemPrompt = `Du bist NELION Friction Diagnostics.
+Berechne den Pfad basierend auf den gelieferten Scan-Daten.
+
+Gate-Logik (zwingend einhalten):
+- L1 rot → Stabilisierungspfad (keine Ausnahme)
+- L1 gelb + L2 hoch → Kulturpfad
+- L1 gelb + L2 ok + L3 erzeugt L2-Blockaden → Klärungspfad
+- L1 grün + L3 dominant → Gestaltungspfad
+- Alle Layer kritisch → Neuausrichtungspfad
+- Mandat fehlt → Alarmstufe Rot
+
+Ausgabe (Markdown, deutsch, max. 200 Wörter):
+1. **Empfohlener Pfad** — Name
+2. **Konfidenz** — ★★☆ (Survey + 1–2 Interviews) oder ★★★ (Survey + alle 3 Interviews + Omission-Bias-Check)
+3. **Primärer Friction-Vektor** — Layer + Achse + Zitat (falls Interview-Beleg)
+4. **Top 3 zu adressierende Punkte** — priorisiert nach Gate-Logik
+5. **Nächster konkreter Schritt** — operativ, umsetzbar`;
+
+  const userMsg = `Klient${kunde_name ? ": " + kunde_name : ""}.
+
+Survey-Ampeln (alle 12 Achsen):
+${ampelnBlock}
+
+Interview-Notizen:
+${interviewBlock}
+
+Omission-Bias-Flags:
+${omissionBlock}
+
+Arbeitshypothese:
+${(arbeitshypothese || "— keine Arbeitshypothese gesetzt —").trim()}
+
+Bitte berechne die Pfad-Empfehlung gemäss Gate-Logik.`;
+
+  const maxRetries = 3;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await anthropic.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1500,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userMsg }],
+      });
+      const text = response.content.filter(c => c.type === "text").map(c => c.text).join("");
+      return res.json({ text });
+    } catch (e) {
+      const isOverloaded = e.status === 529 || (e.message && e.message.includes("529"));
+      const isRateLimit = e.status === 429;
+      if ((isOverloaded || isRateLimit) && attempt < maxRetries) {
+        await new Promise(r => setTimeout(r, attempt * 2000));
+        continue;
+      }
+      console.error("Pfad-Empfehlung Scan error:", e.message);
       const userErr = isOverloaded
         ? "Claude ist gerade überlastet. Bitte in 30 Sekunden nochmal versuchen."
         : isRateLimit
