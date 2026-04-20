@@ -62,7 +62,6 @@ time: ~5 min
 instruction: Eine konkrete, machbare Handlung identifizieren.
 
 guide:
-- "Was wäre der kleinste mögliche nächste Schritt?"
 - Wenn nötig: Organizational Friction Scan als konkretes Angebot positionieren — "3 Tage, 3-seitiger Befund, Klarheit bevor investiert wird."
 
 ---

@@ -181,6 +181,58 @@ async function githubGetContextFile() {
   return { content };
 }
 
+// ─── NELION MASTER CONTEXT LOADER (dynamisch, Multi-Source) ───────────────
+// Reihenfolge: Supabase → GitHub → lokales File. Bei Fehler: leerer Content,
+// der ADA-System-Prompt bleibt funktionsfähig (hardcodierter Fallback).
+// 5-Minuten-Cache um API-Limits zu schonen.
+let _nelionContextCache = { text: null, ts: 0 };
+const NELION_CONTEXT_CACHE_MS = 5 * 60 * 1000;
+const NELION_CONTEXT_LOCAL_PATH = path.join(__dirname, "content", "nelion-master-context.md");
+
+async function loadNelionContext() {
+  // Cache-Hit
+  if (_nelionContextCache.text && (Date.now() - _nelionContextCache.ts) < NELION_CONTEXT_CACHE_MS) {
+    return _nelionContextCache.text;
+  }
+  let text = null;
+  // 1. Supabase — Tabelle nelion_context(name, content)
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("nelion_context")
+        .select("content")
+        .eq("name", "master")
+        .maybeSingle();
+      if (!error && data && data.content) text = data.content;
+    } catch (e) {
+      console.warn("loadNelionContext: Supabase skipped:", e.message);
+    }
+  }
+  // 2. GitHub raw (bestehender Pfad)
+  if (!text) {
+    try {
+      const { content } = await githubGetContextFile();
+      if (content) text = content;
+    } catch (e) {
+      console.warn("loadNelionContext: GitHub skipped:", e.message);
+    }
+  }
+  // 3. Lokales File als Fallback
+  if (!text) {
+    try {
+      if (fs.existsSync(NELION_CONTEXT_LOCAL_PATH)) {
+        text = fs.readFileSync(NELION_CONTEXT_LOCAL_PATH, "utf-8");
+      }
+    } catch (e) {
+      console.warn("loadNelionContext: local file skipped:", e.message);
+    }
+  }
+  if (text) {
+    _nelionContextCache = { text, ts: Date.now() };
+  }
+  return text || "";
+}
+
 // ─── GITHUB MEMORY (shared with NOS) ─────────────────────────────────────
 async function githubGetMemoryFile() {
   if (!GITHUB_FILE_PATH || !GITHUB_TOKEN || !GITHUB_REPO) return { content: null, sha: null };
@@ -612,6 +664,7 @@ app.patch("/api/consultations/:id", async (req, res) => {
     "phase5_mitnehmen_notizen",
     "phase5_naechster_schritt_notizen",
     "phase5_multiplikator",
+    "phase5_ungesagtes",
     "transkript_analyse",
     "transkript_text",
     "completed",
@@ -630,6 +683,7 @@ app.patch("/api/consultations/:id", async (req, res) => {
     "hyp_generated", "hyp_regime",
     "phase4_schritt", "phase4_idealzustand", "phase4_schritt_notizen",
     "phase5_mitnehmen_notizen", "phase5_naechster_schritt_notizen", "phase5_multiplikator",
+    "phase5_ungesagtes",
     "unternehmen", "abteilung", "phase0_notiz",
     "transkript_analyse", "transkript_text",
   ];
@@ -1249,7 +1303,7 @@ const TALLY_F_TO_AXIS = {
   F1:  { layer: "L1",  achse: "Allostatic Load" },          // Neurobiologische Last
   F2:  { layer: "L1",  achse: "Energie-Status" },           // Energiereserven
   F3:  { layer: "L1b", achse: "Anforderungs-Ressourcen-Ungleichgewicht" }, // Strukturelle Ueberlastung
-  F4:  { layer: "L1b", achse: "Erholungsstruktur" },        // Regenerationsdefizit
+  F4:  { layer: "L1b", achse: "Erholungsstruktur" },        // Regenerationsdefizit (Erholung)
   F5:  { layer: "L2",  achse: "Psychological Safety" },     // Selbstzensur
   F6:  { layer: "L2",  achse: "Immunity-Muster" },          // Veraenderungsresistenz
   F7:  { layer: "L2",  achse: "Attribution Style" },        // Verantwortungsvermeidung
@@ -1258,6 +1312,7 @@ const TALLY_F_TO_AXIS = {
   F10: { layer: "L3",  achse: "Incentive-Struktur" },       // Dysfunktionale Anreize
   F11: { layer: "L3",  achse: "Strukturelle Ambiguität" },  // Verantwortungsvakuum
   F12: { layer: "L3",  achse: "Informationsfluss" },        // Informationsblockaden
+  F13: { layer: "L1b", achse: "Schlafqualität" },           // Regenerationsdefizit (Schlaf)
 };
 
 function tallyScoreToAmpel(score) {
@@ -1515,7 +1570,7 @@ app.post("/api/tasks", async (req, res) => {
 
 app.patch("/api/tasks/:id", async (req, res) => {
   if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
-  const allowed = ["titel", "prioritaet", "deadline", "gate_bezug", "status", "ada_vorschlag", "nathalie_approved", "position"];
+  const allowed = ["titel", "prioritaet", "deadline", "gate_bezug", "status", "ada_vorschlag", "nathalie_approved", "position", "notiz"];
   const updates = {};
   for (const key of allowed) {
     if (req.body[key] !== undefined) updates[key] = req.body[key];
@@ -1527,6 +1582,16 @@ app.patch("/api/tasks/:id", async (req, res) => {
     const r2 = await supabase.from("tasks").update(updates).eq("id", req.params.id).select().single();
     if (r2.error) return res.status(500).json({ error: r2.error.message });
     return res.json(r2.data);
+  }
+  if (error && updates.notiz !== undefined && /notiz/.test(error.message || "")) {
+    // Migration 021 noch nicht ausgeführt — ohne notiz retry
+    delete updates.notiz;
+    if (Object.keys(updates).length === 0) {
+      return res.status(500).json({ error: "Migration 021 nötig: tasks.notiz Spalte fehlt" });
+    }
+    const r3 = await supabase.from("tasks").update(updates).eq("id", req.params.id).select().single();
+    if (r3.error) return res.status(500).json({ error: r3.error.message });
+    return res.json(r3.data);
   }
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
@@ -1647,18 +1712,19 @@ app.post("/api/ada/chat", async (req, res) => {
     return res.status(400).json({ error: "messages array erforderlich" });
   }
 
-  // Build system prompt: ADA prompt + Master Context + Memory + Scan Context
-  let systemPrompt = ADA_SYSTEM_PROMPT;
-
-  // 1. NELION Master Context (read-only)
+  // Build system prompt: Master Context (dynamisch) + ADA-spezifisch + Memory + Scan-Kontext
+  // Reihenfolge: NELION_MASTER_CONTEXT (Supabase/GitHub/lokal) zuerst, dann ADA-Prompt.
+  // Falls dynamisches Laden fehlschlägt: hardcodierter ADA-Prompt reicht aus.
+  let systemPrompt = "";
   try {
-    const { content: masterContext } = await githubGetContextFile();
+    const masterContext = await loadNelionContext();
     if (masterContext) {
-      systemPrompt += `\n\n─── NELION MASTER CONTEXT (read-only) ───\n${masterContext}\n─── ENDE CONTEXT ───`;
+      systemPrompt += `─── NELION MASTER CONTEXT (read-only) ───\n${masterContext}\n─── ENDE CONTEXT ───\n\n`;
     }
   } catch (e) {
     console.warn("Master Context fetch failed:", e.message);
   }
+  systemPrompt += ADA_SYSTEM_PROMPT;
 
   // 2. Shared Memory (NATHALIE_MEMORY.md)
   if (memory) {

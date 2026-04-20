@@ -508,10 +508,37 @@
     transition: border-color .12s;
   }
   .note-item:hover { border-color: var(--border2); }
+  /* Collapsible-Header zeigt Preview (erste 60 Zeichen) — klickbar toggelt Body */
+  .note-collapse-header {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 10px; cursor: pointer; user-select: none;
+    font-size: 12px; color: var(--ink); line-height: 1.4;
+  }
+  .note-collapse-header:hover { background: var(--surface2); }
+  .note-collapse-arrow {
+    font-size: 10px; opacity: 0.55; transition: transform .15s;
+    flex-shrink: 0;
+  }
+  .note-item.open .note-collapse-arrow { transform: rotate(90deg); }
+  .note-collapse-preview {
+    flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .note-collapse-preview.empty { color: var(--ink-mute); font-style: italic; }
+  .note-body { display: none; border-top: 1px solid var(--border); }
+  .note-item.open .note-body { display: block; }
   .note-item-header {
     display: flex; align-items: center; gap: 6px;
     padding: 6px 8px 4px; border-bottom: 1px solid var(--border);
   }
+  /* Resize-Handle am linken Rand des Notizen-Panels */
+  .notes-resize {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 6px; cursor: ew-resize;
+    background: transparent; transition: background .15s;
+    z-index: 1;
+  }
+  .notes-resize:hover, .notes-resize.dragging { background: var(--ada-accent); opacity: 0.3; }
+  .notes-panel { position: fixed; }
   .note-title-input {
     flex: 1; border: none; outline: none; background: transparent;
     font-family: var(--sans); font-size: 13px; font-weight: 500;
@@ -1069,6 +1096,25 @@
     font-family: var(--mono); font-size: 10px; color: var(--ink-mute);
     white-space: nowrap; flex-shrink: 0;
   }
+  /* Task-Notiz (Landing) — klappbar, nur sichtbar wenn open */
+  .task-note-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--ink-mute); font-size: 13px;
+    padding: 2px 6px; line-height: 1; border-radius: 3px;
+    transition: color .12s, background .12s;
+  }
+  .task-note-btn:hover { color: var(--ink); background: var(--surface2); }
+  .task-note-btn.has-note { color: var(--ada-accent); }
+  .task-note-wrap { display: none; width: 100%; padding: 4px 0 6px 26px; }
+  .task-note-wrap.open { display: block; }
+  .task-note-input {
+    width: 100%; min-height: 36px;
+    border: 1px solid var(--border); border-radius: var(--rs);
+    padding: 6px 8px; font-family: var(--sans); font-size: 12px;
+    color: var(--ink); background: var(--surface); resize: vertical;
+    outline: none; box-sizing: border-box;
+  }
+  .task-note-input:focus { border-color: var(--ada-accent); }
 
   /* ── GATES ────────────────────────────────────────────────────────── */
   .landing-gates {
@@ -1415,7 +1461,7 @@
     font-family: var(--mono); font-size: 10px;
     color: rgba(255,255,255,0.7); margin-top: 2px;
   }
-  /* Hover-Vergrößerung damit klar wird dass der Punkt interaktiv ist */
+  /* Hover-Vergrösserung damit klar wird dass der Punkt interaktiv ist */
   .tl-task-dot, .tl-gate-dot { cursor: pointer; transition: r .12s; }
   .tl-task-dot:hover { r: 6; }
   .tl-gate-dot:hover { r: 9; }
@@ -2993,6 +3039,109 @@
   }
 
   .tab-btn.active[data-tab="nelion"] { border-bottom-color: #534AB7; }
+
+  /* ── NELION-Tab: Drei-Spalten-Navigation ──────────────────────────── */
+  .nelion-layout { display: flex; gap: 20px; margin-top: 16px; align-items: flex-start; }
+  .nelion-sidenav { flex: 0 0 220px; display: flex; flex-direction: column; gap: 8px; position: sticky; top: 12px; }
+  .nelion-sidenav-btn {
+    padding: 14px 16px; text-align: left;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; font-size: 13px; font-weight: 500;
+    color: var(--ink); cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+  }
+  .nelion-sidenav-btn:hover { background: var(--surface2); }
+  .nelion-sidenav-btn.active {
+    background: #1a1a2e; color: #fff; border-color: #1a1a2e;
+  }
+  .nelion-content { flex: 1; min-width: 0; }
+  .nelion-pane { display: none; }
+  .nelion-pane.active { display: block; }
+
+  .nelion-roi-collapsible { margin-bottom: 20px; }
+  .nelion-roi-toggle {
+    width: 100%; padding: 12px 16px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 14px; font-weight: 500; color: var(--ink);
+    cursor: pointer; user-select: none; font-family: inherit;
+  }
+  .nelion-roi-toggle:hover { background: var(--surface2); }
+  .nelion-roi-toggle-arrow { font-size: 12px; transition: transform .2s; opacity: 0.7; }
+  .nelion-roi-toggle.open .nelion-roi-toggle-arrow { transform: rotate(180deg); }
+  .nelion-roi-body { display: none; padding-top: 14px; }
+  .nelion-roi-body.open { display: block; }
+
+  @media (max-width: 860px) {
+    .nelion-layout { flex-direction: column; }
+    .nelion-sidenav { flex: 1 1 auto; flex-direction: row; flex-wrap: wrap; position: static; }
+    .nelion-sidenav-btn { flex: 1; min-width: 140px; }
+  }
+
+  /* Regime-Routing Pane */
+  .nelion-regime-conf {
+    font-size: 12px; color: #444441; line-height: 1.6;
+    padding: 12px 16px; background: var(--surface2);
+    border-left: 3px solid var(--border);
+    border-radius: 0 6px 6px 0; margin-bottom: 18px;
+  }
+  .nelion-regime-step {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px; margin-bottom: 14px;
+  }
+  .nelion-regime-q {
+    font-size: 14px; font-weight: 500; color: #1a1a2e;
+    margin-bottom: 10px;
+  }
+  .nelion-regime-hint {
+    font-size: 12px; color: #444441; line-height: 1.55;
+    margin-top: 10px; padding: 8px 12px;
+    background: var(--surface2); border-radius: 4px;
+  }
+  .nelion-regime-btnrow { display: flex; gap: 8px; flex-wrap: wrap; }
+  .nelion-regime-btn {
+    padding: 8px 14px; font-size: 12px; font-weight: 500;
+    border: 1px solid var(--border); border-radius: 4px;
+    background: var(--surface); color: #1a1a2e; cursor: pointer;
+    transition: all .15s; font-family: inherit;
+  }
+  .nelion-regime-btn:hover { background: var(--surface2); }
+  .nelion-regime-btn.active { background: #1a1a2e; color: #fff; border-color: #1a1a2e; }
+  .nelion-regime-btn.g.active { background: #0F6E56; border-color: #0F6E56; color: #fff; }
+  .nelion-regime-btn.y.active { background: #BA7517; border-color: #BA7517; color: #fff; }
+  .nelion-regime-btn.r.active { background: #B03636; border-color: #B03636; color: #fff; }
+  .nelion-regime-result {
+    padding: 16px; background: #EEEDFE; border: 1px solid #AFA9EC;
+    border-radius: 8px; margin-top: 14px;
+  }
+  .nelion-regime-result-title { font-size: 14px; font-weight: 600; color: #534AB7; margin-bottom: 6px; }
+  .nelion-regime-result-text { font-size: 13px; color: #1a1a2e; line-height: 1.55; }
+  .nelion-regime-warn {
+    padding: 12px 14px; background: #FAEEDA; border: 1px solid #FAC775;
+    border-radius: 6px; margin-top: 12px; font-size: 12px;
+    color: #7A4A0E; line-height: 1.55;
+  }
+
+  /* Theorie-Legende */
+  .nelion-legend-title {
+    font-size: 15px; font-weight: 500; color: #1a1a2e;
+    margin: 18px 0 10px 0;
+  }
+  .nelion-legend-item {
+    padding: 14px 16px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 6px;
+    margin-bottom: 10px; font-size: 13px; line-height: 1.6;
+  }
+  .nelion-legend-stars {
+    font-weight: 600; color: #534AB7; margin-right: 8px;
+    font-family: var(--mono);
+  }
+
+  /* Kontrast-Fix: Kaskaden-Simulation Erklärungstexte */
+  .sim-step-q, .sim-step-hint, .sim-explain, .sim-meta {
+    color: #444441 !important;
+  }
 </style>
 </head>
 <body>
@@ -3222,28 +3371,45 @@
     NELION diagnostiziert systematisch auf drei Ebenen — bevor interveniert wird.
   </p>
 
-  <!-- ─── ROI-BLOCK ──────────────────────────────────────────────────── -->
-  <div class="nelion-section-label">Warum das Business-relevant ist</div>
-  <div class="nelion-roi-grid">
-    <div class="nelion-roi-tile">
-      <div class="nelion-roi-title">Richtig investieren</div>
-      <div class="nelion-roi-text">Eine Intervention auf der falschen Ebene kostet CHF 50'000+ ohne Wirkung. Der Scan kostet CHF 3'500 und zeigt zuerst wo das Problem wirklich liegt.</div>
-      <div class="nelion-roi-tag">Fehlallokation vermeiden</div>
-    </div>
-    <div class="nelion-roi-tile">
-      <div class="nelion-roi-title">Fluktuation reduzieren</div>
-      <div class="nelion-roi-text">Eine Kündigung kostet 50–200% des Jahresgehalts. L1/L2-Friction ist einer der häufigsten unsichtbaren Fluktuationstreiber.</div>
-      <div class="nelion-roi-tag">Frühwarnsystem</div>
-    </div>
-    <div class="nelion-roi-tile">
-      <div class="nelion-roi-title">Entscheidungen beschleunigen</div>
-      <div class="nelion-roi-text">L3-Friction (unklare Verantwortung, Informationsblockaden) kostet messbar Zeit und Geld. Sichtbar machen, bevor es eskaliert.</div>
-      <div class="nelion-roi-tag">Strukturelle Hebelwirkung</div>
-    </div>
-  </div>
+  <!-- ─── DREI-SPALTEN-NAVIGATION ───────────────────────────────────── -->
+  <div class="nelion-layout">
+    <nav class="nelion-sidenav" id="nelionSideNav">
+      <button class="nelion-sidenav-btn active" data-pane="layer" onclick="switchNelionPane('layer')">Layer-Modell</button>
+      <button class="nelion-sidenav-btn" data-pane="regime" onclick="switchNelionPane('regime')">Regime-Routing</button>
+      <button class="nelion-sidenav-btn" data-pane="theorie" onclick="switchNelionPane('theorie')">Theorie-Legende</button>
+    </nav>
 
-  <!-- ─── DREI LAYER ─────────────────────────────────────────────────── -->
-  <div class="nelion-section-label">Drei Ebenen der Organizational Friction</div>
+    <div class="nelion-content">
+
+    <!-- ─── PANE 1: LAYER-MODELL ──────────────────────────────────── -->
+    <div class="nelion-pane active" id="nelionPaneLayer">
+
+    <!-- ─── ROI-BLOCK (einklappbar, standard: zu) ───────────────── -->
+    <div class="nelion-roi-collapsible">
+      <button class="nelion-roi-toggle" type="button" onclick="toggleNelionRoi(this)">
+        <span>Was ohne Scan unsichtbar bleibt</span>
+        <span class="nelion-roi-toggle-arrow">▼</span>
+      </button>
+      <div class="nelion-roi-body">
+        <div class="nelion-roi-grid">
+          <div class="nelion-roi-tile">
+            <div class="nelion-roi-title">Warum Leute wirklich gehen</div>
+            <div class="nelion-roi-text">Kündigungen kommen selten überraschend — nur zu spät bemerkt. Stille Überlastung, unausgesprochene Konflikte, Erschöpfungsmuster. Diese Signale zeigen sich im Verhalten lange bevor sie im Austrittsgespräch ankommen. In den meisten Organisationen sieht sie niemand, bis es zu spät ist.</div>
+          </div>
+          <div class="nelion-roi-tile">
+            <div class="nelion-roi-title">Wo sich Organisationen selbst bremsen</div>
+            <div class="nelion-roi-text">Die meisten Verzögerungen haben keinen Grund — sondern eine Struktur. Unklare Verantwortlichkeiten, Entscheidungen die zwischen Hierarchien hängenbleiben, Informationen die nicht ankommen. Solche Muster werden zur Normalität, bevor jemand sie benennt.</div>
+          </div>
+          <div class="nelion-roi-tile">
+            <div class="nelion-roi-title">Warum Interventionen ins Leere laufen</div>
+            <div class="nelion-roi-text">Die teuersten Interventionen sind die, die am falschen Punkt ansetzen. Ein Training das nicht greift. Eine Reorganisation die wenig verändert. Das Problem sitzt meist tiefer als der Befund vermuten lässt — und bleibt genau deshalb bestehen.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── DREI LAYER ─────────────────────────────────────────────── -->
+    <div class="nelion-section-label">Drei Ebenen der Organizational Friction</div>
 
   <!-- L1 ───────────────────────────────── -->
   <div class="nelion-layer nelion-layer-l1">
@@ -3488,6 +3654,75 @@
     </div>
   </div>
 
+    </div><!-- /.nelion-pane#nelionPaneLayer -->
+
+    <!-- ─── PANE 2: REGIME-ROUTING ────────────────────────────────── -->
+    <div class="nelion-pane" id="nelionPaneRegime">
+
+      <div class="nelion-regime-conf">
+        <strong>Konfidenz-Erklärung</strong><br>
+        Erstgespräch: <span style="font-family:var(--mono)">★☆☆</span> — Claude schätzt Layer-Intensität aus Gesprächsnotizen (qualitativ, schwache Hypothese).<br>
+        Scan: <span style="font-family:var(--mono)">★★☆</span> bis <span style="font-family:var(--mono)">★★★</span> — Claude berechnet aus Survey-Ampeln + Interview (quantitativ + qualitativ).
+      </div>
+
+      <div class="nelion-section-label">Regime-Simulation</div>
+
+      <div class="nelion-regime-step">
+        <div class="nelion-regime-q">Schritt 1a — Individuelle biologische Kapazität (L1a)</div>
+        <div style="font-size:13px;color:#444441;margin-bottom:10px">Wie ist die Person selbst?</div>
+        <div class="nelion-regime-btnrow" data-step="l1a">
+          <button class="nelion-regime-btn g" onclick="setNelionRegime('l1a','gruen', this)">Grün</button>
+          <button class="nelion-regime-btn y" onclick="setNelionRegime('l1a','gelb', this)">Gelb</button>
+          <button class="nelion-regime-btn r" onclick="setNelionRegime('l1a','rot', this)">Rot</button>
+        </div>
+        <div class="nelion-regime-hint">L1a rot → Person braucht Entlastung und Unterstützung. Kein Coaching, keine neuen Anforderungen.</div>
+      </div>
+
+      <div class="nelion-regime-step">
+        <div class="nelion-regime-q">Schritt 1b — Strukturell verursachte Erschöpfung (L1b)</div>
+        <div style="font-size:13px;color:#444441;margin-bottom:10px">Was tut das System der Person an?</div>
+        <div class="nelion-regime-btnrow" data-step="l1b">
+          <button class="nelion-regime-btn g" onclick="setNelionRegime('l1b','gruen', this)">Grün</button>
+          <button class="nelion-regime-btn y" onclick="setNelionRegime('l1b','gelb', this)">Gelb</button>
+          <button class="nelion-regime-btn r" onclick="setNelionRegime('l1b','rot', this)">Rot</button>
+        </div>
+        <div class="nelion-regime-hint">L1b rot → Das Design erschöpft Menschen strukturell. Einzelne entlasten hilft nicht — das System muss sich ändern.</div>
+      </div>
+
+      <div class="nelion-regime-step">
+        <div class="nelion-regime-q">Schritt 2 — Dauer</div>
+        <div style="font-size:13px;color:#444441;margin-bottom:10px">Wie lange besteht dieser Zustand?</div>
+        <div class="nelion-regime-btnrow" data-step="dauer">
+          <button class="nelion-regime-btn" onclick="setNelionRegime('dauer','akut', this)">Unter 4 Wochen — akut</button>
+          <button class="nelion-regime-btn" onclick="setNelionRegime('dauer','anhaltend', this)">1–3 Monate — anhaltend</button>
+          <button class="nelion-regime-btn" onclick="setNelionRegime('dauer','chronisch', this)">Länger als 3 Monate — chronisch</button>
+        </div>
+      </div>
+
+      <div id="nelionRegimeResult"></div>
+    </div><!-- /.nelion-pane#nelionPaneRegime -->
+
+    <!-- ─── PANE 3: THEORIE-LEGENDE ───────────────────────────────── -->
+    <div class="nelion-pane" id="nelionPaneTheorie">
+      <div class="nelion-legend-title">Validierungsstufen</div>
+
+      <div class="nelion-legend-item">
+        <span class="nelion-legend-stars">★★★</span>
+        = peer-reviewed, repliziert, wissenschaftlicher Konsens. Kann zitiert werden ohne Rechtfertigungsbedarf.
+      </div>
+      <div class="nelion-legend-item">
+        <span class="nelion-legend-stars">★★☆</span>
+        = emerging evidence. Theorie existiert, erste Studien positiv, aber noch nicht breit repliziert. Nutzbar, sollte gekennzeichnet werden.
+      </div>
+      <div class="nelion-legend-item">
+        <span class="nelion-legend-stars">★☆☆</span>
+        = proprietär / konzeptuell. NELION-eigene Konstrukte oder Theorien ohne formale Validierung. Intern valide, extern mit Vorsicht.
+      </div>
+    </div><!-- /.nelion-pane#nelionPaneTheorie -->
+
+    </div><!-- /.nelion-content -->
+  </div><!-- /.nelion-layout -->
+
   <div class="nelion-footer">NELION — Organizational Friction Diagnostics · Basel · 2026</div>
 </div>
 
@@ -3588,6 +3823,7 @@
 <!-- ── NOTIZEN-PANEL (freie Notizen, überall sichtbar) ──────────────────── -->
 <button class="notes-fab" id="notesFab" title="Notizen öffnen" aria-label="Notizen öffnen" onclick="toggleNotesPanel()">✎</button>
 <div class="notes-panel" id="notesPanel" role="dialog" aria-label="Freie Notizen">
+  <div class="notes-resize" id="notesResize" title="Breite anpassen"></div>
   <div class="notes-header">
     <span class="notes-title">Notizen</span>
     <span class="note-save-indicator" id="notesSaveIndicator">Gespeichert ✓</span>
@@ -3971,6 +4207,11 @@ function renderLandingTasks() {
   }
   listEl.innerHTML = "";
   allTasks.forEach((t) => {
+    // Outer wrapper: row + optional note wrap (ausserhalb der row, damit es
+    // unter der Zeile erscheint ohne das Layout zu dehnen wenn zu).
+    const wrap = document.createElement("div");
+    wrap.className = "landing-task-wrap";
+
     const row = document.createElement("div");
     row.className = "landing-task-item";
     row.dataset.id = t.id;
@@ -4007,6 +4248,13 @@ function renderLandingTasks() {
     renderTaskDeadline(deadlineWrap, t, { editable: true });
     content.appendChild(deadlineWrap);
 
+    // Notiz-Toggle-Button (📝). Klick togglet das Notiz-Textarea unter der Zeile.
+    const noteBtn = document.createElement("button");
+    noteBtn.className = "task-note-btn";
+    if (t.notiz && t.notiz.trim()) noteBtn.classList.add("has-note");
+    noteBtn.innerHTML = "📝";
+    noteBtn.title = t.notiz && t.notiz.trim() ? "Notiz bearbeiten" : "Notiz hinzufügen";
+
     const actions = document.createElement("div");
     actions.className = "task-actions";
     const editBtn = mkActionBtn("✎", "Umbenennen", () => startEditTask(t, title));
@@ -4014,8 +4262,40 @@ function renderLandingTasks() {
     delBtn.classList.add("del");
     actions.append(editBtn, delBtn);
 
-    row.append(cb, dot, content, actions);
-    listEl.appendChild(row);
+    row.append(cb, dot, content, noteBtn, actions);
+
+    // Notiz-Wrap — standardmässig zu, 2 Zeilen Textarea, 1s debounced autosave
+    const noteWrap = document.createElement("div");
+    noteWrap.className = "task-note-wrap";
+    if (t.notiz && t.notiz.trim()) noteWrap.classList.add("open");
+    const noteInput = document.createElement("textarea");
+    noteInput.className = "task-note-input";
+    noteInput.rows = 2;
+    noteInput.placeholder = "Notiz zum Task…";
+    noteInput.value = t.notiz || "";
+    let noteTimer = null;
+    noteInput.addEventListener("input", () => {
+      t.notiz = noteInput.value;
+      noteBtn.classList.toggle("has-note", !!noteInput.value.trim());
+      clearTimeout(noteTimer);
+      noteTimer = setTimeout(() => {
+        fetch(`/api/tasks/${t.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ notiz: noteInput.value }),
+        }).catch(() => {});
+      }, 1000);
+    });
+    noteWrap.appendChild(noteInput);
+
+    noteBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isOpen = noteWrap.classList.toggle("open");
+      if (isOpen) setTimeout(() => noteInput.focus(), 30);
+    });
+
+    wrap.append(row, noteWrap);
+    listEl.appendChild(wrap);
   });
 }
 
@@ -4184,6 +4464,11 @@ async function restoreTask(id) {
 
 // ── SWITCH TAB ────────────────────────────────────────────────────────────
 function switchTab(tab) {
+  // Safety-Net: Session-Verlust-Fix. Vor Tab-Wechsel Notizen der
+  // aktuellen Erstgespräch-Session flushen (falls im modul1).
+  if (activeTab === "modul1" && currentConsultation) {
+    try { _forceFlushConsultationSave(); } catch {}
+  }
   activeTab = tab;
   if (typeof _adaCtx !== "undefined") _adaCtx.tab = tab;
   const header = document.getElementById("appHeader");
@@ -4665,7 +4950,8 @@ function renderPhase(num) {
   if (num === 0) { renderPhase0Klient(); return; }
   const phase = PHASES[num - 1]; if (!phase) return;
   renderPhaseSidebar(num);
-  let html = `<div class="phase-header"><span class="phase-number">${escHtml(phase.num)}</span><span class="phase-title">${escHtml(phase.title)}</span><span class="phase-time">${escHtml(phase.time)}</span></div>`;
+  const titleStyle = num === 4 ? ' style="font-style:italic"' : "";
+  let html = `<div class="phase-header"><span class="phase-number">${escHtml(phase.num)}</span><span class="phase-title"${titleStyle}>${escHtml(phase.title)}</span><span class="phase-time">${escHtml(phase.time)}</span></div>`;
   if (phase.instruction && phase.instruction.trim()) {
     html += `<div class="phase-instruction">${escHtml(phase.instruction)}</div>`;
   }
@@ -4722,6 +5008,14 @@ function renderPhase(num) {
     if (idealEl) {
       idealEl.addEventListener("input", () => { notesDirty = true; });
       idealEl.addEventListener("blur", () => { if (notesDirty) saveCurrentNotes(); });
+    }
+  }
+  // Phase 5: Autosave-Binding für Abschlussfrage phase5_ungesagtes
+  if (num === 5) {
+    const ungesagtesEl = document.getElementById("p5Ungesagtes");
+    if (ungesagtesEl) {
+      ungesagtesEl.addEventListener("input", () => { notesDirty = true; });
+      ungesagtesEl.addEventListener("blur", () => { if (notesDirty) saveCurrentNotes(); });
     }
   }
   // Guide-Note-Textareas: Autosave via data-note-key (1s debounced).
@@ -4933,7 +5227,17 @@ async function saveCurrentNotes() {
   }
   const noteKey = `phase${currentPhase}_notes`; const val = $phaseNotes.value;
   currentConsultation[noteKey] = val;
-  try { await fetch(`/api/consultations/${currentConsultation.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ [noteKey]: val, current_phase: currentPhase }) }); }
+  // Phase 5: zusätzlich phase5_ungesagtes mitspeichern (Abschlussfrage)
+  const patch = { [noteKey]: val, current_phase: currentPhase };
+  if (currentPhase === 5) {
+    const ungesagtesEl = document.getElementById("p5Ungesagtes");
+    if (ungesagtesEl) {
+      const u = ungesagtesEl.value;
+      currentConsultation.phase5_ungesagtes = u;
+      patch.phase5_ungesagtes = u;
+    }
+  }
+  try { await fetch(`/api/consultations/${currentConsultation.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(patch) }); }
   catch (e) { console.warn("Save failed:", e.message); }
 }
 
@@ -4947,6 +5251,28 @@ async function finishConsultation() {
 $phaseNotes.addEventListener("input", () => { notesDirty = true; });
 $phaseNotes.addEventListener("blur", () => { if (notesDirty) saveCurrentNotes(); });
 setInterval(() => { if (notesDirty && currentConsultation) saveCurrentNotes(); }, 15000);
+
+// ── AUTOSAVE SAFETY NET — Tab-Verlassen / Tab-Wechsel ─────────────────────
+// Stellt sicher dass Konsultations-Notizen auch dann persistiert werden
+// wenn der User den Tab wechselt, das Fenster schliesst, oder die Seite
+// in den Hintergrund geht. Fix für Session-Verlust-Bug (Anne-Case).
+function _forceFlushConsultationSave() {
+  if (!currentConsultation) return;
+  // Guide-Note-Textareas: pending debounce abbrechen und direkt speichern
+  document.querySelectorAll(".guide-note-input[data-note-key]").forEach(el => {
+    if (el.dataset.noteKey && currentConsultation) {
+      currentConsultation[el.dataset.noteKey] = el.value;
+      saveGuideNote(el.dataset.noteKey, el.value);
+    }
+  });
+  // Phase-weites Save (Phase 4 split-fields, Phase 5 ungesagtes, phaseN_notes)
+  if (typeof saveCurrentNotes === "function") saveCurrentNotes();
+}
+window.addEventListener("beforeunload", () => { _forceFlushConsultationSave(); });
+window.addEventListener("pagehide", () => { _forceFlushConsultationSave(); });
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") _forceFlushConsultationSave();
+});
 
 // Anker
 $btnAnker.addEventListener("click", () => $ankerOverlay.classList.add("open"));
@@ -5025,7 +5351,7 @@ const SCAN_PHASES_LEGACY = [
 // L1b sind die beiden neuen Achsen (strukturell verursachte Erschöpfung).
 const AMPEL_AXES = {
   L1:  ["Energie-Status", "Allostatic Load", "Verarbeitungsarchitektur", "Interoceptive Awareness"],
-  L1b: ["Anforderungs-Ressourcen-Ungleichgewicht", "Erholungsstruktur"],
+  L1b: ["Anforderungs-Ressourcen-Ungleichgewicht", "Erholungsstruktur", "Schlafqualität"],
   L2:  ["Psychological Safety", "Immunity-Muster", "Threat-State", "Attribution Style"],
   L3:  ["Entscheidungsarchitektur", "Incentive-Struktur", "Informationsfluss", "Strukturelle Ambiguität"],
 };
@@ -5041,6 +5367,7 @@ const AXIS_DISPLAY_LABELS = {
   // L1b — Strukturell verursachte Erschöpfung
   "Anforderungs-Ressourcen-Ungleichgewicht": "Strukturelle Überlastung (Anforderungs-Ressourcen-Ungleichgewicht)",
   "Erholungsstruktur":        "Regenerationsdefizit (Erholungsstruktur)",
+  "Schlafqualität":           "Schlafqualität (Regenerationsdefizit)",
   // L2 — Wissensblockaden
   "Psychological Safety":     "Selbstzensur (Psychological Safety)",
   "Immunity-Muster":          "Veränderungsresistenz (Immunity-Muster)",
@@ -6572,6 +6899,77 @@ function toggleNelionAxis(headerEl, bodyId) {
   if (headerEl) headerEl.classList.toggle("open", open);
 }
 
+// NELION-Tab: Pane-Switch (Layer-Modell / Regime-Routing / Theorie-Legende)
+function switchNelionPane(pane) {
+  document.querySelectorAll(".nelion-sidenav-btn").forEach(b => {
+    b.classList.toggle("active", b.dataset.pane === pane);
+  });
+  document.querySelectorAll(".nelion-pane").forEach(p => p.classList.remove("active"));
+  const target = document.getElementById(
+    pane === "layer" ? "nelionPaneLayer" :
+    pane === "regime" ? "nelionPaneRegime" :
+    "nelionPaneTheorie"
+  );
+  if (target) target.classList.add("active");
+}
+
+// NELION-Tab: ROI-Block Toggle
+function toggleNelionRoi(btn) {
+  const body = btn.parentElement.querySelector(".nelion-roi-body");
+  if (!body) return;
+  const open = !body.classList.contains("open");
+  body.classList.toggle("open", open);
+  btn.classList.toggle("open", open);
+}
+
+// NELION-Tab: Regime-Routing Simulation State + Logik
+const _nelionRegime = { l1a: null, l1b: null, dauer: null };
+function setNelionRegime(step, value, btn) {
+  _nelionRegime[step] = value;
+  if (btn) {
+    const row = btn.parentElement;
+    row.querySelectorAll(".nelion-regime-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+  }
+  renderNelionRegimeResult();
+}
+function _worstAmpel(a, b) {
+  const order = { rot: 3, gelb: 2, gruen: 1 };
+  const va = order[a] || 0, vb = order[b] || 0;
+  return va >= vb ? a : b;
+}
+function renderNelionRegimeResult() {
+  const out = document.getElementById("nelionRegimeResult");
+  if (!out) return;
+  const { l1a, l1b, dauer } = _nelionRegime;
+  if (!l1a || !l1b || !dauer) {
+    out.innerHTML = "";
+    return;
+  }
+  const l1 = _worstAmpel(l1a, l1b);
+  let title = "", text = "";
+  if (l1 === "rot") {
+    title = "Regime 3 — Stabilisierung";
+    text = "L1 rot = Gate. Keine L3-Intervention solange die Neurobiologische Kapazität nicht stabilisiert ist. Priorität: Entlastung, Erholung, Reduktion.";
+  } else if (l1 === "gelb") {
+    title = "Regime 2 — Psychologische Klärung";
+    text = "L1 gelb → Wissensblockaden (L2) prüfen und adressieren, bevor strukturelle Interventionen wirken können.";
+  } else {
+    title = "Regime 1 — Strukturoptimierung";
+    text = "L1 grün → primärer Hebel ist L3 (Strukturelle Reibung). Prozesse, Entscheidungsarchitektur, Anreize.";
+  }
+  let warn = "";
+  if (l1 === "gelb" && dauer === "chronisch") {
+    warn = `<div class="nelion-regime-warn">⚠️ Gelb seit über 3 Monaten = Regime 3 Risiko. Beobachten und bei nächster Einschätzung neu prüfen.</div>`;
+  }
+  out.innerHTML = `
+    <div class="nelion-regime-result">
+      <div class="nelion-regime-result-title">${title}</div>
+      <div class="nelion-regime-result-text">${text}</div>
+    </div>${warn}
+  `;
+}
+
 // ── DIAGNOSTISCHER KOMPASS V2 (Erstgespräch Phase 2) ──
 // Zwei separate Toggle-Blöcke unter einem gemeinsamen Titel:
 //   1. Layer-Signale — 4 Spalten (L1/L2/L3/Cross-Layer) mit je 5 Signalen
@@ -6825,6 +7223,12 @@ function renderHypothesenZusammenfassung() {
           <div class="theorie-text">Nicht alle Hebel haben dieselbe Wirkung. Reihenfolge entscheidet über Hebelwirkung.</div>
         </div>
       </div>
+    </div>
+
+    <div class="scan-card" style="margin-top:16px">
+      <div class="scan-card-title">Abschlussfrage — Ungesagtes</div>
+      <div style="font-size:12px;color:var(--ink-mute);margin-bottom:10px">Bevor wir abschliessen — gibt es etwas das du während unseres Gesprächs gedacht aber noch nicht gesagt hast?</div>
+      <textarea class="form-input" id="p5Ungesagtes" rows="4" placeholder="Was noch nicht gesagt wurde…">${escHtml((currentConsultation && currentConsultation.phase5_ungesagtes) || "")}</textarea>
     </div>
 
     <div class="disclosure-block scan-erklaerung">
@@ -7193,7 +7597,12 @@ async function generateHypothesen() {
     });
     const data = await r.json();
     if (!r.ok || data.error) throw new Error(data.error || `HTTP ${r.status}`);
-    const text = data.text || "";
+    const rawText = data.text || "";
+    const hasTranskript = !!(currentConsultation.transkript_text && currentConsultation.transkript_text.trim());
+    const konfidenzHeader = hasTranskript
+      ? "**★★☆ Konfidenz** — Gesprächsnotizen + Transkript. Validierung erst nach Survey + 3 Interviews.\n\n"
+      : "**★☆☆ Konfidenz** — nur Gesprächsnotizen, kein Transkript vorhanden. Hypothesen sind schwache Indizien, keine Befunde. Validierung erst nach Survey + 3 Interviews.\n\n";
+    const text = konfidenzHeader + rawText;
     if (output) {
       output.innerHTML = renderMarkdownToHtml(text);
       output.classList.add("has-content");
@@ -8153,7 +8562,7 @@ function startEditTask(task, titleEl) {
 }
 
 async function deleteTask(id) {
-  if (!confirm("Task wirklich löschen?")) return;
+  if (!confirm("Task löschen?")) return;
   try {
     await fetch(`/api/tasks/${id}`, { method: "DELETE" });
     allTasks = allTasks.filter(t => t.id !== id);
@@ -8413,6 +8822,12 @@ async function loadNotesIfNeeded() {
     const data = await r.json();
     allNotes = Array.isArray(data) ? data : [];
   } catch { allNotes = []; }
+  // Neueste Notiz zuoberst: nach created_at absteigend sortieren
+  allNotes.sort((a, b) => {
+    const ta = a && a.created_at ? Date.parse(a.created_at) : 0;
+    const tb = b && b.created_at ? Date.parse(b.created_at) : 0;
+    return tb - ta;
+  });
   notesLoaded = true;
 }
 
@@ -8442,10 +8857,41 @@ function renderNotesPanel() {
   }
 }
 
+// Liefert die ersten 60 Zeichen einer Notiz (Titel wenn gesetzt, sonst Plain-Text
+// aus dem content-HTML). Für die Collapsible-Preview.
+function _notePreviewText(note) {
+  if (!note) return "";
+  if (note.title && note.title.trim()) return note.title.trim().slice(0, 60);
+  const tmp = document.createElement("div");
+  tmp.innerHTML = note.content || "";
+  const txt = (tmp.textContent || "").trim();
+  return txt.slice(0, 60);
+}
+
 function buildNoteItem(note) {
   const item = document.createElement("div");
   item.className = "note-item";
   item.dataset.id = note.id;
+
+  // Collapsible-Header: Preview der ersten 60 Zeichen (klickbar = Toggle).
+  const collapseHeader = document.createElement("div");
+  collapseHeader.className = "note-collapse-header";
+  const arrow = document.createElement("span");
+  arrow.className = "note-collapse-arrow";
+  arrow.textContent = "▶";
+  const preview = document.createElement("span");
+  preview.className = "note-collapse-preview";
+  const pvText = _notePreviewText(note);
+  if (!pvText) { preview.classList.add("empty"); preview.textContent = "Leere Notiz…"; }
+  else preview.textContent = pvText;
+  collapseHeader.append(arrow, preview);
+  collapseHeader.addEventListener("click", () => {
+    item.classList.toggle("open");
+  });
+
+  // Body: alle Editor-Elemente innerhalb des Body-Containers (standard: zu).
+  const body = document.createElement("div");
+  body.className = "note-body";
 
   // Header: Titel-Input + Delete-Button
   const header = document.createElement("div");
@@ -8455,7 +8901,13 @@ function buildNoteItem(note) {
   titleInput.className = "note-title-input";
   titleInput.placeholder = "Titel (optional)";
   titleInput.value = note.title || "";
-  titleInput.addEventListener("input", () => scheduleNoteSave(note.id, "title", titleInput.value));
+  titleInput.addEventListener("input", () => {
+    scheduleNoteSave(note.id, "title", titleInput.value);
+    // Preview aktualisieren (Titel hat Vorrang)
+    const pv = _notePreviewText({ ...note, title: titleInput.value });
+    if (pv) { preview.textContent = pv; preview.classList.remove("empty"); }
+    else { preview.textContent = "Leere Notiz…"; preview.classList.add("empty"); }
+  });
   const delBtn = document.createElement("button");
   delBtn.className = "note-delete-btn";
   delBtn.innerHTML = "✕";
@@ -8500,6 +8952,12 @@ function buildNoteItem(note) {
   // Autosave beim Tippen
   editor.addEventListener("input", () => {
     scheduleNoteSave(note.id, "content", editor.innerHTML);
+    // Preview nur aktualisieren falls kein Titel existiert
+    if (!(titleInput.value && titleInput.value.trim())) {
+      const pv = _notePreviewText({ title: "", content: editor.innerHTML });
+      if (pv) { preview.textContent = pv; preview.classList.remove("empty"); }
+      else { preview.textContent = "Leere Notiz…"; preview.classList.add("empty"); }
+    }
   });
   // Toolbar-State bei Klick / Keyup im Editor aktualisieren
   editor.addEventListener("keyup", () => updateToolbarState(toolbar));
@@ -8512,7 +8970,8 @@ function buildNoteItem(note) {
     document.execCommand("insertText", false, text);
   });
 
-  item.append(header, toolbar, editor);
+  body.append(header, toolbar, editor);
+  item.append(collapseHeader, body);
   return item;
 }
 
@@ -8562,21 +9021,23 @@ async function addNote() {
     });
     const newNote = await r.json();
     if (newNote && newNote.id) {
-      allNotes.push(newNote);
-      // Neue Notiz unten anhängen und fokussieren
+      // Neueste Notiz zuoberst einfügen
+      allNotes.unshift(newNote);
       const listEl = document.getElementById("notesList");
       if (listEl) {
-        // Wenn vorher empty-state war: komplett neu rendern
         if (allNotes.length === 1) {
           renderNotesPanel();
         } else {
-          listEl.appendChild(buildNoteItem(newNote));
+          const itemEl = buildNoteItem(newNote);
+          itemEl.classList.add("open");  // neue Notiz direkt aufgeklappt
+          listEl.insertBefore(itemEl, listEl.firstChild);
         }
         const items = listEl.querySelectorAll(".note-item");
-        const last = items[items.length - 1];
-        if (last) {
-          last.scrollIntoView({ block: "nearest" });
-          const title = last.querySelector(".note-title-input");
+        const first = items[0];
+        if (first) {
+          first.classList.add("open");
+          first.scrollIntoView({ block: "nearest" });
+          const title = first.querySelector(".note-title-input");
           if (title) title.focus();
         }
       }
@@ -8591,6 +9052,55 @@ async function deleteNote(id) {
     allNotes = allNotes.filter(n => n.id !== id);
     renderNotesPanel();
   } catch (e) { console.warn("Note delete failed:", e.message); }
+}
+
+// ── NOTIZEN-PANEL RESIZE (linker Rand, 280–600px, localStorage) ──────────
+const NOTES_PANEL_WIDTH_KEY = "nelion_notes_panel_width";
+const NOTES_PANEL_MIN = 280;
+const NOTES_PANEL_MAX = 600;
+function _applyNotesPanelWidth(w) {
+  const panel = document.getElementById("notesPanel");
+  if (!panel) return;
+  const clamped = Math.max(NOTES_PANEL_MIN, Math.min(NOTES_PANEL_MAX, w));
+  panel.style.width = clamped + "px";
+}
+function _initNotesPanelResize() {
+  const panel = document.getElementById("notesPanel");
+  const handle = document.getElementById("notesResize");
+  if (!panel || !handle) return;
+  // Gespeicherte Breite anwenden
+  const saved = parseInt(localStorage.getItem(NOTES_PANEL_WIDTH_KEY) || "", 10);
+  if (!isNaN(saved)) _applyNotesPanelWidth(saved);
+
+  let dragging = false;
+  let startX = 0, startW = 0;
+  handle.addEventListener("mousedown", (e) => {
+    dragging = true;
+    handle.classList.add("dragging");
+    startX = e.clientX;
+    startW = panel.getBoundingClientRect().width;
+    e.preventDefault();
+  });
+  window.addEventListener("mousemove", (e) => {
+    if (!dragging) return;
+    // Handle sitzt am linken Rand des Panels (Panel ist left:24px verankert).
+    // Drag nach links → Panel wird breiter (wächst in Richtung rechter Bildrand).
+    const delta = startX - e.clientX;
+    _applyNotesPanelWidth(startW + delta);
+  });
+  window.addEventListener("mouseup", () => {
+    if (!dragging) return;
+    dragging = false;
+    handle.classList.remove("dragging");
+    const w = panel.getBoundingClientRect().width;
+    try { localStorage.setItem(NOTES_PANEL_WIDTH_KEY, String(Math.round(w))); } catch {}
+  });
+}
+// Nach DOM-Setup initialisieren
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", _initNotesPanelResize);
+} else {
+  _initNotesPanelResize();
 }
 
 // Keyboard-Shortcuts: Ctrl/Cmd+B, Ctrl/Cmd+I im Editor funktionieren
@@ -10173,6 +10683,7 @@ const TALLY_F_TO_AXIS = {
   F10: { layer: "L3",  achse: "Incentive-Struktur" },
   F11: { layer: "L3",  achse: "Strukturelle Ambiguität" },
   F12: { layer: "L3",  achse: "Informationsfluss" },
+  F13: { layer: "L1b", achse: "Schlafqualität" },
 };
 
 const SURV_ROLLEN_ORDER = ["CEO", "FK", "Operativ"];
