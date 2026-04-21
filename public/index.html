@@ -7161,6 +7161,7 @@ function renderScanErsteEinschaetzung() {
 
       <div class="btn-row" style="margin-bottom:12px">
         <button class="btn btn-primary" id="btnPfadScan" onclick="generatePfadEmpfehlungScan()">Pfad berechnen</button>
+        <button class="btn btn-secondary" id="btnPfadScanReset" onclick="resetPfadEmpfehlungScan()" style="${s.pfad_empfehlung ? '' : 'display:none;'}">↺ Pfad zurücksetzen</button>
         <span id="pfadScanStatus" style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);align-self:center"></span>
       </div>
 
@@ -7946,6 +7947,7 @@ function renderHypothesenZusammenfassung() {
 
       <div class="btn-row" style="margin-bottom:12px">
         <button class="btn btn-primary" id="btnPfadErstgespraech" onclick="generatePfadEmpfehlungErstgespraech()">Pfad einschätzen</button>
+        <button class="btn btn-secondary" id="btnPfadErstgespraechReset" onclick="resetPfadEmpfehlungErstgespraech()" style="${(currentConsultation && currentConsultation.pfad_empfehlung) ? '' : 'display:none;'}">↺ Pfad zurücksetzen</button>
         <span id="pfadErstgespraechStatus" style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);align-self:center"></span>
       </div>
 
@@ -8477,12 +8479,42 @@ async function generatePfadEmpfehlungErstgespraech() {
         body: JSON.stringify({ pfad_empfehlung: text }),
       });
     } catch {}
+    const resetBtn = document.getElementById("btnPfadErstgespraechReset");
+    if (resetBtn) resetBtn.style.display = "";
     if (status) status.textContent = "✓ Eingeschätzt.";
   } catch (e) {
     if (status) status.textContent = "✗ Fehler: " + e.message;
     console.error("generatePfadEmpfehlungErstgespraech:", e.message);
   }
   if (btn) { btn.disabled = false; btn.textContent = "Pfad neu einschätzen"; }
+}
+
+// Reset der Erstgespräch-Pfad-Empfehlung — DB-Feld leeren, Output zurück
+// auf Leerstand, Button-Text + Sichtbarkeit resetten.
+async function resetPfadEmpfehlungErstgespraech() {
+  if (!currentConsultation) return;
+  if (!confirm("Pfad-Empfehlung zurücksetzen? Der gespeicherte Wert wird geleert.")) return;
+  currentConsultation.pfad_empfehlung = null;
+  const output = document.getElementById("pfadErstgespraechOutput");
+  if (output) {
+    output.innerHTML = '<div class="hyp-output-empty">Noch keine Pfad-Empfehlung. Claude schätzt aus allen Phase-1–5-Notizen den wahrscheinlichsten Pfad ein.</div>';
+    output.classList.remove("has-content");
+  }
+  const btn = document.getElementById("btnPfadErstgespraech");
+  if (btn) btn.textContent = "Pfad einschätzen";
+  const resetBtn = document.getElementById("btnPfadErstgespraechReset");
+  if (resetBtn) resetBtn.style.display = "none";
+  const status = document.getElementById("pfadErstgespraechStatus");
+  if (status) status.textContent = "↺ Zurückgesetzt.";
+  try {
+    await fetch(`/api/consultations/${currentConsultation.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pfad_empfehlung: null }),
+    });
+  } catch (e) {
+    console.error("resetPfadEmpfehlungErstgespraech:", e.message);
+  }
 }
 
 // ── SCAN PHASE 3: PFAD-EMPFEHLUNG (Block A2 — 2026-04-20) ─────────────────
@@ -8564,12 +8596,38 @@ async function generatePfadEmpfehlungScan() {
     try {
       await patchScan({ pfad_empfehlung: text });
     } catch {}
+    const resetBtn = document.getElementById("btnPfadScanReset");
+    if (resetBtn) resetBtn.style.display = "";
     if (status) status.textContent = "✓ Berechnet.";
   } catch (e) {
     if (status) status.textContent = "✗ Fehler: " + e.message;
     console.error("generatePfadEmpfehlungScan:", e.message);
   }
   if (btn) { btn.disabled = false; btn.textContent = "Pfad neu berechnen"; }
+}
+
+// Reset der Scan-Pfad-Empfehlung — DB-Feld leeren, Output zurück auf
+// Leerstand, Button-Text + Sichtbarkeit resetten.
+async function resetPfadEmpfehlungScan() {
+  if (!currentScan) return;
+  if (!confirm("Pfad-Empfehlung zurücksetzen? Der gespeicherte Wert wird geleert.")) return;
+  currentScan.pfad_empfehlung = null;
+  const output = document.getElementById("pfadScanOutput");
+  if (output) {
+    output.innerHTML = '<div class="hyp-output-empty">Noch keine Pfad-Empfehlung. Claude berechnet aus Ampeln + Interview-Notizen + Omission-Bias-Flags + Arbeitshypothese.</div>';
+    output.classList.remove("has-content");
+  }
+  const btn = document.getElementById("btnPfadScan");
+  if (btn) btn.textContent = "Pfad berechnen";
+  const resetBtn = document.getElementById("btnPfadScanReset");
+  if (resetBtn) resetBtn.style.display = "none";
+  const status = document.getElementById("pfadScanStatus");
+  if (status) status.textContent = "↺ Zurückgesetzt.";
+  try {
+    await patchScan({ pfad_empfehlung: null });
+  } catch (e) {
+    console.error("resetPfadEmpfehlungScan:", e.message);
+  }
 }
 
 // ── KULTUR-INDIKATOR (KI-01) — 6 Persistenzmuster ─────────────────────────
