@@ -6708,7 +6708,7 @@ function renderScanInterviews() {
         <div class="kernfrage"><span class="kernfrage-num">Frage 1</span><br>"Was ist das teuerste ungelöste Problem gerade — in Zeit, Energie oder Geld?"</div>
         <div class="kernfrage"><span class="kernfrage-num">Frage 2</span><br>"Was habt ihr in 12–18 Monaten versucht — und was ist geblieben?"</div>
         <div class="kernfrage"><span class="kernfrage-num">Frage 3</span><br>"Wenn ich deinen Kollegen frage wie das Team reagiert wenn etwas schiefläuft — was würde er sagen?"</div>
-        <div class="kernfrage" style="border-left-color:var(--green)"><span class="kernfrage-num">Abschluss</span><br>"Was würde sich ändern wenn das Problem morgen weg wäre?"</div>
+        <div class="kernfrage"><span class="kernfrage-num">Abschluss</span><br>"Was würde sich ändern wenn das Problem morgen weg wäre?"</div>
       </div>
     </details>
 
@@ -6788,6 +6788,17 @@ async function setActiveInterview(i) {
   mountScanInterviews();
 }
 
+// Inline-Dropdown im Vertiefungsblock: synchronisiert die primäre Perspektive-
+// Auswahl und remountet den Slot, damit die passenden Vertiefungsfragen erscheinen.
+async function syncPerspektiveFromVertiefung(num, value) {
+  const primary = document.getElementById(`iv${num}Perspektive`);
+  if (primary) primary.value = value;
+  const iv = scanInterviews && scanInterviews[num - 1];
+  if (iv) iv.perspektive = value;
+  try { await saveAllInterviews(); } catch {}
+  mountScanInterviews();
+}
+
 // Leitfaden-Card: Frage + Signal-Tag + Notizfeld.
 function renderLeitfadenCard(opts) {
   const { num, fieldId, ivKey, rows, frage, signal, placeholder, extraClass, iv } = opts;
@@ -6813,9 +6824,19 @@ function renderVertiefungsblock(num, persp, iv) {
   }
   const fragen = VERTIEFUNGSFRAGEN[persp];
   if (!fragen) {
-    // Perspektive nicht gesetzt: Hinweis + zwei leere Notizfelder ohne Fragen.
+    // Perspektive nicht gesetzt: Inline-Dropdown + Hinweis + zwei leere Notizfelder ohne Fragen.
+    const perspOptionsHtml = PERSPEKTIVE_OPTIONS.map(o =>
+      `<option value="${o.key}">${escHtml(o.label)}</option>`
+    ).join("");
     return `
       <div class="leitfaden-block-label">Vertiefung (situativ wählen)</div>
+      <div class="form-group" style="margin-bottom:8px">
+        <label class="form-label pflicht">Perspektive wählen</label>
+        <select class="form-input" id="iv${num}PerspektiveVert" onchange="syncPerspektiveFromVertiefung(${num}, this.value)">
+          <option value="">— wählen —</option>
+          ${perspOptionsHtml}
+        </select>
+      </div>
       <div class="leitfaden-erklaerung">Bitte zuerst eine Perspektive wählen — die passenden Vertiefungsfragen werden dann automatisch angezeigt.</div>
       <textarea class="form-input leitfaden-card-note" id="iv${num}Vert1" rows="3" placeholder="Vertiefung 1…">${escHtml((iv && iv.vertiefung_1_notiz) || "")}</textarea>
       <textarea class="form-input leitfaden-card-note" id="iv${num}Vert2" rows="3" placeholder="Vertiefung 2…">${escHtml((iv && iv.vertiefung_2_notiz) || "")}</textarea>
