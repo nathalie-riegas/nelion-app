@@ -889,6 +889,10 @@ app.patch("/api/scans/:sid/interviews/:iid", async (req, res) => {
     "plan_b_nicht_gesagt", "plan_b_layer",
     // Migration 022 — eigene Spalte fuer Interview-Abschlussfrage "Ungesagtes".
     "ungesagtes",
+    // Migration 023 — Strukturierter Leitfaden (2026-04-20).
+    "perspektive",
+    "einstieg_notiz", "f1_notiz", "f2_notiz", "f3_notiz", "abschluss_notiz",
+    "vertiefung_1_notiz", "vertiefung_2_notiz",
   ];
   const updates = {};
   for (const key of allowed) {
@@ -897,18 +901,23 @@ app.patch("/api/scans/:sid/interviews/:iid", async (req, res) => {
   if (Object.keys(updates).length === 0) {
     return res.status(400).json({ error: "Keine Felder zum Update" });
   }
-  // Graceful-Fallback: wenn Migration 022 noch nicht ausgefuehrt wurde,
-  // strippe "ungesagtes" und versuche erneut. Datensatz bleibt speicherbar.
-  const MIGRATION_022_COLS = ["ungesagtes"];
+  // Graceful-Fallback: wenn Migration 022/023 noch nicht ausgefuehrt wurde,
+  // strippe die betroffenen Spalten und versuche erneut.
+  const FALLBACK_COLS = [
+    "ungesagtes",
+    "perspektive",
+    "einstieg_notiz", "f1_notiz", "f2_notiz", "f3_notiz", "abschluss_notiz",
+    "vertiefung_1_notiz", "vertiefung_2_notiz",
+  ];
   let { data, error } = await supabase
     .from("interviews").update(updates).eq("id", req.params.iid).select().single();
   if (error) {
     const msg = error.message || "";
-    if (MIGRATION_022_COLS.some(c => msg.includes(c))) {
+    if (FALLBACK_COLS.some(c => msg.includes(c))) {
       const stripped = { ...updates };
-      for (const c of MIGRATION_022_COLS) delete stripped[c];
+      for (const c of FALLBACK_COLS) delete stripped[c];
       if (Object.keys(stripped).length === 0) {
-        return res.status(500).json({ error: "Migration 022 nötig (interviews.ungesagtes fehlt)" });
+        return res.status(500).json({ error: "Migration 022/023 nötig (Leitfaden-Spalten fehlen)" });
       }
       const r2 = await supabase
         .from("interviews").update(stripped).eq("id", req.params.iid).select().single();
@@ -918,6 +927,15 @@ app.patch("/api/scans/:sid/interviews/:iid", async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
   res.json(data);
+});
+
+// DELETE — Interview-Slot entfernen (nur flexible Slots > 3 vorgesehen; Grenze client-seitig).
+app.delete("/api/scans/:sid/interviews/:iid", async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Supabase not configured" });
+  const { error } = await supabase
+    .from("interviews").delete().eq("id", req.params.iid);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ ok: true });
 });
 
 // ─── OMISSION BIAS CHECKS ────────────────────────────────────────────────
