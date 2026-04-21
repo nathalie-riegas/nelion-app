@@ -3292,9 +3292,12 @@
   .nelion-regime-btn.y.active { background: #BA7517; border-color: #BA7517; color: #fff; }
   .nelion-regime-btn.r.active { background: #B03636; border-color: #B03636; color: #fff; }
   .nelion-regime-result {
+    position: relative;
     padding: 16px; background: var(--surface2); border: 1px solid var(--border);
     border-left-width: 4px; border-radius: 8px; margin-top: 14px;
+    cursor: pointer;
   }
+  .nelion-regime-result:hover { filter: brightness(0.97); }
   .nelion-regime-result-title { font-size: 14px; font-weight: 600; color: #1a1a2e; margin-bottom: 6px; }
   .nelion-regime-result-text { font-size: 13px; color: #1a1a2e; line-height: 1.55; }
   .nelion-regime-result-badge {
@@ -3303,6 +3306,18 @@
     text-transform: uppercase; margin-bottom: 8px;
     color: #fff; background: #1a1a2e;
   }
+  /* Reset-Button: Pfad-Empfehlung zurücksetzen */
+  .nelion-regime-reset {
+    position: absolute; top: 10px; right: 10px;
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px; border-radius: 4px;
+    font-size: 11px; font-weight: 500; font-family: inherit;
+    background: rgba(255,255,255,0.6); color: inherit;
+    border: 1px solid currentColor; opacity: 0.75;
+    cursor: pointer; transition: opacity .15s, background .15s;
+  }
+  .nelion-regime-reset:hover { opacity: 1; background: rgba(255,255,255,0.95); }
+  .nelion-regime-reset-icon { font-size: 12px; line-height: 1; }
   /* Layer-Varianten für Pfad-Result: leichter Hintergrund, volle Farbe für Label+Badge */
   .nelion-regime-result-l1 {
     background: #E1F5EE; border-color: #0F6E56;
@@ -7638,6 +7653,20 @@ function setNelionRegime(step, value, btn) {
   }
   renderNelionRegimeResult();
 }
+
+// NELION-Tab: Pfad-Routing zurücksetzen — Empfehlung ausblenden,
+// Auswahl der L1a/L1b/Dauer-Buttons aufheben, Formular wieder frei.
+function resetNelionRegime(ev) {
+  if (ev && ev.stopPropagation) ev.stopPropagation();
+  _nelionRegime.l1a = null;
+  _nelionRegime.l1b = null;
+  _nelionRegime.dauer = null;
+  document
+    .querySelectorAll('#nelionPaneRegime .nelion-regime-btnrow .nelion-regime-btn.active')
+    .forEach(b => b.classList.remove("active"));
+  const out = document.getElementById("nelionRegimeResult");
+  if (out) out.innerHTML = "";
+}
 function _worstAmpel(a, b) {
   const order = { rot: 3, gelb: 2, gruen: 1 };
   const va = order[a] || 0, vb = order[b] || 0;
@@ -7672,7 +7701,14 @@ function renderNelionRegimeResult() {
     warn = `<div class="nelion-regime-warn">⚠️ Gelb seit über 3 Monaten = Stabilisierungspfad Risiko. Beobachten und bei nächster Einschätzung neu prüfen.</div>`;
   }
   out.innerHTML = `
-    <div class="nelion-regime-result nelion-regime-result-${variant}">
+    <div class="nelion-regime-result nelion-regime-result-${variant}"
+         onclick="resetNelionRegime(event)"
+         title="Klicken zum Zurücksetzen">
+      <button type="button" class="nelion-regime-reset"
+              onclick="resetNelionRegime(event)"
+              title="Pfad-Empfehlung zurücksetzen">
+        <span class="nelion-regime-reset-icon">↺</span> Zurücksetzen
+      </button>
       <span class="nelion-regime-result-badge">${badge}</span>
       <div class="nelion-regime-result-title">${title}</div>
       <div class="nelion-regime-result-text">${text}</div>
