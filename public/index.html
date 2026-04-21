@@ -3115,6 +3115,21 @@
     font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase;
   }
 
+  /* Kollabierbare Info-Sektionen (THEORIEN, RELEVANZ, BUSINESS-IMPACT, Persistenzmuster) */
+  .nelion-collapse { }
+  .nelion-collapse-header {
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; user-select: none; gap: 8px;
+  }
+  .nelion-collapse-arrow {
+    font-size: 10px; opacity: 0.55; flex-shrink: 0;
+    transition: opacity .15s;
+  }
+  .nelion-collapse-header:hover .nelion-collapse-arrow { opacity: 0.9; }
+  .nelion-collapse-arrow::before { content: "▲"; }
+  .nelion-collapse.collapsed .nelion-collapse-arrow::before { content: "▼"; }
+  .nelion-collapse.collapsed .nelion-collapse-body { display: none; }
+
   /* Sub-Achsen (Toggles innerhalb eines Layers) */
   .nelion-axis {
     margin-top: 8px; border-radius: 6px;
@@ -3584,15 +3599,27 @@
     <div class="nelion-layer-body" id="nelionL1Body">
       <p>Die biologische Ebene: Energie, Erschöpfung, sensorische Verarbeitung, Regeneration. Hardware schlägt Software — wenn Menschen biologisch erschöpft sind, greifen keine strukturellen Massnahmen.</p>
 
-      <h4>Theorien</h4>
-      <ul>
-        <li>Polyvagal Theory (Porges, 1995 ★★★) — Nervensystem und Threat-State</li>
-        <li>Allostatic Load (McEwen ★★★) — biologische Stressakkumulation</li>
-        <li>Window of Tolerance (Siegel ★★☆) — Regulationskapazität</li>
-      </ul>
+      <div class="nelion-collapse">
+        <h4 class="nelion-collapse-header" onclick="toggleNelionCollapse(this)">
+          <span>Theorien</span><span class="nelion-collapse-arrow"></span>
+        </h4>
+        <div class="nelion-collapse-body">
+          <ul>
+            <li>Polyvagal Theory (Porges, 1995 ★★★) — Nervensystem und Threat-State</li>
+            <li>Allostatic Load (McEwen ★★★) — biologische Stressakkumulation</li>
+            <li>Window of Tolerance (Siegel ★★☆) — Regulationskapazität</li>
+          </ul>
+        </div>
+      </div>
 
-      <h4>Warum relevant</h4>
-      <p>L1 ist das Gate: solange das System im Threat-State ist, ist jede andere Intervention verschwendetes Budget.</p>
+      <div class="nelion-collapse">
+        <h4 class="nelion-collapse-header" onclick="toggleNelionCollapse(this)">
+          <span>Relevanz</span><span class="nelion-collapse-arrow"></span>
+        </h4>
+        <div class="nelion-collapse-body">
+          <p>L1 ist das Gate: solange das System im Threat-State ist, ist jede andere Intervention verschwendetes Budget.</p>
+        </div>
+      </div>
 
       <div class="nelion-sublayer-grid">
         <div class="nelion-sublayer nelion-sublayer-l1a">
@@ -3658,14 +3685,22 @@
         </div>
       </div>
 
-      <div class="nelion-roi-box">
-        <div class="nelion-roi-box-title">Business-Impact</div>
-        Burnout kostet 1.5–3× Jahresgehalt. L1 früh erkennen = Frühwarnsystem. Fehldiagnose als Motivationsproblem = CHF 20'000+ Teambuilding ohne Wirkung. Führungskräfte im Threat-State treffen nachweislich schlechtere Entscheidungen (Decision Fatigue ★★★).
+      <div class="nelion-roi-box nelion-collapse">
+        <div class="nelion-roi-box-title nelion-collapse-header" onclick="toggleNelionCollapse(this)">
+          <span>Business-Impact</span><span class="nelion-collapse-arrow"></span>
+        </div>
+        <div class="nelion-collapse-body">
+          Burnout kostet 1.5–3× Jahresgehalt. L1 früh erkennen = Frühwarnsystem. Fehldiagnose als Motivationsproblem = CHF 20'000+ Teambuilding ohne Wirkung. Führungskräfte im Threat-State treffen nachweislich schlechtere Entscheidungen (Decision Fatigue ★★★).
+        </div>
       </div>
 
-      <div style="margin-top:12px;padding:10px 12px;background:var(--surface2);border-radius:6px;font-size:12px;line-height:1.55">
-        <strong>Typische Persistenzmuster auf dieser Ebene:</strong><br>
-        Versuchsmüdigkeit (wenn L1 + L2 gleichzeitig erschöpft)
+      <div class="nelion-collapse" style="margin-top:12px;padding:10px 12px;background:var(--surface2);border-radius:6px;font-size:12px;line-height:1.55">
+        <div class="nelion-collapse-header" onclick="toggleNelionCollapse(this)">
+          <strong>Typische Persistenzmuster auf dieser Ebene</strong><span class="nelion-collapse-arrow"></span>
+        </div>
+        <div class="nelion-collapse-body" style="margin-top:6px">
+          Versuchsmüdigkeit (wenn L1 + L2 gleichzeitig erschöpft)
+        </div>
       </div>
     </div>
   </div>
@@ -3680,15 +3715,27 @@
     <div class="nelion-layer-body" id="nelionL2Body">
       <p>Die psychologische Ebene: Muster, Ängste, Vermeidung, Veränderungsresistenz. Das Betriebssystem entscheidet ob neue Strukturen wirklich angenommen werden — oder informell absorbiert.</p>
 
-      <h4>Theorien</h4>
-      <ul>
-        <li>Psychological Safety (Edmondson, 1999 ★★★) — Selbstzensur und Feedback</li>
-        <li>Immunity to Change (Kegan & Lahey ★★★) — Warum Veränderung scheitert</li>
-        <li>Attribution Style (Seligman ★★★) — Verantwortungsvermeidung</li>
-      </ul>
+      <div class="nelion-collapse">
+        <h4 class="nelion-collapse-header" onclick="toggleNelionCollapse(this)">
+          <span>Theorien</span><span class="nelion-collapse-arrow"></span>
+        </h4>
+        <div class="nelion-collapse-body">
+          <ul>
+            <li>Psychological Safety (Edmondson, 1999 ★★★) — Selbstzensur und Feedback</li>
+            <li>Immunity to Change (Kegan & Lahey ★★★) — Warum Veränderung scheitert</li>
+            <li>Attribution Style (Seligman ★★★) — Verantwortungsvermeidung</li>
+          </ul>
+        </div>
+      </div>
 
-      <h4>Warum relevant</h4>
-      <p>L2-Muster sind unsichtbar aber kostspielig: Feedback wird nicht gegeben, Probleme nicht benannt, Verantwortung abgewälzt.</p>
+      <div class="nelion-collapse">
+        <h4 class="nelion-collapse-header" onclick="toggleNelionCollapse(this)">
+          <span>Relevanz</span><span class="nelion-collapse-arrow"></span>
+        </h4>
+        <div class="nelion-collapse-body">
+          <p>L2-Muster sind unsichtbar aber kostspielig: Feedback wird nicht gegeben, Probleme nicht benannt, Verantwortung abgewälzt.</p>
+        </div>
+      </div>
 
       <div class="nelion-sublayer-grid">
         <div class="nelion-sublayer nelion-sublayer-l2a">
@@ -3758,14 +3805,22 @@
         </div>
       </div>
 
-      <div class="nelion-roi-box">
-        <div class="nelion-roi-box-title">Business-Impact</div>
-        Teams mit niedriger Psychological Safety haben messbar höhere Fehlerquoten (Edmondson, Google Project Aristotle). Veränderungsresistenz ist der häufigste Grund warum Reorganisationen scheitern — trotz korrekter L3-Strukturen.
+      <div class="nelion-roi-box nelion-collapse">
+        <div class="nelion-roi-box-title nelion-collapse-header" onclick="toggleNelionCollapse(this)">
+          <span>Business-Impact</span><span class="nelion-collapse-arrow"></span>
+        </div>
+        <div class="nelion-collapse-body">
+          Teams mit niedriger Psychological Safety haben messbar höhere Fehlerquoten (Edmondson, Google Project Aristotle). Veränderungsresistenz ist der häufigste Grund warum Reorganisationen scheitern — trotz korrekter L3-Strukturen.
+        </div>
       </div>
 
-      <div style="margin-top:12px;padding:10px 12px;background:var(--surface2);border-radius:6px;font-size:12px;line-height:1.55">
-        <strong>Typische Persistenzmuster auf dieser Ebene:</strong><br>
-        Schweigekultur · Loyalitätsfalle · Erfahrungsstarre
+      <div class="nelion-collapse" style="margin-top:12px;padding:10px 12px;background:var(--surface2);border-radius:6px;font-size:12px;line-height:1.55">
+        <div class="nelion-collapse-header" onclick="toggleNelionCollapse(this)">
+          <strong>Typische Persistenzmuster auf dieser Ebene</strong><span class="nelion-collapse-arrow"></span>
+        </div>
+        <div class="nelion-collapse-body" style="margin-top:6px">
+          Schweigekultur · Loyalitätsfalle · Erfahrungsstarre
+        </div>
       </div>
     </div>
   </div>
@@ -3780,15 +3835,27 @@
     <div class="nelion-layer-body" id="nelionL3Body">
       <p>Die strukturelle Ebene: Prozesse, Entscheidungswege, Anreize, Informationsfluss. Schlechte Architektur erzeugt vorhersehbares Fehlverhalten — unabhängig davon wer die Stellen besetzt.</p>
 
-      <h4>Theorien</h4>
-      <ul>
-        <li>Goodhart's Law (★★★) — Anreize steuern Verhalten</li>
-        <li>Dunbar's Number (★★★) — Informationsfluss und Grösse</li>
-        <li>Meadows Leverage Points (★★★) — Wo Struktureingriffe wirken</li>
-      </ul>
+      <div class="nelion-collapse">
+        <h4 class="nelion-collapse-header" onclick="toggleNelionCollapse(this)">
+          <span>Theorien</span><span class="nelion-collapse-arrow"></span>
+        </h4>
+        <div class="nelion-collapse-body">
+          <ul>
+            <li>Goodhart's Law (★★★) — Anreize steuern Verhalten</li>
+            <li>Dunbar's Number (★★★) — Informationsfluss und Grösse</li>
+            <li>Meadows Leverage Points (★★★) — Wo Struktureingriffe wirken</li>
+          </ul>
+        </div>
+      </div>
 
-      <h4>Warum relevant</h4>
-      <p>L3 ist der häufigste Einstieg — aber oft der falsche. Strukturen optimieren wenn L1/L2 nicht adressiert sind: Budget weg, Zustand wie vorher.</p>
+      <div class="nelion-collapse">
+        <h4 class="nelion-collapse-header" onclick="toggleNelionCollapse(this)">
+          <span>Relevanz</span><span class="nelion-collapse-arrow"></span>
+        </h4>
+        <div class="nelion-collapse-body">
+          <p>L3 ist der häufigste Einstieg — aber oft der falsche. Strukturen optimieren wenn L1/L2 nicht adressiert sind: Budget weg, Zustand wie vorher.</p>
+        </div>
+      </div>
 
       <div class="nelion-sublayer-grid">
         <div class="nelion-sublayer nelion-sublayer-l3a">
@@ -3858,15 +3925,23 @@
         </div>
       </div>
 
-      <div class="nelion-roi-box">
-        <div class="nelion-roi-box-title">Business-Impact</div>
-        Unklare Entscheidungswege kosten 20–40% der verfügbaren Führungszeit (McKinsey). Meetings ohne Ergebnis, Doppelarbeit und Silos sind direkt quantifizierbar. L3-Friction ist oft das teuerste Problem — und das am einfachsten behebbare wenn L1/L2 stabil sind.
+      <div class="nelion-roi-box nelion-collapse">
+        <div class="nelion-roi-box-title nelion-collapse-header" onclick="toggleNelionCollapse(this)">
+          <span>Business-Impact</span><span class="nelion-collapse-arrow"></span>
+        </div>
+        <div class="nelion-collapse-body">
+          Unklare Entscheidungswege kosten 20–40% der verfügbaren Führungszeit (McKinsey). Meetings ohne Ergebnis, Doppelarbeit und Silos sind direkt quantifizierbar. L3-Friction ist oft das teuerste Problem — und das am einfachsten behebbare wenn L1/L2 stabil sind.
+        </div>
       </div>
 
-      <div style="margin-top:12px;padding:10px 12px;background:var(--surface2);border-radius:6px;font-size:12px;line-height:1.55">
-        <strong>Typische Persistenzmuster auf dieser Ebene:</strong><br>
-        Scheinstabilität · Schattenmacht<br>
-        <em style="color:var(--ink-mute)">Cross-Layer: Alle 6 Muster möglich je nach L2/L3-Kombination.</em>
+      <div class="nelion-collapse" style="margin-top:12px;padding:10px 12px;background:var(--surface2);border-radius:6px;font-size:12px;line-height:1.55">
+        <div class="nelion-collapse-header" onclick="toggleNelionCollapse(this)">
+          <strong>Typische Persistenzmuster auf dieser Ebene</strong><span class="nelion-collapse-arrow"></span>
+        </div>
+        <div class="nelion-collapse-body" style="margin-top:6px">
+          Scheinstabilität · Schattenmacht<br>
+          <em style="color:var(--ink-mute)">Cross-Layer: Alle 6 Muster möglich je nach L2/L3-Kombination.</em>
+        </div>
       </div>
     </div>
   </div>
@@ -7498,6 +7573,14 @@ function toggleNelionAxis(headerEl, bodyId) {
   const open = !body.classList.contains("open");
   body.classList.toggle("open", open);
   if (headerEl) headerEl.classList.toggle("open", open);
+}
+
+// NELION-Tab: Toggle einer Info-Sektion (Theorien, Relevanz, Business-Impact, Persistenzmuster).
+// Standard: ausgeklappt. Ein Klick fügt/entfernt .collapsed.
+function toggleNelionCollapse(headerEl) {
+  if (!headerEl) return;
+  const section = headerEl.closest(".nelion-collapse");
+  if (section) section.classList.toggle("collapsed");
 }
 
 // NELION-Tab: Pane-Switch (Layer-Modell / Pfad-Routing / Theorie-Legende)
