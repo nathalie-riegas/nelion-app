@@ -3662,6 +3662,11 @@
         <div class="nelion-roi-box-title">Business-Impact</div>
         Burnout kostet 1.5–3× Jahresgehalt. L1 früh erkennen = Frühwarnsystem. Fehldiagnose als Motivationsproblem = CHF 20'000+ Teambuilding ohne Wirkung. Führungskräfte im Threat-State treffen nachweislich schlechtere Entscheidungen (Decision Fatigue ★★★).
       </div>
+
+      <div style="margin-top:12px;padding:10px 12px;background:var(--surface2);border-radius:6px;font-size:12px;line-height:1.55">
+        <strong>Typische Persistenzmuster auf dieser Ebene:</strong><br>
+        Versuchsmüdigkeit (wenn L1 + L2 gleichzeitig erschöpft)
+      </div>
     </div>
   </div>
 
@@ -3756,6 +3761,11 @@
       <div class="nelion-roi-box">
         <div class="nelion-roi-box-title">Business-Impact</div>
         Teams mit niedriger Psychological Safety haben messbar höhere Fehlerquoten (Edmondson, Google Project Aristotle). Veränderungsresistenz ist der häufigste Grund warum Reorganisationen scheitern — trotz korrekter L3-Strukturen.
+      </div>
+
+      <div style="margin-top:12px;padding:10px 12px;background:var(--surface2);border-radius:6px;font-size:12px;line-height:1.55">
+        <strong>Typische Persistenzmuster auf dieser Ebene:</strong><br>
+        Schweigekultur · Loyalitätsfalle · Erfahrungsstarre
       </div>
     </div>
   </div>
@@ -3852,13 +3862,23 @@
         <div class="nelion-roi-box-title">Business-Impact</div>
         Unklare Entscheidungswege kosten 20–40% der verfügbaren Führungszeit (McKinsey). Meetings ohne Ergebnis, Doppelarbeit und Silos sind direkt quantifizierbar. L3-Friction ist oft das teuerste Problem — und das am einfachsten behebbare wenn L1/L2 stabil sind.
       </div>
+
+      <div style="margin-top:12px;padding:10px 12px;background:var(--surface2);border-radius:6px;font-size:12px;line-height:1.55">
+        <strong>Typische Persistenzmuster auf dieser Ebene:</strong><br>
+        Scheinstabilität · Schattenmacht<br>
+        <em style="color:var(--ink-mute)">Cross-Layer: Alle 6 Muster möglich je nach L2/L3-Kombination.</em>
+      </div>
     </div>
   </div>
 
     </div><!-- /.nelion-pane#nelionPaneLayer -->
 
-    <!-- ─── PANE 2: REGIME-ROUTING ────────────────────────────────── -->
+    <!-- ─── PANE 2: PFAD-ROUTING ──────────────────────────────────── -->
     <div class="nelion-pane" id="nelionPaneRegime">
+
+      <div style="padding:10px 12px;background:var(--surface2);border-radius:6px;font-size:12px;line-height:1.55;margin-bottom:14px;color:var(--ink-mid)">
+        Die Pfad-Indikation zeigt was die Daten nahelegen — nicht was zwingend getan werden muss. Nathalie entscheidet als Beraterin.
+      </div>
 
       <div class="nelion-regime-conf">
         <strong>Konfidenz-Erklärung</strong><br>
@@ -3866,7 +3886,7 @@
         Scan: <span style="font-family:var(--mono)">★★☆</span> bis <span style="font-family:var(--mono)">★★★</span> — Claude berechnet aus Survey-Ampeln + Interview (quantitativ + qualitativ).
       </div>
 
-      <div class="nelion-section-label">Regime-Simulation</div>
+      <div class="nelion-section-label">Pfad-Simulation</div>
 
       <div class="nelion-regime-step">
         <div class="nelion-regime-q">Schritt 1a — Individuelle biologische Kapazität (L1a)</div>
@@ -3901,6 +3921,15 @@
       </div>
 
       <div id="nelionRegimeResult"></div>
+
+      <details style="margin-top:18px;padding:10px 12px;background:var(--surface2);border-radius:6px;font-size:13px">
+        <summary style="cursor:pointer;font-weight:600;color:var(--ink-mid)">Terminologie-Legende</summary>
+        <div style="margin-top:10px;line-height:1.6">
+          <div style="margin-bottom:8px"><strong>Pfad-Indikation.</strong> Was die Daten zeigen. Objektiv, datenbasiert. NELION-Output.</div>
+          <div style="margin-bottom:8px"><strong>Handlungshinweis.</strong> Was als nächstes sinnvoll wäre. Nathalie als Beraterin.</div>
+          <div><strong>Mögliche Interventionsstrategie.</strong> Was ein Partner oder Folgeberater tun könnte. Nicht NELION-Scope.</div>
+        </div>
+      </details>
     </div><!-- /.nelion-pane#nelionPaneRegime -->
 
     <!-- ─── PANE 3: THEORIE-LEGENDE ───────────────────────────────── -->
@@ -7006,6 +7035,8 @@ function renderScanErsteEinschaetzung() {
       <div class="hyp-output${s.pfad_empfehlung ? ' has-content' : ''}" id="pfadScanOutput">${s.pfad_empfehlung ? renderMarkdownToHtml(s.pfad_empfehlung) : '<div class="hyp-output-empty">Noch keine Pfad-Empfehlung. Claude berechnet aus Ampeln + Interview-Notizen + Omission-Bias-Flags + Arbeitshypothese.</div>'}</div>
     </div>
 
+    ${renderKulturIndikatorBlock("befund", s)}
+
     ${renderFuenfKernCheck()}
 
     <div class="btn-row" style="margin-top:12px">
@@ -8373,6 +8404,164 @@ async function generatePfadEmpfehlungScan() {
     console.error("generatePfadEmpfehlungScan:", e.message);
   }
   if (btn) { btn.disabled = false; btn.textContent = "Pfad neu berechnen"; }
+}
+
+// ── KULTUR-INDIKATOR (KI-01) — 6 Persistenzmuster ─────────────────────────
+// Trigger: L2 + L3 beide auffällig. Claude prüft die 6 NELION-Muster.
+// Output persistiert in scans.persistenzmuster (Migration 024).
+// Wiederverwendet in Befund-Tab (phase=befund) + Auswertungs-Tab (phase=ausw).
+
+const KULTUR_MUSTER = [
+  { key: "schweigekultur",    label: "Schweigekultur" },
+  { key: "loyalitaetsfalle",  label: "Loyalitätsfalle" },
+  { key: "scheinstabilitaet", label: "Scheinstabilität" },
+  { key: "erfahrungsstarre",  label: "Erfahrungsstarre" },
+  { key: "versuchsmuedigkeit",label: "Versuchsmüdigkeit" },
+  { key: "schattenmacht",     label: "Schattenmacht" },
+  { key: "kein_muster",       label: "Kein Muster" },
+];
+
+function renderKulturIndikatorBlock(phase, s) {
+  const text = (s && s.persistenzmuster) || "";
+  const hasContent = !!text;
+  const idPrefix = phase === "ausw" ? "kiAusw" : "kiBef";
+  const konfHint = phase === "ausw"
+    ? `<div style="font-size:11px;color:var(--ink-mute);margin-top:4px;font-family:var(--mono)">Konfidenz: ★☆☆ nur Survey · ★★☆ Survey + 1 Interview · ★★★ Survey + 3 Interviews</div>`
+    : "";
+  return `
+    <div class="scan-card" style="margin-top:12px">
+      <div class="scan-card-title">Kultur-Indikator</div>
+      <div style="font-size:12px;color:var(--ink-mute);margin-bottom:10px">
+        Nur relevant wenn Wissensblockaden (L2) + Strukturelle Reibung (L3) beide auffällig.
+        Erklärt warum Interventionen nicht halten.
+        ${konfHint}
+      </div>
+
+      <div class="btn-row" style="margin-bottom:10px">
+        <button class="btn btn-primary" id="${idPrefix}Btn" onclick="analysiereKulturIndikator('${phase}')">Persistenzmuster analysieren</button>
+        <span id="${idPrefix}Status" style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);align-self:center"></span>
+      </div>
+
+      <div class="hyp-output${hasContent ? ' has-content' : ''}" id="${idPrefix}Output">${hasContent ? renderMarkdownToHtml(text) : '<div class="hyp-output-empty">Noch nicht analysiert. Claude prüft die 6 Persistenzmuster anhand Transkripte + L2/L3-Ampeln + Omission-Bias.</div>'}</div>
+
+      <div class="form-group" style="margin-top:12px">
+        <label class="form-label" style="font-size:12px">Muster manuell wählen</label>
+        <select class="form-input" id="${idPrefix}Manual" onchange="setKulturIndikatorManual('${phase}', this.value)">
+          <option value="">— Auswahl —</option>
+          ${KULTUR_MUSTER.map(m => `<option value="${m.key}">${m.label}</option>`).join("")}
+        </select>
+      </div>
+    </div>
+  `;
+}
+
+async function analysiereKulturIndikator(phase) {
+  const idPrefix = phase === "ausw" ? "kiAusw" : "kiBef";
+  const btn = document.getElementById(idPrefix + "Btn");
+  const status = document.getElementById(idPrefix + "Status");
+  const output = document.getElementById(idPrefix + "Output");
+  const scan = phase === "ausw" ? currentAuswertungScan : currentScan;
+  if (!scan) { alert("Kein aktiver Scan."); return; }
+  if (btn) { btn.disabled = true; btn.textContent = "Analysiere…"; }
+  if (status) status.textContent = "Claude analysiert (15–30s)…";
+  try {
+    // Ampeln
+    const ampelnR = await fetch(`/api/scans/${scan.id}/ampeln`);
+    const ampelnRaw = ampelnR.ok ? await ampelnR.json() : [];
+    const byKey = {};
+    for (const a of (ampelnRaw || [])) {
+      byKey[`${a.layer}|${a.achse}`] = { layer: a.layer, achse: a.achse, wert: a.wert };
+    }
+    const ampeln = Object.values(byKey);
+
+    // Interview-Transkripte + Omission-Bias
+    const interviews = [];
+    const omission_flags = [];
+    const ivList = (phase === "ausw" ? (scanInterviews || []) : (scanInterviews || []));
+    for (let i = 0; i < ivList.length; i++) {
+      const iv = ivList[i];
+      if (!iv) continue;
+      const leitfadenParts = [
+        iv.einstieg_notiz      ? `Einstieg: ${iv.einstieg_notiz}`        : "",
+        iv.f1_notiz            ? `F1: ${iv.f1_notiz}`                     : "",
+        iv.f2_notiz            ? `F2: ${iv.f2_notiz}`                     : "",
+        iv.f3_notiz            ? `F3: ${iv.f3_notiz}`                     : "",
+        iv.abschluss_notiz     ? `Lösungsbild: ${iv.abschluss_notiz}`     : "",
+        iv.ungesagtes          ? `Ungesagtes: ${iv.ungesagtes}`           : "",
+      ].filter(Boolean).join("\n");
+      const kombiniert = [iv.transkript_text || "", iv.notizen || "", leitfadenParts].filter(Boolean).join("\n\n");
+      interviews.push({
+        rolle: (typeof perspektiveEffective === "function" ? perspektiveEffective(iv) : (iv.rolle || "")),
+        notizen: kombiniert,
+      });
+      const bias = (iv.omission_bias_checks && iv.omission_bias_checks[0]) || {};
+      omission_flags.push({
+        biologische_last:     !!bias.biologische_last,
+        systemsprache:        !!bias.systemsprache,
+        geschuetzte_kollegen: !!bias.geschuetzte_kollegen,
+        antrieb_gefragt:      !!bias.antrieb_gefragt,
+        ton_wechsel:          !!bias.ton_wechsel,
+      });
+    }
+
+    const payload = {
+      kunde_name:       scan.kunde_name || "",
+      ampeln,
+      interviews,
+      omission_flags,
+      arbeitshypothese: scan.arbeitshypothese || "",
+    };
+    const r = await fetch("/api/ada/persistenzmuster", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await r.json();
+    if (!r.ok || data.error) throw new Error(data.error || `HTTP ${r.status}`);
+    const text = data.text || "";
+    if (output) {
+      output.innerHTML = renderMarkdownToHtml(text);
+      output.classList.add("has-content");
+    }
+    scan.persistenzmuster = text;
+    try {
+      await fetch(`/api/scans/${scan.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ persistenzmuster: text }),
+      });
+    } catch {}
+    if (status) status.textContent = "✓ Analysiert.";
+  } catch (e) {
+    if (status) status.textContent = "✗ Fehler: " + e.message;
+    console.error("analysiereKulturIndikator:", e.message);
+  }
+  if (btn) { btn.disabled = false; btn.textContent = "Neu analysieren"; }
+}
+
+async function setKulturIndikatorManual(phase, key) {
+  if (!key) return;
+  const scan = phase === "ausw" ? currentAuswertungScan : currentScan;
+  if (!scan) return;
+  const muster = KULTUR_MUSTER.find(m => m.key === key);
+  if (!muster) return;
+  const idPrefix = phase === "ausw" ? "kiAusw" : "kiBef";
+  const text = muster.key === "kein_muster"
+    ? "**Persistenzmuster erkannt:** Kein Muster\n\n**Handlungshinweis:** Einzelinterventionen auf Layer-Ebene ausreichend."
+    : `**Persistenzmuster erkannt (manuell):** ${muster.label}\n\n**Handlungshinweis:** Muster im Hypothesen-Spiegel bestätigen und Evidenz im Transkript verankern.`;
+  const output = document.getElementById(idPrefix + "Output");
+  if (output) {
+    output.innerHTML = renderMarkdownToHtml(text);
+    output.classList.add("has-content");
+  }
+  scan.persistenzmuster = text;
+  try {
+    await fetch(`/api/scans/${scan.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ persistenzmuster: text }),
+    });
+  } catch {}
 }
 
 // ── ERSTGESPRÄCH PHASE 5: TRANSKRIPT-UPLOAD + CLAUDE-ANALYSE ──────────────
@@ -11408,7 +11597,7 @@ async function loadAuswertungForScan(scan) {
       triggerLernmodus(
         "Befund-Entwurf geöffnet",
         "Auswertung — Befund-Entwurf",
-        `Rote/gelbe Ampeln: ${ampelSummary.join(", ") || "(keine)"}. Routing-Empfehlung: ${routing.regime} — ${routing.text}`
+        `Rote/gelbe Ampeln: ${ampelSummary.join(", ") || "(keine)"}. Pfad-Indikation: ${routing.regime} — ${routing.text}`
       );
     }
   }
@@ -12075,8 +12264,21 @@ function renderAuswertungBody() {
     renderAuswertungKaskadenSimulation(),
     renderAuswertungHeatmap(),
     renderAuswertungFrictionPoints(),
+    renderAuswertungKulturIndikator(),
     renderAuswertungBefund(),
   ].join("");
+}
+
+// Kultur-Indikator im Auswertungs-Tab — wiederverwendet Befund-Block
+function renderAuswertungKulturIndikator() {
+  const scan = currentAuswertungScan || {};
+  return `
+    <div class="aus-section" id="ausSectionKultur">
+      <div class="aus-section-title">Kultur-Indikator</div>
+      <div class="aus-section-sub">6 Persistenzmuster (KI-01) — prüft warum Interventionen nicht halten wenn L2 + L3 konvergieren.</div>
+      ${renderKulturIndikatorBlock("ausw", scan)}
+    </div>
+  `;
 }
 
 // ── KASKADEN-SIMULATION (Auswertungs-Tab, 2026-04-17) ────────────────────
@@ -12305,7 +12507,7 @@ function routingForPoint(layer, wert) {
   return "— Regime offen —";
 }
 
-// Gesamt-Routing-Empfehlung (einer der 4 Regimes)
+// Gesamt-Pfad-Indikation (einer der 4 Pfade)
 function computeRoutingEmpfehlung() {
   const hasRot = (layer) => AMPEL_AXES[layer]?.some(a => getBestAmpel(layer, a) === "rot");
   const hasGelb = (layer) => AMPEL_AXES[layer]?.some(a => getBestAmpel(layer, a) === "gelb");
@@ -12330,7 +12532,7 @@ function computeRoutingEmpfehlung() {
   if (l2Rot) {
     return { regime: "Kulturpfad", text: "L2 rot — psychologische Dynamik adressieren." };
   }
-  return { regime: "—", text: "Noch nicht genug rote/gelbe Ampeln für eine Routing-Empfehlung." };
+  return { regime: "—", text: "Noch nicht genug rote/gelbe Ampeln für eine Pfad-Indikation." };
 }
 
 function renderAuswertungFrictionPoints() {

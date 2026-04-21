@@ -672,6 +672,8 @@ app.patch("/api/consultations/:id", async (req, res) => {
     "hyp_regime",
     // Migration 022 — automatische Pfad-Empfehlung
     "pfad_empfehlung",
+    // Migration 024 — Kultur-Indikator (KI-01)
+    "persistenzmuster", "handlungshinweis",
   ];
   const updates = {};
   for (const key of allowed) {
@@ -765,6 +767,8 @@ app.patch("/api/scans/:id", async (req, res) => {
     "regime_begruendung",
     // Migration 022 — automatische Pfad-Empfehlung
     "pfad_empfehlung",
+    // Migration 024 — Kultur-Indikator (KI-01)
+    "persistenzmuster", "handlungshinweis",
   ];
   const updates = {};
   for (const key of allowed) {
@@ -2328,6 +2332,106 @@ Bitte berechne die Pfad-Empfehlung gemäss Gate-Logik.`;
         continue;
       }
       console.error("Pfad-Empfehlung Scan error:", e.message);
+      const userErr = isOverloaded
+        ? "Claude ist gerade überlastet. Bitte in 30 Sekunden nochmal versuchen."
+        : isRateLimit
+        ? "Zu viele Anfragen. Bitte kurz warten."
+        : "ADA-Fehler: " + e.message;
+      return res.status(500).json({ error: userErr });
+    }
+  }
+});
+
+// ─── KULTUR-INDIKATOR (KI-01) — 6 Persistenzmuster ───────────────────────
+// Analysiert Interviews + Ampeln auf kulturelle Persistenzmuster.
+// Output in scans.persistenzmuster persistiert (Migration 024).
+app.post("/api/ada/persistenzmuster", async (req, res) => {
+  if (!anthropic) return res.status(503).json({ error: "ANTHROPIC_API_KEY nicht konfiguriert" });
+  const { kunde_name, ampeln, interviews, omission_flags, arbeitshypothese } = req.body || {};
+
+  const ampelnBlock = Array.isArray(ampeln) && ampeln.length > 0
+    ? ampeln.map(a => `- ${a.layer} ${a.achse}: ${a.wert}`).join("\n")
+    : "— keine Ampeln verfügbar —";
+
+  const interviewBlock = Array.isArray(interviews) && interviews.length > 0
+    ? interviews.map((iv, i) =>
+        `Interview ${i + 1}${iv.rolle ? " (" + iv.rolle + ")" : ""}:\n${(iv.notizen || "— keine Notizen —").trim()}`
+      ).join("\n\n")
+    : "— keine Interviews verfügbar —";
+
+  const omissionBlock = Array.isArray(omission_flags) && omission_flags.length > 0
+    ? omission_flags.map((f, i) => `Interview ${i + 1}: ${Object.entries(f).filter(([, v]) => v === true).map(([k]) => k).join(", ") || "— keine Flags —"}`).join("\n")
+    : "— keine Omission-Bias-Flags —";
+
+  const systemPrompt = `Du bist NELION Friction Diagnostics.
+Analysiere ob ein kulturelles Persistenzmuster vorliegt.
+
+Prüfe die 6 NELION Persistenzmuster:
+1. Schweigekultur: Probleme werden gesehen aber nicht benannt. Erkennbar an: Selbstzensur + fehlende Eskalationswege.
+2. Loyalitätsfalle: Personen werden geschützt obwohl sie Friction erzeugen. Erkennbar an: Geschützte Personen im Omission Bias + dysfunktionale Anreize.
+3. Scheinstabilität: Formale Prozesse existieren aber werden nicht gelebt. Erkennbar an: Regelgefälle + Verantwortungsvakuum.
+4. Erfahrungsstarre: System hat gelernt dass Veränderung nicht hält. Erkennbar an: Veränderungsresistenz + gescheiterte Initiativen.
+5. Versuchsmüdigkeit: Energie für Veränderung erschöpft. Erkennbar an: L1 Erschöpfung + Veränderungsresistenz gleichzeitig.
+6. Schattenmacht: Informelle Macht überschreibt formale Struktur. Erkennbar an: Entscheidungswege ≠ Organigramm.
+
+Wichtig: Maximal 2 Muster benennen. Kein Muster ohne direktes Zitat aus Transkript.
+
+Falls kein Muster erkennbar:
+"Kein Persistenzmuster identifiziert — Einzelinterventionen auf Layer-Ebene ausreichend."
+
+Ausgabe-Format:
+**Persistenzmuster erkannt:**
+[Name]
+
+**Erkennbar an:**
+[Direktes Zitat aus Transkript]
+
+**Pfad-Indikation:**
+[Pfadname] — [1 Satz Begründung warum dieses Muster diesen Pfad verstärkt]
+
+**Handlungshinweis:**
+[Was als nächstes sinnvoll wäre, 1–2 Sätze]
+
+**Mögliche Interventionsstrategie:**
+[Was ein Partner/Berater danach tun könnte, optional]
+
+Antworte auf Deutsch. Schweizer Hochdeutsch — kein 'ß', immer 'ss'.`;
+
+  const userMsg = `Klient${kunde_name ? ": " + kunde_name : ""}.
+
+Survey-Ampeln (alle Achsen):
+${ampelnBlock}
+
+Interview-Transkripte / Notizen:
+${interviewBlock}
+
+Omission-Bias-Flags:
+${omissionBlock}
+
+Arbeitshypothese:
+${(arbeitshypothese || "— keine Arbeitshypothese gesetzt —").trim()}
+
+Bitte prüfe die 6 Persistenzmuster und liefere den strukturierten Befund.`;
+
+  const maxRetries = 3;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await anthropic.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1500,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userMsg }],
+      });
+      const text = response.content.filter(c => c.type === "text").map(c => c.text).join("");
+      return res.json({ text });
+    } catch (e) {
+      const isOverloaded = e.status === 529 || (e.message && e.message.includes("529"));
+      const isRateLimit = e.status === 429;
+      if ((isOverloaded || isRateLimit) && attempt < maxRetries) {
+        await new Promise(r => setTimeout(r, attempt * 2000));
+        continue;
+      }
+      console.error("Persistenzmuster error:", e.message);
       const userErr = isOverloaded
         ? "Claude ist gerade überlastet. Bitte in 30 Sekunden nochmal versuchen."
         : isRateLimit
