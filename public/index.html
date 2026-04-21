@@ -5612,10 +5612,10 @@ const AXIS_DISPLAY_LABELS = {
 
 // Layer-Display-Labels für die Gruppen-Überschriften in den Grids.
 const LAYER_DISPLAY_LABELS = {
-  L1:  "L1a — Individuelle Neurobiologische Kapazität",
-  L1b: "L1b — Strukturell verursachte Erschöpfung",
-  L2:  "L2 — Wissensblockaden",
-  L3:  "L3 — Strukturelle Reibung",
+  L1:  "Neurobiologische Kapazität (L1)",
+  L1b: "Strukturell verursachte Erschöpfung (L1b)",
+  L2:  "Wissensblockaden (L2)",
+  L3:  "Strukturelle Reibung (L3)",
 };
 
 function axisLabel(achse) { return AXIS_DISPLAY_LABELS[achse] || achse; }
@@ -7110,9 +7110,9 @@ function renderMassnahmeSlot(num) {
           <label class="form-label">Layer</label>
           <select class="form-input" id="befundMn${num}Layer">
             <option value="">— wählen —</option>
-            <option value="L1">L1</option>
-            <option value="L2">L2</option>
-            <option value="L3">L3</option>
+            <option value="L1">Neurobiologische Kapazität (L1)</option>
+            <option value="L2">Wissensblockaden (L2)</option>
+            <option value="L3">Strukturelle Reibung (L3)</option>
           </select>
         </div>
         <div class="form-group">
@@ -8433,12 +8433,12 @@ async function generatePfadEmpfehlungScan() {
 // Wiederverwendet in Befund-Tab (phase=befund) + Auswertungs-Tab (phase=ausw).
 
 const KULTUR_MUSTER = [
-  { key: "schweigekultur",    label: "Schweigekultur" },
-  { key: "loyalitaetsfalle",  label: "Loyalitätsfalle" },
-  { key: "scheinstabilitaet", label: "Scheinstabilität" },
-  { key: "erfahrungsstarre",  label: "Erfahrungsstarre" },
-  { key: "versuchsmuedigkeit",label: "Versuchsmüdigkeit" },
-  { key: "schattenmacht",     label: "Schattenmacht" },
+  { key: "schweigekultur",    label: "Schweigekultur (Probleme gesehen, nicht benannt)" },
+  { key: "loyalitaetsfalle",  label: "Loyalitätsfalle (Personen geschützt, obwohl Friction-Quelle)" },
+  { key: "scheinstabilitaet", label: "Scheinstabilität (formale ≠ gelebte Regeln)" },
+  { key: "erfahrungsstarre",  label: "Erfahrungsstarre (System hat gelernt: Veränderung hält nicht)" },
+  { key: "versuchsmuedigkeit",label: "Versuchsmüdigkeit (Energie für Veränderung erschöpft)" },
+  { key: "schattenmacht",     label: "Schattenmacht (informelle Macht überschreibt Organigramm)" },
   { key: "kein_muster",       label: "Kein Muster" },
 ];
 
@@ -11127,9 +11127,9 @@ function renderPaiPhase4() {
       <div class="scan-card-title">Deine Einschätzung nach dem Gespräch</div>
       <div class="pai-diag-hint" style="margin-bottom:10px">Drei Ampeln — dein Urteil als Beraterin nach dem Gespräch.</div>
       <div style="font-size:12px;color:var(--ink-mid);margin-bottom:10px;line-height:1.5">
-        <div><strong>L1</strong> — Neurobiologische Kapazität</div>
-        <div><strong>L2</strong> — Wissensblockaden</div>
-        <div><strong>L3</strong> — Strukturelle Reibung</div>
+        <div>Neurobiologische Kapazität (L1)</div>
+        <div>Wissensblockaden (L2)</div>
+        <div>Strukturelle Reibung (L3)</div>
       </div>
       <div class="ampel-grid">
         ${ampel("L1")}
@@ -12161,11 +12161,7 @@ function printTriangulationMatrix() {
     const fKeysInLayer = byLayer[layer] || [];
     if (fKeysInLayer.length === 0) continue;
     // Layer-Trennzeile (fett, schwarz hinterlegt im CSS)
-    const layerTitle = layer === "L1"  ? "L1a — Individuelle Neurobiologische Kapazität"
-                     : layer === "L1b" ? "L1b — Strukturell verursachte Erschöpfung"
-                     : layer === "L2"  ? "L2 — Wissensblockaden"
-                     : layer === "L3"  ? "L3 — Strukturelle Reibung"
-                     : layer;
+    const layerTitle = layerLabel(layer);
     tableRows += `<tr class="pm-layer-sep"><td colspan="8">${escHtml(layerTitle)}</td></tr>`;
     for (const fKey of fKeysInLayer) {
       const axis = TALLY_F_TO_AXIS[fKey];
@@ -13113,7 +13109,7 @@ function renderIntervOverrideControls(idx, fp) {
   // Dropdown für Layer, Achse, Ampel
   const layers = Object.keys(AMPEL_AXES);
   const currentAxes = AMPEL_AXES[fp.layer] || [];
-  const layerOpts = layers.map(l => `<option value="${l}" ${l === fp.layer ? "selected" : ""}>${l}</option>`).join("");
+  const layerOpts = layers.map(l => `<option value="${l}" ${l === fp.layer ? "selected" : ""}>${escHtml(layerLabel(l))}</option>`).join("");
   const achseOpts = currentAxes.map(a => `<option value="${escHtml(a)}" ${a === fp.achse ? "selected" : ""}>${escHtml(a)}</option>`).join("");
   const wertOpts = ["rot", "gelb"].map(w => `<option value="${w}" ${w === fp.wert ? "selected" : ""}>${w}</option>`).join("");
   return `
