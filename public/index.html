@@ -4187,6 +4187,11 @@
   </div>
 </div>
 
+<!-- ── GLOBAL SAVE TOAST (Erstgespräch-Daten) ──────────────────────────────
+     Sichtbares Feedback für jeden Supabase-Write in Modul 1. Reuse der
+     aus-save-toast CSS-Klasse (fixed bottom-right). -->
+<div class="aus-save-toast" id="globalSaveToast" aria-live="polite">Gespeichert ✓</div>
+
 <!-- ── PRINT-ONLY TRIANGULATIONSMATRIX (A4 Druckansicht) ─────────────────── -->
 <!-- Wird von printTriangulationMatrix() befüllt, Screen: display:none, Print: block -->
 <div id="printMatrix" aria-hidden="true"></div>
@@ -5438,6 +5443,8 @@ function renderPhase0Klient() {
   $phaseNotes.style.display = "none";
 
   // Autosave (1s debounced) — Name → contact PATCH, andere Felder → consultation PATCH
+  // Zusätzlich blur-Save (Fix 2026-04-23): wenn User Feld verlässt bevor
+  // Debounce feuert, wurde der letzte Wert nicht gespeichert.
   const fields = ["p0Name", "p0Unternehmen", "p0Abteilung", "p0Datum", "p0Notiz"];
   let saveTimer = null;
   const triggerSave = () => {
@@ -5446,8 +5453,10 @@ function renderPhase0Klient() {
   };
   fields.forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.addEventListener("input", triggerSave);
-    if (el) el.addEventListener("change", triggerSave);
+    if (!el) return;
+    el.addEventListener("input", triggerSave);
+    el.addEventListener("change", triggerSave);
+    el.addEventListener("blur", () => { clearTimeout(saveTimer); savePhase0Klient(); });
   });
 
   // Buttons unten: Zurück zur Kontaktliste + Weiter zu Phase 1
@@ -5472,13 +5481,15 @@ async function savePhase0Klient() {
   const datum = document.getElementById("p0Datum")?.value || null;
   const notiz = document.getElementById("p0Notiz")?.value || "";
 
+  showGlobalSaveToast("saving");
   try {
     // Name → contact (falls geändert)
     if (currentContact && name && name !== currentContact.name) {
-      await fetch(`/api/contacts/${currentContact.id}`, {
+      const rc = await fetch(`/api/contacts/${currentContact.id}`, {
         method: "PATCH", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name }),
       });
+      if (!rc.ok) throw new Error("contact HTTP " + rc.status);
       currentContact.name = name;
       renderCockpitHeader();
     }
@@ -5488,17 +5499,21 @@ async function savePhase0Klient() {
       consultation_date: datum,
     };
     Object.assign(currentConsultation, updates);
-    await fetch(`/api/consultations/${currentConsultation.id}`, {
+    const r = await fetch(`/api/consultations/${currentConsultation.id}`, {
       method: "PATCH", headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updates),
     });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    console.log("[save] phase0 klient → OK", Object.keys(updates));
     if (indicator) {
       indicator.textContent = "Gespeichert ✓";
       setTimeout(() => { if (indicator) indicator.textContent = ""; }, 1500);
     }
+    showGlobalSaveToast("saved");
   } catch (e) {
     if (indicator) indicator.textContent = "Speichern fehlgeschlagen: " + e.message;
     console.warn("Phase 0 save failed:", e.message);
+    showGlobalSaveToast("error", "Nicht gespeichert: " + e.message);
   }
 }
 
@@ -5529,22 +5544,47 @@ async function phase0ZuScanUebernehmen() {
   }
 }
 
+// ── GLOBAL SAVE TOAST ────────────────────────────────────────────────────
+// Sichtbares Feedback "Gespeichert ✓" nach jedem erfolgreichen PATCH auf
+// /api/consultations/:id. State: "saving" (gelb), "saved" (grün), "error"
+// (rot). Reuse CSS-Klasse .aus-save-toast.
+function showGlobalSaveToast(state, msg) {
+  const el = document.getElementById("globalSaveToast");
+  if (!el) return;
+  clearTimeout(showGlobalSaveToast._t);
+  if (state === "saving")      { el.textContent = "Speichert…"; el.style.background = ""; }
+  else if (state === "error")  { el.textContent = msg || "Speichern fehlgeschlagen"; el.style.background = "#b00020"; }
+  else                         { el.textContent = "Gespeichert ✓"; el.style.background = ""; }
+  el.classList.add("show");
+  if (state !== "saving") {
+    showGlobalSaveToast._t = setTimeout(() => el.classList.remove("show"), 1500);
+  }
+}
+
 // Speichert ein einzelnes Guide-Notes-Feld per PATCH. Nicht blockierend.
 async function saveGuideNote(key, value) {
   if (!currentConsultation) return;
+  showGlobalSaveToast("saving");
   try {
-    await fetch(`/api/consultations/${currentConsultation.id}`, {
+    const r = await fetch(`/api/consultations/${currentConsultation.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ [key]: value }),
     });
-  } catch (e) { console.warn("GuideNote save failed:", e.message); }
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    console.log("[save] guide-note", key, "→ OK");
+    showGlobalSaveToast("saved");
+  } catch (e) {
+    console.warn("GuideNote save failed:", e.message);
+    showGlobalSaveToast("error", "Nicht gespeichert: " + e.message);
+  }
 }
 
 async function saveCurrentNotes() {
   if (!currentConsultation) return;
   // Phase 0 nutzt eigene Save-Logik (savePhase0Klient) — hier kein phase0_notes
   if (currentPhase === 0) return;
+  showGlobalSaveToast("saving");
   // Phase 4: zwei getrennte Felder statt phaseNotes
   if (currentPhase === 4) {
     const schrittEl = document.getElementById("p4Schritt");
@@ -5554,7 +5594,7 @@ async function saveCurrentNotes() {
     currentConsultation.phase4_schritt = schritt;
     currentConsultation.phase4_idealzustand = ideal;
     try {
-      await fetch(`/api/consultations/${currentConsultation.id}`, {
+      const r = await fetch(`/api/consultations/${currentConsultation.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -5563,7 +5603,13 @@ async function saveCurrentNotes() {
           current_phase: currentPhase,
         }),
       });
-    } catch (e) { console.warn("Save failed:", e.message); }
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      console.log("[save] phase4 split-fields → OK");
+      showGlobalSaveToast("saved");
+    } catch (e) {
+      console.warn("Save failed:", e.message);
+      showGlobalSaveToast("error", "Nicht gespeichert: " + e.message);
+    }
     return;
   }
   const noteKey = `phase${currentPhase}_notes`; const val = $phaseNotes.value;
@@ -5578,13 +5624,39 @@ async function saveCurrentNotes() {
       patch.phase5_ungesagtes = u;
     }
   }
-  try { await fetch(`/api/consultations/${currentConsultation.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(patch) }); }
-  catch (e) { console.warn("Save failed:", e.message); }
+  try {
+    const r = await fetch(`/api/consultations/${currentConsultation.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(patch) });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    console.log("[save] phase" + currentPhase + " notes → OK", Object.keys(patch));
+    showGlobalSaveToast("saved");
+  } catch (e) {
+    console.warn("Save failed:", e.message);
+    showGlobalSaveToast("error", "Nicht gespeichert: " + e.message);
+  }
 }
 
 async function finishConsultation() {
-  await saveCurrentNotes();
-  try { await fetch(`/api/consultations/${currentConsultation.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ completed: true }) }); } catch {}
+  // Bug-Fix 2026-04-23: Erstgespräch-Daten gingen verloren, weil
+  // finishConsultation nur die aktuelle Phase flushte und debounced
+  // Guide-Note-Saves (1s) sowie Errors beim completed-PATCH verschluckt
+  // wurden. Jetzt: alle Guide-Notes + aktuelle Phase flushen und
+  // completed-PATCH Response prüfen bevor Complete-Screen gezeigt wird.
+  showGlobalSaveToast("saving");
+  try {
+    await _forceFlushConsultationSave();
+    const r = await fetch(`/api/consultations/${currentConsultation.id}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ completed: true }),
+    });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    console.log("[save] consultation completed → OK", currentConsultation.id);
+    showGlobalSaveToast("saved");
+  } catch (e) {
+    console.warn("finishConsultation save failed:", e.message);
+    showGlobalSaveToast("error", "Speichern fehlgeschlagen: " + e.message);
+    alert("Speichern fehlgeschlagen: " + e.message + "\n\nBitte Seite nicht schliessen — erneut versuchen.");
+    return;
+  }
   document.getElementById("completeMsg").innerHTML = `Gespräch mit ${escHtml(currentContact.name)} wurde gespeichert.` + renderSignalSummary();
   showScreen("screenComplete");
 }
@@ -5597,17 +5669,24 @@ setInterval(() => { if (notesDirty && currentConsultation) saveCurrentNotes(); }
 // Stellt sicher dass Konsultations-Notizen auch dann persistiert werden
 // wenn der User den Tab wechselt, das Fenster schliesst, oder die Seite
 // in den Hintergrund geht. Fix für Session-Verlust-Bug (Anne-Case).
-function _forceFlushConsultationSave() {
+async function _forceFlushConsultationSave() {
   if (!currentConsultation) return;
   // Guide-Note-Textareas: pending debounce abbrechen und direkt speichern
+  const guidePromises = [];
   document.querySelectorAll(".guide-note-input[data-note-key]").forEach(el => {
     if (el.dataset.noteKey && currentConsultation) {
       currentConsultation[el.dataset.noteKey] = el.value;
-      saveGuideNote(el.dataset.noteKey, el.value);
+      guidePromises.push(saveGuideNote(el.dataset.noteKey, el.value));
     }
   });
-  // Phase-weites Save (Phase 4 split-fields, Phase 5 ungesagtes, phaseN_notes)
-  if (typeof saveCurrentNotes === "function") saveCurrentNotes();
+  await Promise.all(guidePromises);
+  // Phase 0 nutzt eigene Save-Funktion (savePhase0Klient)
+  if (currentPhase === 0 && typeof savePhase0Klient === "function") {
+    await savePhase0Klient();
+  } else if (typeof saveCurrentNotes === "function") {
+    // Phase-weites Save (Phase 4 split-fields, Phase 5 ungesagtes, phaseN_notes)
+    await saveCurrentNotes();
+  }
 }
 window.addEventListener("beforeunload", () => { _forceFlushConsultationSave(); });
 window.addEventListener("pagehide", () => { _forceFlushConsultationSave(); });
