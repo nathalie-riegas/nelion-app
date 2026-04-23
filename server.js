@@ -1586,18 +1586,19 @@ app.patch("/api/tally/submissions/:id", async (req, res) => {
 // and reorder silently no-ops while delete/rename/add still work.
 app.get("/api/tasks", async (req, res) => {
   if (!supabase) return res.json([]);
-  // Primary order: position (drag-and-drop). Fallback: prioritaet, created_at.
+  // Neueste Tasks zuoberst (created_at DESC). Position und prioritaet dienen
+  // nur noch als Tiebreaker falls zwei Tasks denselben Timestamp haben.
   let query = supabase.from("tasks").select("*")
+    .order("created_at", { ascending: false })
     .order("position", { ascending: true, nullsFirst: false })
-    .order("prioritaet", { ascending: true })
-    .order("created_at", { ascending: false });
+    .order("prioritaet", { ascending: true });
   if (req.query.status) query = query.eq("status", req.query.status);
   let { data, error } = await query;
   if (error) {
     // position column may not exist yet — retry without it
     let q2 = supabase.from("tasks").select("*")
-      .order("prioritaet", { ascending: true })
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .order("prioritaet", { ascending: true });
     if (req.query.status) q2 = q2.eq("status", req.query.status);
     const r2 = await q2;
     if (r2.error) return res.json([]);

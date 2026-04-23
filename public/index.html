@@ -1185,7 +1185,26 @@
   }
   .landing-task-prio.p1 { background: var(--red); color: var(--red); }
   .landing-task-prio.p2 { background: var(--yellow); color: var(--yellow); }
-  .landing-task-prio.p3 { background: #3498db; color: #3498db; }
+  .landing-task-prio.p3 { background: #2ecc71; color: #2ecc71; }
+  /* Mini-Dropdown zum Aendern der Prioritaet per Klick auf den Dot.
+     Absolut positioniert ueber dem Dot; schliesst sich bei Klick ausserhalb. */
+  .prio-menu {
+    position: absolute; z-index: 1000;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; padding: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: flex; gap: 6px;
+  }
+  .prio-menu-opt {
+    width: 16px; height: 16px; border-radius: 50%;
+    cursor: pointer; border: 2px solid transparent;
+    transition: transform .12s, border-color .12s;
+  }
+  .prio-menu-opt:hover { transform: scale(1.2); }
+  .prio-menu-opt.active { border-color: var(--ink); }
+  .prio-menu-opt.p1 { background: var(--red); }
+  .prio-menu-opt.p2 { background: var(--yellow); }
+  .prio-menu-opt.p3 { background: #2ecc71; }
   /* Checkbox zum Abhaken auf der Landing Page — gleicher Style wie im Drawer */
   .landing-task-checkbox {
     width: 16px; height: 16px; cursor: pointer;
@@ -1458,7 +1477,7 @@
   }
   .task-badge.prio1 { background: var(--red-bg); color: var(--red); }
   .task-badge.prio2 { background: var(--yellow-bg); color: var(--yellow); }
-  .task-badge.prio3 { background: #e8f0fe; color: #3498db; }
+  .task-badge.prio3 { background: #e8f8ef; color: #27ae60; }
   .task-badge.gate { background: var(--surface2); color: var(--ink-dim); }
   .task-badge.ada-badge { background: var(--ada-bg); color: var(--ada-accent); }
   .task-badge.approve {
@@ -4580,8 +4599,8 @@ function renderLandingTasks() {
 
     const dot = document.createElement("div");
     dot.className = `landing-task-prio p${t.prioritaet || 2}`;
-    dot.title = `Priorität P${t.prioritaet || 2} — Klick zyklt P1 → P2 → P3`;
-    dot.addEventListener("click", (e) => { e.stopPropagation(); cycleTaskPrio(t.id); });
+    dot.title = `Priorität P${t.prioritaet || 2} — Klick öffnet Auswahl (rot/orange/grün)`;
+    dot.addEventListener("click", (e) => { e.stopPropagation(); openPrioMenu(t.id, dot); });
 
     const content = document.createElement("div");
     content.className = "landing-task-content";
@@ -4697,7 +4716,7 @@ async function submitLandingTaskAdd() {
       body: JSON.stringify({ titel, nathalie_approved: true }),
     });
     const newTask = await r.json();
-    if (newTask && newTask.id) allTasks.push(newTask);
+    if (newTask && newTask.id) allTasks.unshift(newTask);
   } catch (e) { console.warn("Task-Create failed:", e.message); }
   input.value = "";
   closeLandingTaskAdd();
@@ -9693,6 +9712,12 @@ async function loadTasksIfNeeded() {
     const r = await fetch("/api/tasks?status=offen");
     const data = await r.json();
     allTasks = Array.isArray(data) ? data : [];
+    // Defensive Sortierung: neueste zuoberst (falls Server-Order mal abweicht)
+    allTasks.sort((a, b) => {
+      const ta = new Date(a.created_at || 0).getTime();
+      const tb = new Date(b.created_at || 0).getTime();
+      return tb - ta;
+    });
   } catch { allTasks = []; }
   tasksLoaded = true;
 }
@@ -9849,7 +9874,7 @@ async function addTaskFromDrawer() {
       body: JSON.stringify({ titel, nathalie_approved: true }),
     });
     const newTask = await r.json();
-    if (newTask && newTask.id) allTasks.push(newTask);
+    if (newTask && newTask.id) allTasks.unshift(newTask);
     input.value = "";
     refreshAllTaskViews();
   } catch {}
@@ -9891,22 +9916,54 @@ async function approveTask(id) {
   } catch {}
 }
 
-// Zyklt die Priorität eines Tasks: 1 → 2 → 3 → 1. Optimistic update,
-// persistiert via PATCH. refreshAllTaskViews zeichnet Dot-Farbe neu.
-async function cycleTaskPrio(id) {
+// Setzt die Priorität eines Tasks direkt auf einen Zielwert. Optimistic update,
+// persistiert sofort in Supabase via PATCH. refreshAllTaskViews zeichnet die
+// Dot-Farbe neu.
+async function setTaskPrio(id, prio) {
   const t = allTasks.find(x => x.id === id);
   if (!t) return;
-  const current = t.prioritaet || 2;
-  const next = current >= 3 ? 1 : current + 1;
-  t.prioritaet = next;
+  if (t.prioritaet === prio) return;
+  t.prioritaet = prio;
   refreshAllTaskViews();
   try {
     await fetch(`/api/tasks/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prioritaet: next }),
+      body: JSON.stringify({ prioritaet: prio }),
     });
   } catch {}
+}
+
+// Öffnet ein kleines Dropdown (rot/orange/grün) direkt beim Prio-Dot.
+// Klick auf eine Option ruft setTaskPrio; Klick ausserhalb schliesst.
+function openPrioMenu(id, anchorEl) {
+  document.querySelectorAll(".prio-menu").forEach(el => el.remove());
+  const t = allTasks.find(x => x.id === id);
+  if (!t || !anchorEl) return;
+  const current = t.prioritaet || 2;
+  const menu = document.createElement("div");
+  menu.className = "prio-menu";
+  [1, 2, 3].forEach(p => {
+    const opt = document.createElement("div");
+    opt.className = `prio-menu-opt p${p}` + (p === current ? " active" : "");
+    opt.title = p === 1 ? "Hoch (rot)" : p === 2 ? "Mittel (orange)" : "Niedrig (grün)";
+    opt.addEventListener("click", (e) => {
+      e.stopPropagation();
+      menu.remove();
+      setTaskPrio(id, p);
+    });
+    menu.appendChild(opt);
+  });
+  const rect = anchorEl.getBoundingClientRect();
+  menu.style.left = `${rect.left + window.scrollX}px`;
+  menu.style.top = `${rect.bottom + window.scrollY + 4}px`;
+  document.body.appendChild(menu);
+  const close = (e) => {
+    if (menu.contains(e.target)) return;
+    menu.remove();
+    document.removeEventListener("click", close, true);
+  };
+  setTimeout(() => document.addEventListener("click", close, true), 0);
 }
 
 async function saveAdaTaskSuggestion(titel) {
@@ -9918,7 +9975,7 @@ async function saveAdaTaskSuggestion(titel) {
     });
     const newTask = await r.json();
     if (newTask && newTask.id) {
-      allTasks.push(newTask);
+      allTasks.unshift(newTask);
       refreshAllTaskViews();
     }
   } catch {}
