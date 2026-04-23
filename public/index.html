@@ -3521,7 +3521,8 @@
   <div class="complete-icon">&#10003;</div>
   <div class="complete-title">Erstgespräch abgeschlossen</div>
   <div class="complete-msg" id="completeMsg"></div>
-  <div class="btn-row" style="justify-content:center;">
+  <div class="btn-row" style="justify-content:center;gap:8px;">
+    <button class="btn btn-ghost" id="btnBackToOverview">Zurück zur Übersicht</button>
     <button class="btn btn-primary" id="btnBackToStart">Neues Gespräch</button>
   </div>
 </div>
@@ -4189,7 +4190,12 @@
 
 <!-- ── GLOBAL SAVE TOAST (Erstgespräch-Daten) ──────────────────────────────
      Sichtbares Feedback für jeden Supabase-Write in Modul 1. Reuse der
-     aus-save-toast CSS-Klasse (fixed bottom-right). -->
+     aus-save-toast CSS-Klasse, überschreibt Position + z-index damit der
+     Toast über Anker-/Chat-Buttons und Notizen-FAB sichtbar bleibt. -->
+<style>
+  #globalSaveToast { bottom: 80px !important; z-index: 9999 !important; }
+  #globalSaveToast.state-error { background: #b00020 !important; color: #fff !important; }
+</style>
 <div class="aus-save-toast" id="globalSaveToast" aria-live="polite">Gespeichert ✓</div>
 
 <!-- ── PRINT-ONLY TRIANGULATIONSMATRIX (A4 Druckansicht) ─────────────────── -->
@@ -5513,7 +5519,7 @@ async function savePhase0Klient() {
   } catch (e) {
     if (indicator) indicator.textContent = "Speichern fehlgeschlagen: " + e.message;
     console.warn("Phase 0 save failed:", e.message);
-    showGlobalSaveToast("error", "Nicht gespeichert: " + e.message);
+    showGlobalSaveToast("error");
   }
 }
 
@@ -5552,13 +5558,19 @@ function showGlobalSaveToast(state, msg) {
   const el = document.getElementById("globalSaveToast");
   if (!el) return;
   clearTimeout(showGlobalSaveToast._t);
-  if (state === "saving")      { el.textContent = "Speichert…"; el.style.background = ""; }
-  else if (state === "error")  { el.textContent = msg || "Speichern fehlgeschlagen"; el.style.background = "#b00020"; }
-  else                         { el.textContent = "Gespeichert ✓"; el.style.background = ""; }
-  el.classList.add("show");
-  if (state !== "saving") {
-    showGlobalSaveToast._t = setTimeout(() => el.classList.remove("show"), 1500);
+  // Nur Fehler werden angezeigt — Erfolg und Saving-State bleiben still.
+  if (state !== "error") {
+    el.classList.remove("show");
+    el.classList.remove("state-error");
+    return;
   }
+  el.textContent = msg || "Nicht gespeichert ⚠";
+  el.classList.add("state-error");
+  el.classList.add("show");
+  showGlobalSaveToast._t = setTimeout(() => {
+    el.classList.remove("show");
+    el.classList.remove("state-error");
+  }, 3000);
 }
 
 // Speichert ein einzelnes Guide-Notes-Feld per PATCH. Nicht blockierend.
@@ -5576,7 +5588,7 @@ async function saveGuideNote(key, value) {
     showGlobalSaveToast("saved");
   } catch (e) {
     console.warn("GuideNote save failed:", e.message);
-    showGlobalSaveToast("error", "Nicht gespeichert: " + e.message);
+    showGlobalSaveToast("error");
   }
 }
 
@@ -5608,7 +5620,7 @@ async function saveCurrentNotes() {
       showGlobalSaveToast("saved");
     } catch (e) {
       console.warn("Save failed:", e.message);
-      showGlobalSaveToast("error", "Nicht gespeichert: " + e.message);
+      showGlobalSaveToast("error");
     }
     return;
   }
@@ -5631,7 +5643,7 @@ async function saveCurrentNotes() {
     showGlobalSaveToast("saved");
   } catch (e) {
     console.warn("Save failed:", e.message);
-    showGlobalSaveToast("error", "Nicht gespeichert: " + e.message);
+    showGlobalSaveToast("error");
   }
 }
 
@@ -5653,7 +5665,7 @@ async function finishConsultation() {
     showGlobalSaveToast("saved");
   } catch (e) {
     console.warn("finishConsultation save failed:", e.message);
-    showGlobalSaveToast("error", "Speichern fehlgeschlagen: " + e.message);
+    showGlobalSaveToast("error");
     alert("Speichern fehlgeschlagen: " + e.message + "\n\nBitte Seite nicht schliessen — erneut versuchen.");
     return;
   }
@@ -5703,6 +5715,16 @@ $ankerOverlay.addEventListener("click", (e) => { if (e.target === $ankerOverlay)
 document.getElementById("btnBackToStart").addEventListener("click", () => {
   currentConsultation = null; currentContact = null; currentPhase = 1;
   $contactName.value = ""; $contactNote.value = "";
+  loadContacts(); showScreen("screenStart");
+});
+
+// Zurück zur Übersicht (Liste aller Erstgespräche) — nach Complete-Screen.
+// Gleiches Ziel wie "Neues Gespräch": screenStart mit aktualisierter
+// Kontaktliste. Unterschied nur semantisch (kein impliziter Neu-Start).
+document.getElementById("btnBackToOverview").addEventListener("click", () => {
+  currentConsultation = null; currentContact = null; currentPhase = 1;
+  if ($contactName) $contactName.value = "";
+  if ($contactNote) $contactNote.value = "";
   loadContacts(); showScreen("screenStart");
 });
 
