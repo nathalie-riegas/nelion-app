@@ -642,6 +642,13 @@
     font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
     text-transform: uppercase; color: var(--ink-mute); margin-bottom: 12px;
   }
+  .tally-link-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 0;
+  }
+  .tally-link-rolle {
+    flex: 1; font-size: 13px; color: var(--ink);
+  }
   /* PAI Phase 0 — L1a Kognitive Profile (Subheading + Radio-Gruppen) */
   .pai-subheading {
     font-family: var(--mono); font-size: 11px; font-weight: 500;
@@ -1185,7 +1192,7 @@
   }
   .landing-task-prio.p1 { background: var(--red); color: var(--red); }
   .landing-task-prio.p2 { background: var(--yellow); color: var(--yellow); }
-  .landing-task-prio.p3 { background: #2ecc71; color: #2ecc71; }
+  .landing-task-prio.p3 { background: #167ec4; color: #167ec4; }
   /* Mini-Dropdown zum Aendern der Prioritaet per Klick auf den Dot.
      Absolut positioniert ueber dem Dot; schliesst sich bei Klick ausserhalb. */
   .prio-menu {
@@ -1204,7 +1211,7 @@
   .prio-menu-opt.active { border-color: var(--ink); }
   .prio-menu-opt.p1 { background: var(--red); }
   .prio-menu-opt.p2 { background: var(--yellow); }
-  .prio-menu-opt.p3 { background: #2ecc71; }
+  .prio-menu-opt.p3 { background: #167ec4; }
   /* Checkbox zum Abhaken auf der Landing Page — gleicher Style wie im Drawer */
   .landing-task-checkbox {
     width: 16px; height: 16px; cursor: pointer;
@@ -1477,7 +1484,7 @@
   }
   .task-badge.prio1 { background: var(--red-bg); color: var(--red); }
   .task-badge.prio2 { background: var(--yellow-bg); color: var(--yellow); }
-  .task-badge.prio3 { background: #e8f8ef; color: #27ae60; }
+  .task-badge.prio3 { background: #eaf4fb; color: #2980b9; }
   .task-badge.gate { background: var(--surface2); color: var(--ink-dim); }
   .task-badge.ada-badge { background: var(--ada-bg); color: var(--ada-accent); }
   .task-badge.approve {
@@ -1557,9 +1564,25 @@
     display: none; margin-top: 12px; border-top: 1px solid var(--border);
     padding-top: 12px;
     position: relative; /* für Tooltip-Absolutposition */
+    overflow-x: auto; overflow-y: hidden;
   }
   .landing-timeline-wrapper.open { display: block; }
+  /* Innerer Scroll-Container: Breite skaliert via --tl-zoom CSS-Variable
+     (gesetzt von applyTimelineZoom). min-width 100% damit bei Zoom 1
+     die Timeline weiterhin den Container fuellt. */
+  .landing-timeline-scroll {
+    width: calc(100% * var(--tl-zoom, 1));
+    min-width: 100%;
+  }
   .timeline-svg { width: 100%; height: 120px; display: block; }
+  .tl-zoom-btn {
+    background: transparent; border: 1px solid var(--ink-mid); color: var(--ink-mid);
+    width: 24px; height: 24px; border-radius: 4px; cursor: pointer;
+    font-size: 14px; line-height: 1; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .tl-zoom-btn:hover { color: var(--ink); border-color: var(--ink); }
+  .tl-zoom-btn:disabled { opacity: 0.3; cursor: not-allowed; }
   /* Custom Tooltip für Timeline-Punkte (Tasks + Gates): erscheint sofort
      beim Hover, keine Browser-Verzögerung wie beim nativen <title>. */
   .tl-tooltip {
@@ -1607,7 +1630,7 @@
   .tl-task-dot { fill: var(--surface); stroke: var(--ink-mid); stroke-width: 1.5; }
   .tl-task-dot.p1 { fill: var(--red); stroke: var(--red); }
   .tl-task-dot.p2 { fill: var(--yellow); stroke: var(--yellow); }
-  .tl-task-dot.p3 { fill: #3498db; stroke: #3498db; }
+  .tl-task-dot.p3 { fill: #167ec4; stroke: #167ec4; }
   .tl-empty {
     font-size: 12px; color: var(--ink-mute); font-style: italic;
     text-align: center; padding: 20px 0;
@@ -3468,10 +3491,20 @@
     <div class="landing-section">
       <div class="landing-timeline-toggle" onclick="toggleLandingTimeline()">
         <div class="landing-section-title" style="margin-bottom:0;">Zeitplan</div>
-        <div class="landing-timeline-arrow" id="landingTimelineArrow">&#9660;</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button class="tl-zoom-btn" id="tlZoomOutBtn"
+            onclick="event.stopPropagation(); timelineZoomOut();"
+            title="Verkleinern" aria-label="Zoom out">&minus;</button>
+          <button class="tl-zoom-btn" id="tlZoomInBtn"
+            onclick="event.stopPropagation(); timelineZoomIn();"
+            title="Vergrössern" aria-label="Zoom in">+</button>
+          <div class="landing-timeline-arrow" id="landingTimelineArrow">&#9660;</div>
+        </div>
       </div>
       <div class="landing-timeline-wrapper" id="landingTimelineWrapper">
-        <div id="landingTimeline"></div>
+        <div class="landing-timeline-scroll" id="landingTimelineScroll">
+          <div id="landingTimeline"></div>
+        </div>
         <div class="tl-tooltip" id="landingTimelineTooltip"></div>
       </div>
     </div>
@@ -4392,13 +4425,53 @@ function escapeXmlAttr(s) {
   }[c]));
 }
 
+// Dynamisches Enddatum: Maximum aus
+//   - heute + 18 Monate (Mindesthorizont)
+//   - spaetester Task-Deadline (offen + erledigt) + 3 Monate Puffer
+//   - spaetestes Gate-Datum + 3 Monate Puffer
+// Verhindert, dass Tasks am Rand kleben oder Gates aus dem Fenster fallen.
+// completedTasks wird mit einbezogen, sonst wuerde das Fenster beim Abhaken
+// eines spaeten Tasks ploetzlich schrumpfen.
+function computeTimelineEndDate(today) {
+  const minEnd = new Date(today);
+  minEnd.setMonth(minEnd.getMonth() + 18);
+
+  let maxTaskDate = null;
+  for (const t of [...allTasks, ...completedTasks]) {
+    if (!t.deadline) continue;
+    const d = new Date(t.deadline);
+    if (isNaN(d.getTime())) continue;
+    if (!maxTaskDate || d > maxTaskDate) maxTaskDate = d;
+  }
+
+  let maxGateDate = null;
+  for (const g of (typeof GATES !== "undefined" ? GATES : [])) {
+    const d = g.date instanceof Date ? g.date : new Date(g.date);
+    if (isNaN(d.getTime())) continue;
+    if (!maxGateDate || d > maxGateDate) maxGateDate = d;
+  }
+
+  let candidate = minEnd;
+  if (maxTaskDate) {
+    const withBuffer = new Date(maxTaskDate);
+    withBuffer.setMonth(withBuffer.getMonth() + 3);
+    if (withBuffer > candidate) candidate = withBuffer;
+  }
+  if (maxGateDate) {
+    const withBuffer = new Date(maxGateDate);
+    withBuffer.setMonth(withBuffer.getMonth() + 3);
+    if (withBuffer > candidate) candidate = withBuffer;
+  }
+  return candidate;
+}
+
 function renderTimeline() {
   const container = document.getElementById("landingTimeline");
   if (!container) return;
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const endDate = new Date(2027, 2, 31);
+  const endDate = computeTimelineEndDate(today);
   const totalMs = endDate - today;
   if (totalMs <= 0) {
     container.innerHTML = '<div class="tl-empty">Zeitraum abgelaufen.</div>';
@@ -4442,7 +4515,14 @@ function renderTimeline() {
     .filter(t => t.deadline)
     .map(t => {
       const d = new Date(t.deadline);
-      if (isNaN(d.getTime()) || d < today || d > endDate) return "";
+      if (isNaN(d.getTime())) {
+        console.warn("Timeline: ungueltiges Datum", t.id, t.deadline);
+        return "";
+      }
+      if (d < today || d > endDate) {
+        console.warn("Timeline: Datum ausserhalb Fenster (today bis", endDate.toISOString().slice(0,10), ")", t.id, t.deadline);
+        return "";
+      }
       const x = pxFor(d);
       const prioCls = `p${t.prioritaet || 2}`;
       const dateStr = d.toLocaleDateString("de-CH", { day:"2-digit", month:"2-digit", year:"2-digit" });
@@ -4512,7 +4592,10 @@ function toggleLandingTimeline() {
   const open = !wrap.classList.contains("open");
   wrap.classList.toggle("open", open);
   if (arrow) arrow.innerHTML = open ? "&#9650;" : "&#9660;";
-  if (open) renderTimeline();
+  if (open) {
+    renderTimeline();
+    applyTimelineZoom();
+  }
   try { localStorage.setItem("landingTimelineOpen", String(open)); } catch {}
 }
 
@@ -4523,12 +4606,52 @@ function restoreTimelineState() {
   const arrow = document.getElementById("landingTimelineArrow");
   if (wrap) wrap.classList.toggle("open", open);
   if (arrow) arrow.innerHTML = open ? "&#9650;" : "&#9660;";
-  if (open) renderTimeline();
+  if (open) {
+    renderTimeline();
+    applyTimelineZoom();
+  }
 }
 
 function refreshTimelineIfOpen() {
   const wrap = document.getElementById("landingTimelineWrapper");
   if (wrap && wrap.classList.contains("open")) renderTimeline();
+}
+
+// ── TIMELINE ZOOM ─────────────────────────────────────────────────────────
+// Zoom skaliert die Breite des inner-scroll-divs via CSS-Variable --tl-zoom.
+// Punkt-Positionen bleiben relativ zum Track stabil; Wrapper scrollt
+// horizontal. Stufen + persisted index in localStorage.
+const TL_ZOOM_STEPS = [1, 1.5, 2, 3, 4];
+let timelineZoomIdx = 0;
+try {
+  const saved = parseInt(localStorage.getItem("landingTimelineZoomIdx") || "0", 10);
+  if (!isNaN(saved)) {
+    timelineZoomIdx = Math.max(0, Math.min(TL_ZOOM_STEPS.length - 1, saved));
+  }
+} catch {}
+
+function applyTimelineZoom() {
+  const wrap = document.getElementById("landingTimelineWrapper");
+  if (!wrap) return;
+  wrap.style.setProperty("--tl-zoom", String(TL_ZOOM_STEPS[timelineZoomIdx]));
+  const inBtn = document.getElementById("tlZoomInBtn");
+  const outBtn = document.getElementById("tlZoomOutBtn");
+  if (inBtn) inBtn.disabled = timelineZoomIdx >= TL_ZOOM_STEPS.length - 1;
+  if (outBtn) outBtn.disabled = timelineZoomIdx <= 0;
+}
+
+function timelineZoomIn() {
+  if (timelineZoomIdx >= TL_ZOOM_STEPS.length - 1) return;
+  timelineZoomIdx++;
+  try { localStorage.setItem("landingTimelineZoomIdx", String(timelineZoomIdx)); } catch {}
+  applyTimelineZoom();
+}
+
+function timelineZoomOut() {
+  if (timelineZoomIdx <= 0) return;
+  timelineZoomIdx--;
+  try { localStorage.setItem("landingTimelineZoomIdx", String(timelineZoomIdx)); } catch {}
+  applyTimelineZoom();
 }
 
 // ── LANDING PAGE ──────────────────────────────────────────────────────────
@@ -4599,7 +4722,7 @@ function renderLandingTasks() {
 
     const dot = document.createElement("div");
     dot.className = `landing-task-prio p${t.prioritaet || 2}`;
-    dot.title = `Priorität P${t.prioritaet || 2} — Klick öffnet Auswahl (rot/orange/grün)`;
+    dot.title = `Priorität P${t.prioritaet || 2} — Klick öffnet Auswahl (rot/orange/blau)`;
     dot.addEventListener("click", (e) => { e.stopPropagation(); openPrioMenu(t.id, dot); });
 
     const content = document.createElement("div");
@@ -4715,9 +4838,20 @@ async function submitLandingTaskAdd() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ titel, nathalie_approved: true }),
     });
-    const newTask = await r.json();
-    if (newTask && newTask.id) allTasks.unshift(newTask);
-  } catch (e) { console.warn("Task-Create failed:", e.message); }
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      console.error("Task-Create failed:", r.status, err.error || r.statusText);
+      alert("Task konnte nicht gespeichert werden: " + (err.error || r.statusText));
+      return;
+    }
+    // Force-Reload vom Server (Source of Truth) statt optimistic update.
+    tasksLoaded = false;
+    await loadTasksIfNeeded();
+  } catch (e) {
+    console.error("Task-Create network error:", e.message);
+    alert("Netzwerkfehler beim Speichern.");
+    return;
+  }
   input.value = "";
   closeLandingTaskAdd();
   refreshAllTaskViews();
@@ -6397,8 +6531,29 @@ function renderScanSurvey() {
     <div class="phase-instruction">Tally-Survey verschicken, Respondenten tracken, Rücklauf beobachten.</div>
 
     <div class="scan-card">
-      <div class="scan-card-title">Tally-Link</div>
-      <div class="btn-row"><button class="btn btn-ghost btn-sm" onclick="window.open('https://tally.so','_blank')">Tally-Survey öffnen ↗</button></div>
+      <div class="scan-card-title">Tally-Links pro Respondent</div>
+      <div class="phase-instruction" style="margin-top:0">
+        Pro Rolle ein eigener Link mit auswertung_id + rolle als URL-Parameter.
+        Submissions landen automatisch dieser Auswertung zugeordnet.
+      </div>
+      <div class="tally-link-row">
+        <span class="tally-link-rolle">CEO / Entscheider</span>
+        <button class="btn btn-ghost btn-sm" onclick="copyTallyLink('CEO')">Link kopieren</button>
+        <button class="btn btn-ghost btn-sm" onclick="openTallyLink('CEO')">Öffnen ↗</button>
+      </div>
+      <div class="tally-link-row">
+        <span class="tally-link-rolle">Führungskraft</span>
+        <button class="btn btn-ghost btn-sm" onclick="copyTallyLink('FK')">Link kopieren</button>
+        <button class="btn btn-ghost btn-sm" onclick="openTallyLink('FK')">Öffnen ↗</button>
+      </div>
+      <div class="tally-link-row">
+        <span class="tally-link-rolle">Operativ</span>
+        <button class="btn btn-ghost btn-sm" onclick="copyTallyLink('Operativ')">Link kopieren</button>
+        <button class="btn btn-ghost btn-sm" onclick="openTallyLink('Operativ')">Öffnen ↗</button>
+      </div>
+      <div class="phase-instruction" id="tallyConfigWarning" style="display:none;color:var(--red);margin-top:8px;">
+        ⚠️ TALLY_FORM_ID env var nicht gesetzt — Links können nicht generiert werden.
+      </div>
     </div>
 
     <div class="scan-card" style="margin-top:12px">
@@ -6423,6 +6578,56 @@ function renderScanSurvey() {
       <button class="btn btn-primary" onclick="goToScanPhase(2)">Weiter</button>
     </div>
   `;
+}
+
+// ── TALLY LINK GENERATOR ──────────────────────────────────────────────────
+// Erzeugt pro Rolle einen Tally-Link mit auswertung_id + rolle als URL-Param.
+// Voraussetzung: TALLY_FORM_ID env var im Server gesetzt + zwei Hidden Fields
+// in Tally (Keys: auswertung_id, rolle). Der Webhook-Handler liest diese
+// Parameter aus der Submission und ordnet sie der richtigen Auswertung zu.
+let _tallyConfig = null;
+
+async function loadTallyConfig() {
+  if (_tallyConfig !== null) return _tallyConfig;
+  try {
+    const r = await fetch("/api/config");
+    _tallyConfig = await r.json();
+  } catch { _tallyConfig = {}; }
+  return _tallyConfig;
+}
+
+async function buildTallyLink(rolle) {
+  const cfg = await loadTallyConfig();
+  if (!cfg.tallyFormId || !currentScan) return null;
+  const u = new URL(`https://tally.so/r/${cfg.tallyFormId}`);
+  u.searchParams.set("auswertung_id", currentScan.id);
+  u.searchParams.set("rolle", rolle);
+  return u.toString();
+}
+
+async function copyTallyLink(rolle) {
+  const link = await buildTallyLink(rolle);
+  if (!link) {
+    const w = document.getElementById("tallyConfigWarning");
+    if (w) w.style.display = "block";
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(link);
+    showGlobalSaveToast("saved", `Link für ${rolle} kopiert ✓`);
+  } catch {
+    prompt("Link manuell kopieren:", link);
+  }
+}
+
+async function openTallyLink(rolle) {
+  const link = await buildTallyLink(rolle);
+  if (!link) {
+    const w = document.getElementById("tallyConfigWarning");
+    if (w) w.style.display = "block";
+    return;
+  }
+  window.open(link, "_blank", "noopener");
 }
 
 function renderRespondentRow(key, rolleLabel, s) {
@@ -9729,12 +9934,21 @@ async function showTasks() {
 }
 
 // Re-renders both views from the current allTasks state (no fetch).
-// Also refreshes the timeline if it's currently open (P1 tasks with a deadline
-// show up there, so deadline mutations must repaint it).
+// Timeline wird IMMER neu gerendert (auch wenn der Wrapper zu ist) — schreibt
+// nur in innerHTML, kein visueller Aufwand. So ist der Content beim spaeteren
+// Aufklappen sofort aktuell, ohne Page-Reload.
 function refreshAllTaskViews() {
   renderTaskDrawer();
   renderLandingTasks();
-  refreshTimelineIfOpen();
+  renderTimelineSafe();
+}
+
+// Render mit Existenz-Check: wenn das Timeline-DOM-Element nicht existiert
+// (z.B. weil wir nicht auf der Landing-Page sind), sauber raus statt Crash.
+function renderTimelineSafe() {
+  const el = document.getElementById("landingTimeline");
+  if (!el) return;
+  renderTimeline();
 }
 
 function toggleTaskDrawer() {
@@ -9873,34 +10087,51 @@ async function addTaskFromDrawer() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ titel, nathalie_approved: true }),
     });
-    const newTask = await r.json();
-    if (newTask && newTask.id) allTasks.unshift(newTask);
-    input.value = "";
-    refreshAllTaskViews();
-  } catch {}
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      console.error("Task-Create failed:", r.status, err.error || r.statusText);
+      alert("Task konnte nicht gespeichert werden: " + (err.error || r.statusText));
+      return;
+    }
+    tasksLoaded = false;
+    await loadTasksIfNeeded();
+  } catch (e) {
+    console.error("Task-Create network error:", e.message);
+    alert("Netzwerkfehler beim Speichern.");
+    return;
+  }
+  input.value = "";
+  refreshAllTaskViews();
 }
 
 async function toggleTaskStatus(id) {
   try {
-    await fetch(`/api/tasks/${id}`, {
+    const r = await fetch(`/api/tasks/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "erledigt" }),
     });
-    // Aus offenen Tasks rausnehmen und in History schieben
-    // (damit sie in der "Erledigt"-Sektion sofort auftaucht ohne Reload)
+    if (!r.ok) {
+      console.error("Task-Toggle failed:", r.status);
+      return;
+    }
+    // Aus offenen Tasks rausnehmen und in Erledigt-Liste schieben.
+    // loadCompletedTasksIfNeeded sorgt dafuer dass die Liste auch dann
+    // gefuellt wird, wenn die "Erledigt"-Sektion noch nie aufgeklappt war —
+    // sonst verschwindet der Task visuell ins Nichts.
     const idx = allTasks.findIndex(t => t.id === id);
     if (idx >= 0) {
       const task = allTasks.splice(idx, 1)[0];
       task.status = "erledigt";
       task.updated_at = new Date().toISOString();
-      if (completedTasksLoaded) {
-        completedTasks.unshift(task);
-        renderLandingCompletedTasks();
-      }
+      await loadCompletedTasksIfNeeded();
+      completedTasks.unshift(task);
+      renderLandingCompletedTasks();
     }
     refreshAllTaskViews();
-  } catch {}
+  } catch (e) {
+    console.error("Task-Toggle network error:", e.message);
+  }
 }
 
 async function approveTask(id) {
@@ -9946,7 +10177,7 @@ function openPrioMenu(id, anchorEl) {
   [1, 2, 3].forEach(p => {
     const opt = document.createElement("div");
     opt.className = `prio-menu-opt p${p}` + (p === current ? " active" : "");
-    opt.title = p === 1 ? "Hoch (rot)" : p === 2 ? "Mittel (orange)" : "Niedrig (grün)";
+    opt.title = p === 1 ? "Hoch (rot)" : p === 2 ? "Mittel (orange)" : "Niedrig (blau)";
     opt.addEventListener("click", (e) => {
       e.stopPropagation();
       menu.remove();
@@ -10081,14 +10312,28 @@ function openDeadlineEditor(container, task) {
 
 async function setTaskDeadline(id, dateStr) {
   try {
-    await fetch(`/api/tasks/${id}`, {
+    const r = await fetch(`/api/tasks/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ deadline: dateStr }),
     });
+    if (!r.ok) {
+      console.error("Deadline-Save failed:", r.status);
+      refreshAllTaskViews();
+      return;
+    }
+    const updated = await r.json().catch(() => null);
     const entry = allTasks.find(t => t.id === id);
-    if (entry) entry.deadline = dateStr;
-  } catch {}
+    if (entry) {
+      // Server-Antwort bevorzugen (kanonisches Datumsformat),
+      // Fallback auf den Input-String
+      entry.deadline = (updated && updated.deadline !== undefined)
+        ? updated.deadline
+        : dateStr;
+    }
+  } catch (e) {
+    console.error("Deadline-Save network error:", e.message);
+  }
   refreshAllTaskViews();
 }
 
