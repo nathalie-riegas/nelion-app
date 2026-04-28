@@ -1597,12 +1597,13 @@ app.patch("/api/tally/submissions/:id", async (req, res) => {
 // and reorder silently no-ops while delete/rename/add still work.
 app.get("/api/tasks", async (req, res) => {
   if (!supabase) return res.json([]);
-  // Neueste Tasks zuoberst (created_at DESC). Position und prioritaet dienen
-  // nur noch als Tiebreaker falls zwei Tasks denselben Timestamp haben.
+  // Position bestimmt die Reihenfolge (Drag&Drop → kleinste Zahl oben).
+  // Tasks ohne position landen am Ende, dort dann neueste zuerst.
+  // created_at DESC als Tiebreaker stellt sicher, dass neue Tasks (gleiches
+  // position-Bucket) trotzdem oben erscheinen.
   let query = supabase.from("tasks").select("*")
-    .order("created_at", { ascending: false })
     .order("position", { ascending: true, nullsFirst: false })
-    .order("prioritaet", { ascending: true });
+    .order("created_at", { ascending: false });
   if (req.query.status) query = query.eq("status", req.query.status);
   let { data, error } = await query;
   if (error) {
@@ -1623,19 +1624,22 @@ app.post("/api/tasks", async (req, res) => {
   const { titel, prioritaet, deadline, gate_bezug, ada_vorschlag, nathalie_approved, position } = req.body || {};
   if (!titel) return res.status(400).json({ error: "titel erforderlich" });
 
-  // Auto-assign position = MAX(position) + 10 so new tasks land at the end.
-  // If the position column doesn't exist yet, the insert still succeeds
-  // because we only include it in the insert payload when we have a number.
+  // Auto-assign position = MIN(position) - 10 so new tasks land at the TOP
+  // (kleinster Wert = oberster Listeneintrag bei position ASC).
+  // Damit ueberlebt eine vom User per Drag&Drop gewaehlte Reihenfolge das
+  // Hinzufuegen einer neuen Aufgabe — der neue Task setzt sich oben drauf,
+  // alle anderen Positionen bleiben unveraendert.
   let nextPosition = typeof position === "number" ? position : null;
   if (nextPosition == null) {
     try {
       const r = await supabase
         .from("tasks")
         .select("position")
-        .order("position", { ascending: false, nullsFirst: false })
+        .eq("status", "offen")
+        .order("position", { ascending: true, nullsFirst: false })
         .limit(1);
       if (!r.error && r.data && r.data.length > 0 && r.data[0].position != null) {
-        nextPosition = r.data[0].position + 10;
+        nextPosition = r.data[0].position - 10;
       }
     } catch {}
   }

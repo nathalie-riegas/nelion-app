@@ -9917,8 +9917,14 @@ async function loadTasksIfNeeded() {
     const r = await fetch("/api/tasks?status=offen");
     const data = await r.json();
     allTasks = Array.isArray(data) ? data : [];
-    // Defensive Sortierung: neueste zuoberst (falls Server-Order mal abweicht)
+    // Defensive Sortierung: position ASC (Drag&Drop-Reihenfolge bestimmt
+    // Anzeige), Tasks ohne position ans Ende, dort created_at DESC als
+    // Tiebreaker. Muss zur Server-Order passen, sonst wird die vom User
+    // gewaehlte Reihenfolge beim Reload (z.B. nach Task-Add) ueberschrieben.
     allTasks.sort((a, b) => {
+      const pa = (typeof a.position === "number") ? a.position : Infinity;
+      const pb = (typeof b.position === "number") ? b.position : Infinity;
+      if (pa !== pb) return pa - pb;
       const ta = new Date(a.created_at || 0).getTime();
       const tb = new Date(b.created_at || 0).getTime();
       return tb - ta;
