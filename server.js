@@ -146,6 +146,7 @@ const GITHUB_TOKEN        = process.env.GITHUB_TOKEN;
 const GITHUB_REPO         = process.env.GITHUB_REPO;
 const GITHUB_CONTEXT_PATH = process.env.GITHUB_CONTEXT_PATH;
 const GITHUB_FILE_PATH    = process.env.GITHUB_FILE_PATH;
+const TALLY_FORM_ID       = process.env.TALLY_FORM_ID;
 
 // ─── SUPABASE ───────────────────────────────────────────────────────────────
 const supabase = (SUPABASE_URL && SUPABASE_ANON_KEY)
@@ -345,6 +346,14 @@ app.get("/api/auth/status", (req, res) => {
   res.json({
     authenticated: isAuthenticated(req),
     passwordSet: !!NELION_PASSWORD,
+  });
+});
+
+// Frontend-Konfiguration (auth-protected via globalem Middleware).
+// Aktuell nur Tally Form ID — fuer Survey-Link-Generator pro Rolle.
+app.get("/api/config", (req, res) => {
+  res.json({
+    tallyFormId: TALLY_FORM_ID || null,
   });
 });
 
@@ -1533,7 +1542,7 @@ app.post("/webhook/tally", async (req, res) => {
       console.error("Tally webhook: Supabase-Fehler:", error.message);
       return res.status(500).json({ error: error.message });
     }
-    console.log(`Tally webhook: Submission ${processed.submission_id} gespeichert (id=${data.id}, rolle=${processed.respondent_rolle})`);
+    console.log(`Tally webhook: Submission ${processed.submission_id} gespeichert (id=${data.id}, rolle=${processed.respondent_rolle}, auswertung_id=${processed.auswertung_id || "unassigned"})`);
     res.status(200).json({ ok: true, id: data.id });
   } catch (e) {
     console.error("Tally webhook: Crash:", e.message);
