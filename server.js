@@ -1515,6 +1515,8 @@ function processTallyPayload(payload) {
 app.post("/webhook/tally", async (req, res) => {
   try {
     const payload = req.body || {};
+    // TEMP DEBUG — entfernen sobald Hidden-Field-Parser-Bug verifiziert.
+    console.log("TALLY DEBUG PAYLOAD:", JSON.stringify(req.body?.data?.fields || [], null, 2));
     const processed = processTallyPayload(payload);
 
     if (!processed.submission_id || Object.keys(processed.scores).length === 0) {
