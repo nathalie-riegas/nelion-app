@@ -2060,8 +2060,8 @@ Verwende Markdown-Formatierung:
 
 Die drei Layer der NELION-Friction-Taxonomie:
 - L1 = Neurobiologische Kapazität (Energie, Schlaf, Overload)
-- L2 = Wissensblockaden (Muster, Safety, Immunity)
-- L3 = Strukturelle Reibung (Prozesse, Entscheidung, Verantwortung)
+- L2 = Psychologische Dynamik (Muster, Safety, Immunity)
+- L3 = Organisationale Struktur (Prozesse, Entscheidung, Verantwortung)
 
 Format-Regel für die Friction-Frage (obligatorisch):
 
@@ -2145,8 +2145,8 @@ Verwende Markdown: ## / ### für Überschriften, **Fett** für Layer-Labels, num
 
 Die drei Layer:
 - L1 = Neurobiologische Kapazität (Energie, Schlaf, Overload)
-- L2 = Wissensblockaden (Muster, Safety, Immunity)
-- L3 = Strukturelle Reibung (Prozesse, Entscheidung, Verantwortung)
+- L2 = Psychologische Dynamik (Muster, Safety, Immunity)
+- L3 = Organisationale Struktur (Prozesse, Entscheidung, Verantwortung)
 
 Format-Regel für die Friction-Frage (obligatorisch):
 

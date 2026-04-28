@@ -3805,7 +3805,7 @@
   <!-- L2 ───────────────────────────────── -->
   <div class="nelion-layer nelion-layer-l2">
     <div class="nelion-layer-header" onclick="toggleNelionLayer(this, 'nelionL2Body')">
-      <div class="nelion-layer-title">L2 — Wissensblockaden</div>
+      <div class="nelion-layer-title">L2 — Psychologische Dynamik</div>
       <span class="nelion-layer-badge">Betriebssystem</span>
       <span class="nelion-layer-arrow">▼</span>
     </div>
@@ -3921,7 +3921,7 @@
   <!-- L3 ───────────────────────────────── -->
   <div class="nelion-layer nelion-layer-l3">
     <div class="nelion-layer-header" onclick="toggleNelionLayer(this, 'nelionL3Body')">
-      <div class="nelion-layer-title">L3 — Strukturelle Reibung</div>
+      <div class="nelion-layer-title">L3 — Organisationale Struktur</div>
       <span class="nelion-layer-badge">Architektur</span>
       <span class="nelion-layer-arrow">▼</span>
     </div>
@@ -5963,12 +5963,12 @@ const AXIS_DISPLAY_LABELS = {
   "Anforderungs-Ressourcen-Ungleichgewicht": "Strukturelle Überlastung (Anforderungs-Ressourcen-Ungleichgewicht)",
   "Erholungsstruktur":        "Regenerationsdefizit (Erholungsstruktur)",
   "Schlafqualität":           "Schlafqualität (Regenerationsdefizit)",
-  // L2 — Wissensblockaden
+  // L2 — Psychologische Dynamik
   "Psychological Safety":     "Selbstzensur (Psychological Safety)",
   "Immunity-Muster":          "Veränderungsresistenz (Immunity-Muster)",
   "Attribution Style":        "Verantwortungsvermeidung (Attribution Style)",
   "Threat-State":             "Irritabilität (Threat-State)",
-  // L3 — Strukturelle Reibung
+  // L3 — Organisationale Struktur
   "Entscheidungsarchitektur": "Fehlentscheidungskosten (Entscheidungsarchitektur)",
   "Incentive-Struktur":       "Dysfunktionale Anreize (Incentive-Struktur)",
   "Strukturelle Ambiguität":  "Verantwortungsvakuum (Strukturelle Ambiguität)",
@@ -5979,8 +5979,8 @@ const AXIS_DISPLAY_LABELS = {
 const LAYER_DISPLAY_LABELS = {
   L1:  "Neurobiologische Kapazität (L1)",
   L1b: "Strukturell verursachte Erschöpfung (L1b)",
-  L2:  "Wissensblockaden (L2)",
-  L3:  "Strukturelle Reibung (L3)",
+  L2:  "Psychologische Dynamik (L2)",
+  L3:  "Organisationale Struktur (L3)",
 };
 
 function axisLabel(achse) { return AXIS_DISPLAY_LABELS[achse] || achse; }
@@ -7548,8 +7548,8 @@ function renderMassnahmeSlot(num) {
           <select class="form-input" id="befundMn${num}Layer">
             <option value="">— wählen —</option>
             <option value="L1">Neurobiologische Kapazität (L1)</option>
-            <option value="L2">Wissensblockaden (L2)</option>
-            <option value="L3">Strukturelle Reibung (L3)</option>
+            <option value="L2">Psychologische Dynamik (L2)</option>
+            <option value="L3">Organisationale Struktur (L3)</option>
           </select>
         </div>
         <div class="form-group">
@@ -7659,13 +7659,13 @@ async function exportBefundTxt() {
   lines.push(pad("Strukturelle Überlastung:", _ampelText("L1b_Anforderungs-Ressourcen-Ungleichgewicht_final")));
   lines.push(pad("Regenerationsdefizit:",     _ampelText("L1b_Erholungsstruktur_final")));
   lines.push("");
-  lines.push("L2 — Wissensblockaden");
+  lines.push("L2 — Psychologische Dynamik");
   lines.push(pad("Selbstzensur:",             _ampelText("L2_Psychological Safety_final")));
   lines.push(pad("Veränderungsresistenz:",    _ampelText("L2_Immunity-Muster_final")));
   lines.push(pad("Verantwortungsvermeidung:", _ampelText("L2_Attribution Style_final")));
   lines.push(pad("Irritabilität:",            _ampelText("L2_Threat-State_final")));
   lines.push("");
-  lines.push("L3 — Strukturelle Reibung");
+  lines.push("L3 — Organisationale Struktur");
   lines.push(pad("Fehlentscheidungskosten:", _ampelText("L3_Entscheidungsarchitektur_final")));
   lines.push(pad("Dysfunktionale Anreize:",  _ampelText("L3_Incentive-Struktur_final")));
   lines.push(pad("Verantwortungsvakuum:",    _ampelText("L3_Strukturelle Ambiguität_final")));
@@ -8015,11 +8015,11 @@ function renderNelionRegimeResult() {
     variant = "l1"; badge = "L1 — Neurobiologisch";
   } else if (l1 === "gelb") {
     title = "Kulturpfad — Psychologische Klärung";
-    text = "L1 gelb → Wissensblockaden (L2) prüfen und adressieren, bevor strukturelle Interventionen wirken können.";
-    variant = "l2"; badge = "L2 — Wissensblockaden";
+    text = "L1 gelb → Psychologische Dynamik (L2) prüfen und adressieren, bevor strukturelle Interventionen wirken können.";
+    variant = "l2"; badge = "L2 — Psychologische Dynamik";
   } else {
     title = "Gestaltungspfad — Strukturoptimierung";
-    text = "L1 grün → primärer Hebel ist L3 (Strukturelle Reibung). Prozesse, Entscheidungsarchitektur, Anreize.";
+    text = "L1 grün → primärer Hebel ist L3 (Organisationale Struktur). Prozesse, Entscheidungsarchitektur, Anreize.";
     variant = "l3"; badge = "L3 — Strukturell";
   }
   let warn = "";
@@ -8440,7 +8440,7 @@ const KASKADEN_REGIMES = {
     ],
   },
   "1": {
-    label: "Gestaltungspfad — Strukturoptimierung (Strukturelle Reibung — L3)", color: "r1",
+    label: "Gestaltungspfad — Strukturoptimierung (Organisationale Struktur — L3)", color: "r1",
     erklaerung: "Das System ist bereit. Strukturelle Friction ist der einzige Hebel — und der sitzt jetzt freigespielt.",
     basis: "Meadows Leverage Points (★★★) · Requisite Variety (Ashby ★★★)",
     bedeutet: [
@@ -8450,7 +8450,7 @@ const KASKADEN_REGIMES = {
     ],
   },
   "2": {
-    label: "Kulturpfad — Psychologische Klärung (Wissensblockaden — L2)", color: "r2",
+    label: "Kulturpfad — Psychologische Klärung (Psychologische Dynamik — L2)", color: "r2",
     erklaerung: "Psychologische Muster verhindern dass strukturelle Lösungen greifen. Vertrauen und Klarheit kommen zuerst.",
     basis: "Immunity to Change (Kegan & Lahey ★★★) · Psychological Safety (Edmondson ★★★)",
     bedeutet: [
@@ -8460,7 +8460,7 @@ const KASKADEN_REGIMES = {
     ],
   },
   "2b": {
-    label: "Klärungspfad — Struktur benennen, dann formalisieren (Wissensblockaden + Strukturelle Reibung — L2+L3)", color: "r2b",
+    label: "Klärungspfad — Struktur benennen, dann formalisieren (Psychologische Dynamik + Organisationale Struktur — L2+L3)", color: "r2b",
     erklaerung: "Eine aufgesetzte Struktur hat Blockaden erzeugt. Was ungeklärt ist muss benannt werden — dann kann die Struktur wirklich greifen.",
     basis: "Double-Loop Learning (Argyris ★★★) · NELION L0 Constitution Klärungspfad",
     bedeutet: [
@@ -8566,7 +8566,7 @@ function renderKaskadenSimulation() {
 
   if (s.l1 === "rot") {
     html += buildSimStep(
-      "Sind psychologische Muster zusätzlich sichtbar? (Wissensblockaden — L2)",
+      "Sind psychologische Muster zusätzlich sichtbar? (Psychologische Dynamik — L2)",
       s.l2,
       [
         { v: "hoch", label: "Ja — Muster sichtbar", cls: "r2" },
@@ -8576,7 +8576,7 @@ function renderKaskadenSimulation() {
       "Prüft R4-Trigger: wenn L1 rot UND L2 hoch UND L3 dominant zusammentreffen, liegt Neuausrichtungspfad vor.");
     if (s.l2 === "hoch") {
       html += buildSimStep(
-        "Ist strukturelle Reibung ebenfalls dominant? (Strukturelle Reibung — L3)",
+        "Ist strukturelle Reibung ebenfalls dominant? (Organisationale Struktur — L3)",
         s.l3crit,
         [
           { v: "dominant", label: "Ja — L3 dominant", cls: "r4" },
@@ -8586,7 +8586,7 @@ function renderKaskadenSimulation() {
     }
   } else if (s.l1 === "gelb") {
     html += buildSimStep(
-      "Sind psychologische Muster sichtbar? (Wissensblockaden — L2)",
+      "Sind psychologische Muster sichtbar? (Psychologische Dynamik — L2)",
       s.l2,
       [
         { v: "hoch", label: "Ja — Muster sichtbar", cls: "r2" },
@@ -8596,7 +8596,7 @@ function renderKaskadenSimulation() {
       "Auffällig = mindestens eine Achse gelb/rot: Selbstzensur, Veränderungsresistenz, Verantwortungsvermeidung oder Irritabilität");
   } else if (s.l1 === "gruen") {
     html += buildSimStep(
-      "Welche Layer sind auffällig? (Wissensblockaden / Strukturelle Reibung)",
+      "Welche Layer sind auffällig? (Psychologische Dynamik / Organisationale Struktur)",
       s.l2,
       [
         { v: "dominant", label: "L2 dominant", cls: "r2" },
@@ -8608,7 +8608,7 @@ function renderKaskadenSimulation() {
 
   if (s.l1 === "gelb" && s.l2 === "ok") {
     html += buildSimStep(
-      "Liegt ein strukturelles Problem vor das Blockaden erzeugt? (Strukturelle Reibung — L3)",
+      "Liegt ein strukturelles Problem vor das Blockaden erzeugt? (Organisationale Struktur — L3)",
       s.immunity,
       [
         { v: "ja", label: "Ja — Struktur erzeugt Blockaden", cls: "r2b" },
@@ -8981,7 +8981,7 @@ function renderKulturIndikatorBlock(phase, s) {
     <div class="scan-card" style="margin-top:12px">
       <div class="scan-card-title">Kultur-Indikator</div>
       <div style="font-size:12px;color:var(--ink-mute);margin-bottom:10px">
-        Nur relevant wenn Wissensblockaden (L2) + Strukturelle Reibung (L3) beide auffällig.
+        Nur relevant wenn Psychologische Dynamik (L2) + Organisationale Struktur (L3) beide auffällig.
         Erklärt warum Interventionen nicht halten.
         ${konfHint}
       </div>
@@ -11734,8 +11734,8 @@ function renderPaiPhase4() {
       <div class="pai-diag-hint" style="margin-bottom:10px">Drei Ampeln — dein Urteil als Beraterin nach dem Gespräch.</div>
       <div style="font-size:12px;color:var(--ink-mid);margin-bottom:10px;line-height:1.5">
         <div>Neurobiologische Kapazität (L1)</div>
-        <div>Wissensblockaden (L2)</div>
-        <div>Strukturelle Reibung (L3)</div>
+        <div>Psychologische Dynamik (L2)</div>
+        <div>Organisationale Struktur (L3)</div>
       </div>
       <div class="ampel-grid">
         ${ampel("L1")}
@@ -12938,7 +12938,7 @@ function renderKaskadenSimulationAus() {
 
   if (s.l1 === "gelb") {
     html += buildSimStep(
-      "Sind psychologische Muster sichtbar? (Wissensblockaden — L2)",
+      "Sind psychologische Muster sichtbar? (Psychologische Dynamik — L2)",
       s.l2,
       [
         { v: "hoch", label: "Ja — Muster sichtbar", cls: "r2" },
@@ -12948,7 +12948,7 @@ function renderKaskadenSimulationAus() {
       "Auffällig = mindestens eine Achse gelb/rot: Selbstzensur, Veränderungsresistenz, Verantwortungsvermeidung oder Irritabilität");
   } else if (s.l1 === "gruen") {
     html += buildSimStep(
-      "Welche Layer sind auffällig? (Wissensblockaden / Strukturelle Reibung)",
+      "Welche Layer sind auffällig? (Psychologische Dynamik / Organisationale Struktur)",
       s.l2,
       [
         { v: "dominant", label: "L2 dominant", cls: "r2" },
@@ -12960,7 +12960,7 @@ function renderKaskadenSimulationAus() {
 
   if (s.l1 === "gelb" && s.l2 === "ok") {
     html += buildSimStep(
-      "Liegt ein strukturelles Problem vor das Blockaden erzeugt? (Strukturelle Reibung — L3)",
+      "Liegt ein strukturelles Problem vor das Blockaden erzeugt? (Organisationale Struktur — L3)",
       s.immunity,
       [
         { v: "ja", label: "Ja — Struktur erzeugt Blockaden", cls: "r2b" },

@@ -62,7 +62,7 @@ Verarbeitung.
   (Designfehler): Strukturelle Überlastung,
   Regenerationsdefizit
 
-### L2 — Wissensblockaden (Betriebssystem)
+### L2 — Psychologische Dynamik (Betriebssystem)
 Psychologische Muster, Vermeidung, Selbstzensur,
 Veränderungsresistenz. Vier Achsen:
 - **Selbstzensur** (Psychological Safety)
@@ -70,7 +70,7 @@ Veränderungsresistenz. Vier Achsen:
 - **Verantwortungsvermeidung** (Attribution Style)
 - **Irritabilität** (Threat-State)
 
-### L3 — Strukturelle Reibung (Architektur)
+### L3 — Organisationale Struktur (Architektur)
 Prozesse, Entscheidungswege, Anreize, Informationsfluss.
 Vier Achsen:
 - **Fehlentscheidungskosten** (Entscheidungsarchitektur)
