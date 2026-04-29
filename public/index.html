@@ -12732,13 +12732,16 @@ function survKonfidenzStars(level) {
 async function loadTallySubmissionsForAuswertung() {
   currentTallySubmissions = [];
   currentTallyUnassigned  = [];
-  if (!currentAuswertung || !currentAuswertung.id) return;
 
-  try {
-    const r = await fetch(`/api/tally/submissions/${currentAuswertung.id}`);
-    if (r.ok) currentTallySubmissions = await r.json();
-  } catch (e) { console.warn("Tally submissions load:", e.message); }
+  if (currentAuswertung && currentAuswertung.id) {
+    try {
+      const r = await fetch(`/api/tally/submissions/${currentAuswertung.id}`);
+      if (r.ok) currentTallySubmissions = await r.json();
+    } catch (e) { console.warn("Tally submissions load:", e.message); }
+  }
 
+  // Pool unabhängig von gespeicherter Auswertung laden — Submissions sollen
+  // immer zuordenbar sein, auch bevor ein Wert gespeichert wurde.
   try {
     const r = await fetch(`/api/tally/submissions/unassigned`);
     if (r.ok) currentTallyUnassigned = await r.json();
@@ -12766,11 +12769,6 @@ function renderSurveyDataInput() {
         <button class="btn btn-ghost btn-sm" onclick="reloadSurveyData()">Submissions neu laden</button>
       </div>
   `;
-
-  if (!currentAuswertung || !currentAuswertung.id) {
-    body += `<div class="surv-empty">Auswertung wurde noch nicht gespeichert. Setze unten einen Wert (z.B. eine Heatmap-Ampel oder ein Befund-Feld) — dann kannst du Submissions zuordnen.</div></div>`;
-    return body;
-  }
 
   if (subs.length === 0 && unassigned.length === 0) {
     body += `<div class="surv-empty">Keine Tally-Submissions vorhanden. Webhook-URL für Tally: <code>https://nelion-app.onrender.com/webhook/tally</code></div></div>`;
@@ -12859,8 +12857,18 @@ async function onSurveySubmissionRolleChange(sel) {
 }
 
 async function onSurveySubmissionAssign(id) {
-  if (!currentAuswertung || !currentAuswertung.id) return;
   try {
+    // Lazy-Create: noch keine Auswertung vorhanden → leere anlegen, damit
+    // Submissions zugeordnet werden können bevor irgendein Wert gespeichert ist.
+    if (!currentAuswertung || !currentAuswertung.id) {
+      if (!currentAuswertungScan || !currentAuswertungScan.id) return;
+      const cr = await fetch(`/api/auswertungen`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scan_id: currentAuswertungScan.id }),
+      });
+      if (!cr.ok) { console.warn("Auswertung create failed:", cr.status); return; }
+      currentAuswertung = await cr.json();
+    }
     const r = await fetch(`/api/tally/submissions/${id}`, {
       method: "PATCH", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ auswertung_id: currentAuswertung.id }),
