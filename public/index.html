@@ -7706,9 +7706,12 @@ function renderScanErsteEinschaetzung() {
 
     <div class="scan-card">
       <div class="scan-card-title">Friction Profil</div>
-      <div class="check-row" style="margin-bottom:10px">
+      <div class="check-row" style="margin-bottom:6px">
         <input type="checkbox" id="frictionManualOverride" ${manual ? "checked" : ""} onchange="onFrictionManualOverrideToggle(this)">
         <label for="frictionManualOverride">Manuell überschreiben</label>
+      </div>
+      <div style="margin-bottom:10px">
+        <button type="button" class="btn btn-ghost" id="btnFrictionReset" onclick="resetFrictionProfilManual()" style="font-size:11px;padding:4px 10px" ${manual ? "" : "disabled"}>↺ Testdaten zurücksetzen</button>
       </div>
       <div id="frictionProfilGrid">${renderFrictionProfilReadonly(manual)}</div>
       <div id="frictionProfilStatus" style="font-size:11px;color:var(--ink-mute);margin-top:8px"></div>
@@ -8066,7 +8069,23 @@ async function onFrictionManualOverrideToggle(cb) {
   currentScan.friction_profil_manual_override = !!cb.checked;
   const grid = document.getElementById("frictionProfilGrid");
   if (grid) grid.innerHTML = renderFrictionProfilReadonly(!!cb.checked);
+  const resetBtn = document.getElementById("btnFrictionReset");
+  if (resetBtn) resetBtn.disabled = !cb.checked;
   try { await patchScan({ friction_profil_manual_override: !!cb.checked }); } catch {}
+}
+
+// Setzt alle Override-Ampeln (_final) lokal auf "grau" zurück. Kein Supabase-Delete —
+// nur UI-State, damit der Berater einen sauberen Override-Zustand neu setzen kann.
+function resetFrictionProfilManual() {
+  if (!currentScan || !currentScan.friction_profil_manual_override) return;
+  if (!confirm("Alle manuell gesetzten Ampeln zurücksetzen? (Nur lokal — keine Server-Änderung)")) return;
+  for (const key of Object.keys(scanAmpeln)) {
+    if (key.endsWith("_final")) scanAmpeln[key] = "grau";
+  }
+  const grid = document.getElementById("frictionProfilGrid");
+  if (grid) grid.innerHTML = renderFrictionProfilReadonly(true);
+  const statusEl = document.getElementById("frictionProfilStatus");
+  if (statusEl) statusEl.textContent = "Manueller Override zurückgesetzt — Ampeln neu setzen.";
 }
 
 async function autoFillFrictionProfilFromTally() {
