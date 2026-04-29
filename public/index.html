@@ -6190,10 +6190,10 @@ const SCAN_PHASES_LEGACY = [
 // L1 ist intern der Key für die L1a-Achsen (biologische Kapazität).
 // L1b sind die beiden neuen Achsen (strukturell verursachte Erschöpfung).
 const AMPEL_AXES = {
-  L1:  ["Energie-Status", "Allostatic Load", "Verarbeitungsarchitektur", "Interoceptive Awareness"],
+  L1:  ["Energie-Status", "Allostatic Load", "Verarbeitungsarchitektur", "Interoceptive Awareness", "Fokuszeit"],
   L1b: ["Anforderungs-Ressourcen-Ungleichgewicht", "Erholungsstruktur", "Schlafqualität"],
-  L2:  ["Psychological Safety", "Immunity-Muster", "Threat-State", "Attribution Style"],
-  L3:  ["Entscheidungsarchitektur", "Incentive-Struktur", "Informationsfluss", "Strukturelle Ambiguität"],
+  L2:  ["Psychological Safety", "Immunity-Muster", "Threat-State", "Attribution Style", "Vertrauensarchitektur"],
+  L3:  ["Entscheidungsarchitektur", "Incentive-Struktur", "Informationsfluss", "Strukturelle Ambiguität", "Kommunikationsarchitektur"],
 };
 
 // Display-Labels im Format: "Klienten-Name (Wissenschaftlicher Name)"
@@ -6218,6 +6218,10 @@ const AXIS_DISPLAY_LABELS = {
   "Incentive-Struktur":       "Dysfunktionale Anreize (Incentive-Struktur)",
   "Strukturelle Ambiguität":  "Verantwortungsvakuum (Strukturelle Ambiguität)",
   "Informationsfluss":        "Informationsblockaden (Informationsfluss)",
+  // 3 zusätzliche Achsen (Interview-only, noch kein Survey-Mapping)
+  "Fokuszeit":                "Fokuszeit-Verfügbarkeit (Fokuszeit)",
+  "Vertrauensarchitektur":    "Vertrauensarchitektur",
+  "Kommunikationsarchitektur": "Kommunikationsarchitektur (Informationsfluss)",
 };
 
 // Layer-Display-Labels für die Gruppen-Überschriften in den Grids.
@@ -13302,7 +13306,7 @@ function renderAuswertungHeatmap() {
   let html = `
     <div class="aus-section" id="ausSection1">
       <div class="aus-section-title">1 · Friction Profile Heatmap</div>
-      <div class="aus-section-sub">14 Achsen. Klick togglet grün → gelb → rot → leer. Werte kommen aus dem Friction Scan Tab.</div>
+      <div class="aus-section-sub">17 Achsen im Profil, 14 via Survey erfasst (3 via Interview only). Klick togglet grün → gelb → rot → leer. Werte kommen aus dem Friction Scan Tab.</div>
       <div class="aus-heatmap-legend">
         <span><span class="dot gruen" style="background:var(--green);"></span>grün = 7–10</span>
         <span><span class="dot gelb" style="background:var(--yellow);"></span>gelb = 4–6</span>

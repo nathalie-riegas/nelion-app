@@ -27,7 +27,7 @@ create table if not exists scans (
 create index if not exists scans_created_at_idx on scans(created_at desc);
 
 -- ─── SCAN AMPELN (Traffic Lights) ─────────────────────────────────────────────
--- 12 axes across 3 layers, tracked per phase (survey / interview / final)
+-- 17 Achsen im Profil, 14 via Survey erfasst (3 via Interview only), tracked per phase (survey / interview / final)
 create table if not exists scan_ampeln (
   id uuid primary key default gen_random_uuid(),
   scan_id uuid not null references scans(id) on delete cascade,
