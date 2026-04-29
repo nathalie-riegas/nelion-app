@@ -906,6 +906,8 @@ app.patch("/api/scans/:sid/interviews/:iid", async (req, res) => {
     "perspektive",
     "einstieg_notiz", "f1_notiz", "f2_notiz", "f3_notiz", "abschluss_notiz",
     "vertiefung_1_notiz", "vertiefung_2_notiz",
+    // Migration 025 — Kontext-Felder pro Interview-Person.
+    "altersgruppe", "geschlecht", "branche", "teamgroesse",
   ];
   const updates = {};
   for (const key of allowed) {
@@ -921,6 +923,7 @@ app.patch("/api/scans/:sid/interviews/:iid", async (req, res) => {
     "perspektive",
     "einstieg_notiz", "f1_notiz", "f2_notiz", "f3_notiz", "abschluss_notiz",
     "vertiefung_1_notiz", "vertiefung_2_notiz",
+    "altersgruppe", "geschlecht", "branche", "teamgroesse",
   ];
   let { data, error } = await supabase
     .from("interviews").update(updates).eq("id", req.params.iid).select().single();

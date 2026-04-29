@@ -859,7 +859,13 @@
     border-left: 3px solid var(--accent); border-radius: 0 var(--rs) var(--rs) 0;
     font-size: 13px; color: var(--ink-mid); line-height: 1.5; margin-bottom: 4px;
   }
-  .leitfaden-card.abschluss { border-left-color: var(--green); }
+  .leitfaden-card.abschluss { border-left-color: var(--accent); }
+  .leitfaden-q-num {
+    display: inline-block; font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.05em; color: var(--ink-mute);
+    background: rgba(0,0,0,0.05); padding: 1px 6px; border-radius: 3px;
+    margin-right: 6px; vertical-align: middle;
+  }
   .leitfaden-signal-tag {
     display: inline-block; font-family: var(--mono); font-size: 10px;
     color: var(--ink-mute); margin-top: 4px; opacity: 0.8;
@@ -7155,10 +7161,15 @@ async function saveAllInterviews() {
     // Tab nicht im DOM mounted (nur ein Interview sichtbar): nicht überschreiben.
     if (!perspektiveEl || !notizEl) continue;
     const val = id => (document.getElementById(id)?.value || "");
+    const teamRaw = val(`iv${i}Teamgroesse`);
     const updates = {
       perspektive:         perspektiveEl.value || "",
       datum:               document.getElementById(`iv${i}Datum`)?.value || null,
       notizen:             notizEl.value || "",
+      altersgruppe:        val(`iv${i}Altersgruppe`),
+      geschlecht:          val(`iv${i}Geschlecht`),
+      branche:             val(`iv${i}Branche`),
+      teamgroesse:         teamRaw === "" ? null : Number(teamRaw),
       einstieg_notiz:      val(`iv${i}Einstieg`),
       f1_notiz:            val(`iv${i}F1`),
       f2_notiz:            val(`iv${i}F2`),
@@ -7167,6 +7178,10 @@ async function saveAllInterviews() {
       vertiefung_1_notiz:  val(`iv${i}Vert1`),
       vertiefung_2_notiz:  val(`iv${i}Vert2`),
       ungesagtes:          val(`iv${i}Ungesagtes`) || (iv.ungesagtes || iv.plan_b_nicht_gesagt || ""),
+      se1_notiz:           val(`iv${i}SE1`),
+      se2_notiz:           val(`iv${i}SE2`),
+      se3_notiz:           val(`iv${i}SE3`),
+      se4_notiz:           val(`iv${i}SE4`),
     };
     try {
       await fetch(`/api/scans/${currentScan.id}/interviews/${iv.id}`, {
@@ -7442,11 +7457,11 @@ async function syncPerspektiveFromVertiefung(num, value) {
 
 // Leitfaden-Card: Frage + Signal-Tag + Notizfeld.
 function renderLeitfadenCard(opts) {
-  const { num, fieldId, ivKey, rows, frage, signal, placeholder, extraClass, iv } = opts;
+  const { num, fieldId, ivKey, rows, frage, signal, placeholder, extraClass, iv, nummer } = opts;
   const val = (iv && iv[ivKey]) || "";
   return `
     <div class="leitfaden-card${extraClass ? ' ' + extraClass : ''}">
-      ${escHtml(frage)}
+      ${nummer ? `<span class="leitfaden-q-num">${escHtml(nummer)}</span>` : ""}${escHtml(frage)}
       ${signal ? `<div class="leitfaden-signal-tag">Signal: ${escHtml(signal)}</div>` : ""}
     </div>
     <textarea class="form-input leitfaden-card-note" id="iv${num}${fieldId}" rows="${rows}" placeholder="${escHtml(placeholder || '')}">${escHtml(val)}</textarea>
@@ -7488,12 +7503,12 @@ function renderVertiefungsblock(num, persp, iv) {
     <div class="leitfaden-block-label">Vertiefung (situativ wählen)</div>
     <div class="leitfaden-erklaerung">Beide Fragen anzeigen — du wählst im Gespräch welche passt. ⓘ-Button zeigt Einsatzhinweis.</div>
     <div class="leitfaden-card">
-      ${escHtml(f1.q)}
+      <span class="leitfaden-q-num">V1</span>${escHtml(f1.q)}
       <button type="button" class="vertiefung-info-btn" data-tip="${escHtml(f1.info)}" aria-label="Einsatzhinweis">ⓘ</button>
     </div>
     <textarea class="form-input leitfaden-card-note" id="iv${num}Vert1" rows="3" placeholder="Antwort / Beobachtung Frage 1…">${escHtml((iv && iv.vertiefung_1_notiz) || "")}</textarea>
     <div class="leitfaden-card">
-      ${escHtml(f2.q)}
+      <span class="leitfaden-q-num">V2</span>${escHtml(f2.q)}
       <button type="button" class="vertiefung-info-btn" data-tip="${escHtml(f2.info)}" aria-label="Einsatzhinweis">ⓘ</button>
     </div>
     <textarea class="form-input leitfaden-card-note" id="iv${num}Vert2" rows="3" placeholder="Antwort / Beobachtung Frage 2…">${escHtml((iv && iv.vertiefung_2_notiz) || "")}</textarea>
@@ -7531,6 +7546,37 @@ function renderInterviewSlot(num) {
         </div>
       </div>
 
+      <div class="interview-fields" style="margin-top:6px">
+        <div class="form-group">
+          <label class="form-label">Altersgruppe</label>
+          <select class="form-input" id="iv${num}Altersgruppe">
+            <option value=""          ${(iv.altersgruppe||"")===""    ? "selected":""}>—</option>
+            <option value="unter_30"  ${iv.altersgruppe==="unter_30"  ? "selected":""}>unter 30</option>
+            <option value="30_45"     ${iv.altersgruppe==="30_45"     ? "selected":""}>30–45</option>
+            <option value="45_60"     ${iv.altersgruppe==="45_60"     ? "selected":""}>45–60</option>
+            <option value="ueber_60"  ${iv.altersgruppe==="ueber_60"  ? "selected":""}>über 60</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Geschlecht</label>
+          <select class="form-input" id="iv${num}Geschlecht">
+            <option value=""              ${(iv.geschlecht||"")===""       ? "selected":""}>—</option>
+            <option value="weiblich"      ${iv.geschlecht==="weiblich"     ? "selected":""}>weiblich</option>
+            <option value="maennlich"     ${iv.geschlecht==="maennlich"    ? "selected":""}>männlich</option>
+            <option value="divers"        ${iv.geschlecht==="divers"       ? "selected":""}>divers</option>
+            <option value="keine_angabe"  ${iv.geschlecht==="keine_angabe" ? "selected":""}>keine Angabe</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Branche</label>
+          <input class="form-input" type="text" id="iv${num}Branche" placeholder="z.B. Software, Gesundheit, Industrie" value="${escHtml(iv.branche||"")}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Teamgrösse</label>
+          <input class="form-input" type="number" min="0" id="iv${num}Teamgroesse" placeholder="Anzahl Personen" value="${escHtml(iv.teamgroesse!=null?String(iv.teamgroesse):"")}">
+        </div>
+      </div>
+
       <div class="form-group" style="margin-top:10px">
         <label class="form-label">Live-Notizen (frei)</label>
         <textarea class="form-input" id="iv${num}Notizen" rows="3" placeholder="Beobachtungen, Zitate, Timestamps…">${escHtml(iv.notizen || "")}</textarea>
@@ -7548,22 +7594,22 @@ function renderInterviewSlot(num) {
       <!-- B2 — Universalfragen -->
       <div class="leitfaden-block-label">Kernfragen (alle Interviews identisch)</div>
       ${renderLeitfadenCard({
-        num, fieldId: "F1", ivKey: "f1_notiz", rows: 3, iv,
+        num, fieldId: "F1", ivKey: "f1_notiz", rows: 3, iv, nummer: "K1",
         frage: '"Was ist das teuerste ungelöste Problem gerade — in Zeit, Energie oder Geld?"',
         signal: "L1 / L2 / L3 offen", placeholder: "Antwort / Zitat / Beobachtung…",
       })}
       ${renderLeitfadenCard({
-        num, fieldId: "F2", ivKey: "f2_notiz", rows: 3, iv,
+        num, fieldId: "F2", ivKey: "f2_notiz", rows: 3, iv, nummer: "K2",
         frage: '"Was habt ihr in 12–18 Monaten versucht — und was ist geblieben?"',
         signal: "Immunity to Change / Attraktor-Muster", placeholder: "Antwort / Zitat / Beobachtung…",
       })}
       ${renderLeitfadenCard({
-        num, fieldId: "F3", ivKey: "f3_notiz", rows: 3, iv,
+        num, fieldId: "F3", ivKey: "f3_notiz", rows: 3, iv, nummer: "K3",
         frage: '"Wenn ich deinen Kollegen frage wie das Team reagiert wenn etwas schiefläuft — was würde er sagen?"',
         signal: "Psychological Safety / Attribution Style", placeholder: "Antwort / Zitat / Beobachtung…",
       })}
       ${renderLeitfadenCard({
-        num, fieldId: "AbschlussUniv", ivKey: "abschluss_notiz", rows: 3, iv, extraClass: "abschluss",
+        num, fieldId: "AbschlussUniv", ivKey: "abschluss_notiz", rows: 3, iv, nummer: "K4",
         frage: '"Was würde sich ändern wenn das Problem morgen weg wäre?"',
         signal: "Lösungsbild / Motivationsstruktur", placeholder: "Antwort / Zitat / Beobachtung…",
       })}
@@ -7574,10 +7620,36 @@ function renderInterviewSlot(num) {
       <!-- B4 — Abschluss -->
       <div class="leitfaden-block-label">Abschluss</div>
       ${renderLeitfadenCard({
-        num, fieldId: "Ungesagtes", ivKey: "ungesagtes", rows: 3, iv,
+        num, fieldId: "Ungesagtes", ivKey: "ungesagtes", rows: 3, iv, nummer: "A1",
         frage: '"Bevor wir abschliessen — gibt es etwas das du während unseres Gesprächs gedacht aber noch nicht gesagt hast?"',
         signal: "", placeholder: "Was noch nicht gesagt wurde…",
       })}
+
+      <!-- B4b — Systemische Erweiterung -->
+      <div class="omission-bias-wrap">
+        <div class="scan-card-title">Systemische Erweiterung</div>
+        <div class="leitfaden-erklaerung" style="font-style:normal">4 ergänzende Fragen — Vertrauensarchitektur, Kommunikationsarchitektur, Fokuszeit, externer Druck.</div>
+        ${renderLeitfadenCard({
+          num, fieldId: "SE1", ivKey: "se1_notiz", rows: 3, iv, nummer: "SE1",
+          frage: '"Gibt es Personen im Unternehmen mit denen Sie bestimmte Themen bewusst nicht besprechen — obwohl es eigentlich sinnvoll wäre?"',
+          signal: "Vertrauensarchitektur / L2", placeholder: "Antwort / Zitat / Beobachtung…",
+        })}
+        ${renderLeitfadenCard({
+          num, fieldId: "SE2", ivKey: "se2_notiz", rows: 3, iv, nummer: "SE2",
+          frage: '"Wie haben Sie von der letzten wichtigen Entscheidung erfahren die Sie betroffen hat?"',
+          signal: "Kommunikationsarchitektur / L3", placeholder: "Antwort / Zitat / Beobachtung…",
+        })}
+        ${renderLeitfadenCard({
+          num, fieldId: "SE3", ivKey: "se3_notiz", rows: 3, iv, nummer: "SE3",
+          frage: '"Wie viele Stunden pro Woche haben Sie realistisch ungestörte Arbeitszeit — nicht theoretisch, sondern tatsächlich?"',
+          signal: "Fokuszeit-Verfügbarkeit / L1b", placeholder: "Antwort / Zitat / Beobachtung…",
+        })}
+        ${renderLeitfadenCard({
+          num, fieldId: "SE4", ivKey: "se4_notiz", rows: 3, iv, nummer: "SE4",
+          frage: '"Welche externen Veränderungen — Markt, Regulierung, Wettbewerb, Technologie — haben in den letzten 12 Monaten intern den grössten Druck erzeugt?"',
+          signal: "Systemische Perspektive / Cross-Layer", placeholder: "Antwort / Zitat / Beobachtung…",
+        })}
+      </div>
 
       <!-- B5 — Omission Bias Check (visuell abgegrenzt) -->
       <div class="omission-bias-wrap">
