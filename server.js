@@ -2117,7 +2117,16 @@ Bitte generiere die Hypothesen-Zusammenfassung. Nach der empfohlenen Friction-Fr
 // Hypothesen-Spiegel. Antwort = strukturierter deutscher Markdown-Text.
 app.post("/api/ada/transkript-analyse", async (req, res) => {
   if (!anthropic) return res.status(503).json({ error: "ANTHROPIC_API_KEY nicht konfiguriert" });
-  const { transkript, phase_notes, person_name } = req.body || {};
+  const {
+    transkript,
+    phase_notes,
+    person_name,
+    person_rolle,
+    person_alter,
+    person_geschlecht,
+    team_groesse,
+    branche,
+  } = req.body || {};
   if (!transkript || !transkript.trim()) {
     return res.status(400).json({ error: "Transkript erforderlich" });
   }
@@ -2129,38 +2138,128 @@ Phase 2 (Scan): ${(notes.phase2 || "— keine Notizen —").trim()}
 Phase 3 (Spiegeln): ${(notes.phase3 || "— keine Notizen —").trim()}
 Phase 4 (Slice): ${(notes.phase4 || "— keine Notizen —").trim()}`;
 
-  const systemPrompt = `Du bist NELION Friction Diagnostics.
-Analysiere dieses Erstgespräch-Transkript einer Führungsperson.
+  const kontextVars =
+`Rolle im Unternehmen: ${person_rolle || "—"}
+Altersgruppe: ${person_alter || "—"}
+Geschlecht: ${person_geschlecht || "—"}
+Teamgrösse: ${team_groesse || "—"}
+Branche: ${branche || "—"}`;
 
-Kontext aus dem Gespräch:
+  const systemPrompt = `Du bist NELION Friction Diagnostics — ein präzises diagnostisches
+System für organisationale Reibung.
+
+Du analysierst ein Interview-Transkript einer Führungsperson im
+Rahmen eines Organizational Friction Scan.
+
+═══ NELION DREI-LAYER-MODELL ═══
+
+L1 — Neurobiologische Kapazität (Hardware)
+Achsen: Energie-Status / Allostatic Load / Verarbeitungsarchitektur /
+        Interoceptive Awareness / Fokuszeit-Verfügbarkeit
+
+L2 — Psychologische Dynamik (Betriebssystem)
+Achsen: Psychological Safety / Immunity-Muster / Threat-State /
+        Attribution Style / Vertrauensarchitektur
+
+L3 — Organisationale Struktur (Architektur)
+Achsen: Entscheidungsarchitektur / Incentive-Struktur /
+        Informationsfluss / Strukturelle Ambiguität /
+        Kommunikationsarchitektur
+
+Sequenzierungs-Axiom (nicht verhandelbar):
+L1 rot → keine L3-Intervention. Erst stabilisieren, dann verändern.
+Regime 2b: L3-Versagen das L2-Blockade produziert → L2 zuerst
+benennen, dann L3 formalisieren.
+
+═══ GESPRÄCHSKONTEXT (Phase-Notes) ═══
+
 ${kontextBlock}
 
-Extrahiere:
-1. Layer-Hypothesen (L1/L2/L3) — je mit direktem Zitat als Evidenz
-2. Omission Bias Check:
-   - Biologische Last über Systemsprache kommuniziert?
-   - Geschützte Personen nie als Reibungsquelle genannt?
-   - Wo hat der Ton gewechselt?
-3. Stärkste Friction-Hypothese (1 Satz)
-4. Empfohlene erste Friction Scan-Frage — mit Begründung (Format unten, obligatorisch)
+═══ KONTEXT-VARIABLEN (Interpretationsfilter) ═══
 
-Antworte strukturiert, deutsch, maximal 450 Wörter.
-Verwende Markdown: ## / ### für Überschriften, **Fett** für Layer-Labels, nummerierte Listen, kurze Sätze.
+${kontextVars}
 
-Die drei Layer:
-- L1 = Neurobiologische Kapazität (Energie, Schlaf, Overload)
-- L2 = Psychologische Dynamik (Muster, Safety, Immunity)
-- L3 = Organisationale Struktur (Prozesse, Entscheidung, Verantwortung)
+Diese Variablen beeinflussen die Interpretation von Psychological
+Safety, Attribution Style und Incentive-Struktur. Sie erscheinen
+nicht als eigenständiger Befund — nur als Kontexthinweis wo relevant.
 
-Format-Regel für die Friction-Frage (obligatorisch):
+═══ DEINE AUFGABE ═══
+
+Analysiere das Transkript und liefere:
+
+## 1. Layer-Hypothesen
+
+Für jeden Layer (L1 / L2 / L3):
+- Ampel: grün / gelb / rot
+- Betroffene Achse(n)
+- Direktes Zitat aus dem Transkript als Evidenz (zwingend)
+- 1-Satz-Hypothese
+
+Regel: Kein Layer-Befund ohne direktes Zitat.
+Wenn kein Zitat → Ampel grün oder "nicht beurteilbar".
+
+## 2. Omission-Bias-Check
+
+Prüfe systematisch:
+- Wurde biologische Last über Systemsprache kommuniziert?
+  (z.B. "das System ist überlastet" statt "ich bin erschöpft")
+- Hat die Person beschrieben was ihr "passiert" ohne eigene
+  Entscheidungen zu benennen?
+- Gibt es geschützte Personen die nie als Reibungsquelle
+  genannt wurden?
+- Was treibt die Person an — wurde das je gefragt?
+- Wo hat der Ton gewechselt (sachlich → emotional)?
+  Timestamp oder Textstelle markieren.
+
+## 3. Systemische Perspektive
+
+Prüfe ob externe Faktoren (Markt, Wettbewerb, Regulierung,
+Technologie, Branchendruck) als Ursache für interne Friction
+genannt oder impliziert wurden.
+Falls ja: welcher externe Faktor produziert welchen internen
+Layer-Druck?
+Falls nicht erwähnt: als Lücke markieren — im nächsten Interview
+nachfragen.
+
+## 4. Stärkste Friction-Hypothese
+
+1 Satz. Layer benennen. Mechanismus benennen.
+Format: "L[X]-[Achse] erzeugt [Konsequenz] — sichtbar an [Zitat]."
+
+## 5. Primärer Friction-Vektor
+
+Falls mehrere Layer betroffen: welcher ist Gate?
+Regime-Einschätzung: 1 / 2 / 2b / 3
+
+## 6. Empfohlene Friction Scan-Frage
+
+Die eine Frage die im nächsten Schritt den Kern testet.
 
 **Empfohlene erste Friction Scan-Frage**
 "[Frage]"
 
 **Warum diese Frage:**
-[2–3 Sätze: welches psychologische oder strukturelle Muster sie testet, wissenschaftliche Basis, was die Antwort über den Layer verrät]`;
+[2–3 Sätze: welches Muster sie testet, wissenschaftliche Basis
+(Autor, ★-Status), was die Antwort über den Layer verrät]
+
+═══ REGELN ═══
+
+- Kein Layer-Befund ohne direktes Zitat
+- Maximal 500 Wörter
+- Deutsch, Schweizer Hochdeutsch (ss statt ß)
+- Markdown: ## / ### Überschriften, **Fett** für Layer-Labels
+- Keine Diagnose — nur testbare Hypothesen
+- Wenn Datenlage dünn: explizit "Einzelquelle ★☆☆" markieren
+- Denzin-Triangulation: diese Quelle ist 1 von 3 —
+  Konfidenz entsprechend begrenzen`;
 
   const userMsg = `Klient${person_name ? ": " + person_name : ""}.
+
+Rolle im Unternehmen: ${person_rolle || "—"}
+Altersgruppe: ${person_alter || "—"}
+Geschlecht: ${person_geschlecht || "—"}
+Teamgrösse: ${team_groesse || "—"}
+Branche: ${branche || "—"}
 
 Transkript:
 ${transkript.trim()}
@@ -2279,7 +2378,19 @@ Bitte liefere die strukturierte Pfad-Empfehlung.`;
 // Endergebnis wird in scans.pfad_empfehlung persistiert (Frontend).
 app.post("/api/ada/pfad-empfehlung-scan", async (req, res) => {
   if (!anthropic) return res.status(503).json({ error: "ANTHROPIC_API_KEY nicht konfiguriert" });
-  const { ampeln, interview_notizen, omission_flags, arbeitshypothese, kunde_name } = req.body || {};
+  const {
+    ampeln,
+    interview_notizen,
+    omission_flags,
+    arbeitshypothese,
+    kunde_name,
+    person_rolle,
+    person_alter,
+    person_geschlecht,
+    branche,
+    team_groesse,
+    externe_faktoren,
+  } = req.body || {};
 
   const ampelnBlock = Array.isArray(ampeln) && ampeln.length > 0
     ? ampeln.map(a => `- ${a.layer} ${a.achse}: ${a.wert}`).join("\n")
@@ -2295,27 +2406,117 @@ app.post("/api/ada/pfad-empfehlung-scan", async (req, res) => {
     ? omission_flags.map((f, i) => `Interview ${i + 1}: ${Object.entries(f).filter(([, v]) => v === true).map(([k]) => k).join(", ") || "— keine Flags —"}`).join("\n")
     : "— keine Omission-Bias-Flags —";
 
-  const systemPrompt = `Du bist NELION Friction Diagnostics.
-Berechne den Pfad basierend auf den gelieferten Scan-Daten.
+  const kontextBlock =
+`Rolle im Unternehmen: ${person_rolle || "—"}
+Altersgruppe: ${person_alter || "—"}
+Geschlecht: ${person_geschlecht || "—"}
+Branche: ${branche || "—"}
+Teamgrösse: ${team_groesse || "—"}`;
 
-Gate-Logik (zwingend einhalten):
-- L1 rot → Stabilisierungspfad (keine Ausnahme)
-- L1 gelb + L2 hoch → Kulturpfad
-- L1 gelb + L2 ok + L3 erzeugt L2-Blockaden → Klärungspfad
-- L1 grün + L3 dominant → Gestaltungspfad
-- Alle Layer kritisch → Neuausrichtungspfad
-- Mandat fehlt → Alarmstufe Rot
+  const systemPrompt = `Du bist NELION Friction Diagnostics — ein präzises diagnostisches
+System für organisationale Reibung.
 
-Ausgabe (Markdown, deutsch, max. 200 Wörter):
-1. **Empfohlener Pfad** — Name
-2. **Konfidenz** — ★★☆ (Survey + 1–2 Interviews) oder ★★★ (Survey + alle 3 Interviews + Omission-Bias-Check)
-3. **Primärer Friction-Vektor** — Layer + Achse + Zitat (falls Interview-Beleg)
-4. **Top 3 zu adressierende Punkte** — priorisiert nach Gate-Logik
-5. **Nächster konkreter Schritt** — operativ, umsetzbar`;
+Du berechnest den Interventionspfad basierend auf vollständigen
+Scan-Daten (Survey + Interviews + Omission-Bias-Check).
+
+═══ NELION DREI-LAYER-MODELL ═══
+
+L1 — Neurobiologische Kapazität (Hardware)
+Achsen: Energie-Status / Allostatic Load / Verarbeitungsarchitektur /
+        Interoceptive Awareness / Fokuszeit-Verfügbarkeit
+
+L1b — Strukturell verursachte Erschöpfung
+Achsen: Anforderungs-Ressourcen-Ungleichgewicht / Erholungsstruktur /
+        Schlafqualität
+
+L2 — Psychologische Dynamik (Betriebssystem)
+Achsen: Psychological Safety / Immunity-Muster / Threat-State /
+        Attribution Style / Vertrauensarchitektur
+
+L3 — Organisationale Struktur (Architektur)
+Achsen: Entscheidungsarchitektur / Incentive-Struktur /
+        Informationsfluss / Strukturelle Ambiguität /
+        Kommunikationsarchitektur
+
+═══ GATE-LOGIK (nicht verhandelbar) ═══
+
+L1 rot → Stabilisierungspfad (keine Ausnahme, auch nicht bei
+          starkem L3-Befund)
+L1 gelb + L2 hoch → Kulturpfad
+L1 gelb + L2 ok + L3 erzeugt L2-Blockaden → Klärungspfad
+L1 grün + L3 dominant → Gestaltungspfad
+Alle Layer kritisch → Neuausrichtungspfad
+Mandat fehlt oder System im Überlebensmodus → Alarmstufe Rot
+
+Regime 2b (gesondert prüfen):
+L3-Strukturversagen das L2-Blockade produziert.
+Erkennbar an: Rollenunklarheit oder fehlende Legitimation (L3)
+→ Bescheidenheit, Over-Functioning, Rückzug (L2)
+→ Erschöpfung (L1).
+Sequenz zwingend: L2 zuerst benennen — dann L3 formalisieren.
+Nicht L3 first, sonst absorbiert die Person die neue Struktur
+informell.
+
+═══ VERFÜGBARE PFADE ═══
+
+Alarmstufe Rot: Scan nicht möglich — System im Überlebensmodus
+Stabilisierungspfad: L1 dominant — biologische Erschöpfung
+Kulturpfad: L2 dominant — psychologische Blockaden
+Klärungspfad: L3 hat L2-Blockaden erzeugt — Sequenz entscheidend
+Gestaltungspfad: L3 direkt — System stabil
+Neuausrichtungspfad: alle Layer kritisch — fundamentaler Reset
+
+═══ KONTEXT-VARIABLEN (Interpretationsfilter) ═══
+
+${kontextBlock}
+
+Diese Variablen beeinflussen die Interpretation — besonders bei
+Psychological Safety, Attribution Style und Incentive-Struktur.
+Erscheinen nicht als eigenständiger Befund — nur als Hinweis
+wo relevant.
+
+═══ DEINE AUFGABE ═══
+
+## 1. Empfohlener Pfad
+Name + 1 Satz Begründung.
+Regime-Einschätzung: 1 / 2 / 2b / 3
+
+## 2. Konfidenz
+★★☆ wenn Survey + 1–2 Interviews vorhanden
+★★★ wenn Survey + alle 3 Interviews + Omission-Bias-Check
+
+## 3. Primärer Friction-Vektor
+Layer + Achse + direktes Zitat aus Interview (zwingend wenn
+Interview-Daten vorhanden).
+Format: "L[X] — [Achse]: [Zitat]"
+
+## 4. Systemische Perspektive
+Wurden externe Faktoren (Markt, Wettbewerb, Regulierung,
+Technologie) als Ursache für interne Friction genannt?
+Falls ja: welcher externe Faktor → welcher Layer-Druck?
+Falls nicht erwähnt: als Lücke markieren.
+
+## 5. Top 3 zu adressierende Punkte
+Priorisiert nach Gate-Logik und Regime.
+Format: Layer — Achse — Handlungsempfehlung (1 Satz)
+
+## 6. Nächster konkreter Schritt
+Operativ, umsetzbar, auf den Pfad abgestimmt.
+
+═══ REGELN ═══
+
+- Gate-Logik ist nicht verhandelbar — kein L3-Fix bei L1 rot
+- Kein Pfad ohne Evidenz aus den Daten
+- Regime 2b explizit prüfen bei L3/L2-Kombinationen
+- Maximal 250 Wörter
+- Deutsch, Schweizer Hochdeutsch (ss statt ß)
+- Markdown: ## Überschriften, **Fett** für Layer/Pfad-Labels
+- Denzin-Triangulation: Konfidenz explizit begrenzen wenn
+  Quellen fehlen`;
 
   const userMsg = `Klient${kunde_name ? ": " + kunde_name : ""}.
 
-Survey-Ampeln (alle 12 Achsen):
+Survey-Ampeln (alle 18 Achsen):
 ${ampelnBlock}
 
 Interview-Notizen:
@@ -2326,6 +2527,9 @@ ${omissionBlock}
 
 Arbeitshypothese:
 ${(arbeitshypothese || "— keine Arbeitshypothese gesetzt —").trim()}
+
+Externe Faktoren (falls erfasst):
+${externe_faktoren || "— nicht erfasst —"}
 
 Bitte berechne die Pfad-Empfehlung gemäss Gate-Logik.`;
 
