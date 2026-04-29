@@ -286,6 +286,15 @@
     border-radius: 0 var(--rs) var(--rs) 0; padding: 12px 16px;
     font-size: 14px; color: var(--ink-mid); line-height: 1.6;
   }
+  .phase-intro {
+    background: var(--surface2); border-left: 3px solid var(--accent);
+    border-radius: 0 var(--rs) var(--rs) 0;
+    padding: 10px 14px; margin-top: 10px;
+    font-size: 12.5px; color: var(--ink-mid); line-height: 1.55;
+  }
+  .phase-intro ul { margin: 0; padding-left: 18px; }
+  .phase-intro li { margin-bottom: 4px; }
+  .phase-intro li:last-child { margin-bottom: 0; }
   .guide-block {
     background: var(--surface); border: 1px solid var(--border);
     border-radius: var(--r); padding: 16px;
@@ -3072,6 +3081,16 @@
     font-size: 13px; line-height: 1.55; color: var(--ink);
     margin-bottom: 8px;
   }
+  .nelion-roi-list {
+    font-size: 13px; line-height: 1.55; color: var(--ink);
+    margin: 0 0 8px 0; padding-left: 18px;
+  }
+  .nelion-roi-list li {
+    margin-bottom: 4px;
+  }
+  .nelion-roi-list li:last-child {
+    margin-bottom: 0;
+  }
   .nelion-roi-tag {
     font-family: var(--mono); font-size: 10px; letter-spacing: 0.05em;
     color: #185FA5; opacity: 0.75;
@@ -3149,6 +3168,67 @@
     background: #FAEEDA; border-left: 3px solid #BA7517;
   }
 
+  /* Theorien & Messung — interne Tabelle */
+  .nelion-tm-wrap {
+    overflow-x: auto; max-height: 70vh; overflow-y: auto;
+    border: 1px solid var(--border, #E5E5E0); border-radius: 6px;
+  }
+  .nelion-tm-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 12.5px; line-height: 1.45;
+  }
+  .nelion-tm-table thead th {
+    position: sticky; top: 0; z-index: 1;
+    background: var(--surface2); color: var(--ink-mid);
+    text-align: left; font-weight: 600;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border, #E5E5E0);
+    white-space: nowrap;
+  }
+  .nelion-tm-table tbody td {
+    padding: 7px 10px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    vertical-align: top;
+  }
+  .nelion-tm-table tbody tr:last-child td { border-bottom: none; }
+  .nelion-tm-table tbody tr:hover { background: var(--surface2); }
+
+  /* Persistenzmuster Cards */
+  .nelion-muster {
+    border: 1px solid; border-radius: 8px;
+    margin-bottom: 10px; overflow: hidden;
+  }
+  .nelion-muster-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; cursor: pointer;
+    font-size: 14px; font-weight: 600;
+    user-select: none;
+  }
+  .nelion-muster-name { flex: 1; }
+  .nelion-muster-badge {
+    font-family: var(--mono); font-size: 11px;
+    padding: 2px 8px; border-radius: 4px;
+    background: rgba(255,255,255,0.55);
+    letter-spacing: 0.03em;
+  }
+  .nelion-muster-l1 { background: #E1F5EE; border-color: #9FE1CB; }
+  .nelion-muster-l1 .nelion-muster-header { color: #0F6E56; }
+  .nelion-muster-l1 .nelion-badge-l1 { color: #0F6E56; }
+  .nelion-muster-l2 { background: #EEEDFE; border-color: #AFA9EC; }
+  .nelion-muster-l2 .nelion-muster-header { color: #534AB7; }
+  .nelion-muster-l2 .nelion-badge-l2 { color: #534AB7; }
+  .nelion-muster-l3 { background: #FAEEDA; border-color: #FAC775; }
+  .nelion-muster-l3 .nelion-muster-header { color: #BA7517; }
+  .nelion-muster-l3 .nelion-badge-l3 { color: #BA7517; }
+  .nelion-muster .nelion-axis-body {
+    background: var(--surface); border-top: 1px solid rgba(0,0,0,0.06);
+    padding: 10px 14px; font-size: 13px;
+  }
+  .nelion-muster .nelion-axis-body ul {
+    margin: 4px 0 0 0; padding-left: 18px;
+  }
+  .nelion-muster .nelion-axis-body ul li { margin-bottom: 3px; }
+
   .nelion-roi-box {
     padding: 10px 14px; border-radius: 6px;
     font-size: 12px; line-height: 1.55;
@@ -3214,6 +3294,15 @@
   }
   @media (max-width: 780px) {
     .nelion-sublayer-grid { grid-template-columns: 1fr; }
+  }
+  .nelion-layer-question {
+    font-style: italic; font-size: 13px;
+    color: var(--ink-mute); margin: 0 0 12px 0;
+    padding-left: 12px; border-left: 2px solid var(--surface2);
+  }
+  .nelion-axis-list {
+    display: flex; flex-direction: column; gap: 8px;
+    margin-top: 10px;
   }
   .nelion-sublayer {
     border: 1px solid; border-radius: 8px;
@@ -3651,6 +3740,8 @@
     <nav class="nelion-sidenav" id="nelionSideNav">
       <button class="nelion-sidenav-btn active" data-pane="layer" onclick="switchNelionPane('layer')">Layer-Modell</button>
       <button class="nelion-sidenav-btn" data-pane="regime" onclick="switchNelionPane('regime')">Pfad-Routing</button>
+      <button class="nelion-sidenav-btn" data-pane="muster" onclick="switchNelionPane('muster')">Persistenzmuster</button>
+      <button class="nelion-sidenav-btn" data-pane="theoriemess" onclick="switchNelionPane('theoriemess')">Theorien &amp; Messung</button>
       <button class="nelion-sidenav-btn" data-pane="theorie" onclick="switchNelionPane('theorie')">Theorie-Legende</button>
     </nav>
 
@@ -3662,22 +3753,34 @@
     <!-- ─── ROI-BLOCK (einklappbar, standard: zu) ───────────────── -->
     <div class="nelion-roi-collapsible">
       <button class="nelion-roi-toggle" type="button" onclick="toggleNelionRoi(this)">
-        <span>Was ohne Scan unsichtbar bleibt</span>
+        <span>Warum das Problem bleibt</span>
         <span class="nelion-roi-toggle-arrow">▼</span>
       </button>
       <div class="nelion-roi-body">
         <div class="nelion-roi-grid">
           <div class="nelion-roi-tile">
             <div class="nelion-roi-title">Warum Leute wirklich gehen</div>
-            <div class="nelion-roi-text">Kündigungen kommen selten überraschend — nur zu spät bemerkt. Stille Überlastung, unausgesprochene Konflikte, Erschöpfungsmuster. Diese Signale zeigen sich im Verhalten lange bevor sie im Austrittsgespräch ankommen. In den meisten Organisationen sieht sie niemand, bis es zu spät ist.</div>
+            <ul class="nelion-roi-list">
+              <li>Stille Überlastung — sichtbar im Verhalten, lange vor dem Austrittsgespräch</li>
+              <li>Unausgesprochene Konflikte und Erschöpfungsmuster</li>
+              <li>In den meisten Organisationen sieht sie niemand bis es zu spät ist</li>
+            </ul>
           </div>
           <div class="nelion-roi-tile">
             <div class="nelion-roi-title">Wo sich Organisationen selbst bremsen</div>
-            <div class="nelion-roi-text">Die meisten Verzögerungen haben keinen Grund — sondern eine Struktur. Unklare Verantwortlichkeiten, Entscheidungen die zwischen Hierarchien hängenbleiben, Informationen die nicht ankommen. Solche Muster werden zur Normalität, bevor jemand sie benennt.</div>
+            <ul class="nelion-roi-list">
+              <li>Unklare Verantwortlichkeiten und hängende Entscheidungen</li>
+              <li>Informationen die nicht ankommen</li>
+              <li>Muster werden zur Normalität bevor jemand sie benennt</li>
+            </ul>
           </div>
           <div class="nelion-roi-tile">
             <div class="nelion-roi-title">Warum Interventionen ins Leere laufen</div>
-            <div class="nelion-roi-text">Die teuersten Interventionen sind die, die am falschen Punkt ansetzen. Ein Training das nicht greift. Eine Reorganisation die wenig verändert. Das Problem sitzt meist tiefer als der Befund vermuten lässt — und bleibt genau deshalb bestehen.</div>
+            <ul class="nelion-roi-list">
+              <li>Problem sitzt tiefer als der Befund vermuten lässt</li>
+              <li>Training das nicht greift, Reorganisation die wenig verändert</li>
+              <li>Falsche Ebene = verschwendetes Budget</li>
+            </ul>
           </div>
         </div>
       </div>
@@ -3695,19 +3798,7 @@
     </div>
     <div class="nelion-layer-body" id="nelionL1Body">
       <p>Die biologische Ebene: Energie, Erschöpfung, sensorische Verarbeitung, Regeneration. Hardware schlägt Software — wenn Menschen biologisch erschöpft sind, greifen keine strukturellen Massnahmen.</p>
-
-      <div class="nelion-collapse">
-        <h4 class="nelion-collapse-header" onclick="toggleNelionCollapse(this)">
-          <span>Theorien</span><span class="nelion-collapse-arrow"></span>
-        </h4>
-        <div class="nelion-collapse-body">
-          <ul>
-            <li>Polyvagal Theory (Porges, 1995 ★★★) — Nervensystem und Threat-State</li>
-            <li>Allostatic Load (McEwen ★★★) — biologische Stressakkumulation</li>
-            <li>Window of Tolerance (Siegel ★★☆) — Regulationskapazität</li>
-          </ul>
-        </div>
-      </div>
+      <p class="nelion-layer-question">Wann haben Sie zuletzt nach einem Wochenende wirklich erholt gefühlt?</p>
 
       <div class="nelion-collapse">
         <h4 class="nelion-collapse-header" onclick="toggleNelionCollapse(this)">
@@ -3718,66 +3809,52 @@
         </div>
       </div>
 
-      <div class="nelion-sublayer-grid">
-        <div class="nelion-sublayer nelion-sublayer-l1a">
-          <div class="nelion-sublayer-header">L1a — Individuelle Biologische Kapazität</div>
-          <div class="nelion-sublayer-perspective">Perspektive: Individuum</div>
-
-          <div class="nelion-axis">
-            <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL1Ax1')">
-              <span>Individuelle Energiereserven</span><span class="nelion-axis-arrow">▼</span>
-            </div>
-            <div class="nelion-axis-body" id="nelionL1Ax1">
-              <dl>
-                <dt>Was</dt><dd>Verfügbare kognitive und physische Energie der Person</dd>
-                <dt>Gemessen durch</dt><dd>Survey F2 + Interview</dd>
-                <dt>Warum</dt><dd>Entscheidungsqualität sinkt mit sinkender Energie (Decision Fatigue ★★★)</dd>
-              </dl>
-            </div>
+      <div class="nelion-axis-list">
+        <div class="nelion-axis">
+          <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL1Ax1')">
+            <span>Individuelle Energiereserven</span><span class="nelion-axis-arrow">▼</span>
           </div>
-
-          <div class="nelion-axis">
-            <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL1Ax2')">
-              <span>Neurobiologische Last</span><span class="nelion-axis-arrow">▼</span>
-            </div>
-            <div class="nelion-axis-body" id="nelionL1Ax2">
-              <dl>
-                <dt>Was</dt><dd>Akkumulierte biologische Stressbelastung</dd>
-                <dt>Gemessen durch</dt><dd>Survey F1 + Interview</dd>
-                <dt>Warum</dt><dd>Allostatic Load als stiller Leistungskiller (McEwen ★★★)</dd>
-              </dl>
-            </div>
+          <div class="nelion-axis-body" id="nelionL1Ax1">
+            <dl>
+              <dt>Was</dt><dd>Verfügbare kognitive und physische Energie der Person</dd>
+              <dt>Warum</dt><dd>Entscheidungsqualität sinkt mit sinkender Energie</dd>
+            </dl>
           </div>
         </div>
 
-        <div class="nelion-sublayer nelion-sublayer-l1b">
-          <div class="nelion-sublayer-header">L1b — Strukturell verursachte Erschöpfung</div>
-          <div class="nelion-sublayer-perspective">Perspektive: Organisation</div>
-
-          <div class="nelion-axis">
-            <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL1Ax3')">
-              <span>Strukturelle Überlastung</span><span class="nelion-axis-arrow">▼</span>
-            </div>
-            <div class="nelion-axis-body" id="nelionL1Ax3">
-              <dl>
-                <dt>Was</dt><dd>Systemisch verursachte Überlastung — Designfehler, nicht Personenproblem</dd>
-                <dt>Gemessen durch</dt><dd>Survey F3 + Interview</dd>
-                <dt>Warum</dt><dd>Unterscheidet individuelle von struktureller Erschöpfung (Job Demands-Resources — Bakker & Demerouti ★★★)</dd>
-              </dl>
-            </div>
+        <div class="nelion-axis">
+          <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL1Ax2')">
+            <span>Neurobiologische Last</span><span class="nelion-axis-arrow">▼</span>
           </div>
+          <div class="nelion-axis-body" id="nelionL1Ax2">
+            <dl>
+              <dt>Was</dt><dd>Akkumulierte biologische Stressbelastung</dd>
+              <dt>Warum</dt><dd>Allostatic Load als stiller Leistungskiller</dd>
+            </dl>
+          </div>
+        </div>
 
-          <div class="nelion-axis">
-            <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL1Ax4')">
-              <span>Regenerationsdefizit</span><span class="nelion-axis-arrow">▼</span>
-            </div>
-            <div class="nelion-axis-body" id="nelionL1Ax4">
-              <dl>
-                <dt>Was</dt><dd>Fehlende Erholungsstrukturen im System</dd>
-                <dt>Gemessen durch</dt><dd>Survey F4 + F13 (Schlafqualität) + Interview</dd>
-                <dt>Warum</dt><dd>Chronisches Defizit = Stabilisierungspfad-Trigger (Effort-Recovery — Meijman & Mulder ★★★)</dd>
-              </dl>
-            </div>
+        <div class="nelion-axis">
+          <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL1Ax3')">
+            <span>Strukturelle Überlastung</span><span class="nelion-axis-arrow">▼</span>
+          </div>
+          <div class="nelion-axis-body" id="nelionL1Ax3">
+            <dl>
+              <dt>Was</dt><dd>Systemisch verursachte Überlastung — Designfehler, nicht Personenproblem</dd>
+              <dt>Warum</dt><dd>Unterscheidet individuelle von struktureller Erschöpfung</dd>
+            </dl>
+          </div>
+        </div>
+
+        <div class="nelion-axis">
+          <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL1Ax4')">
+            <span>Regenerationsdefizit</span><span class="nelion-axis-arrow">▼</span>
+          </div>
+          <div class="nelion-axis-body" id="nelionL1Ax4">
+            <dl>
+              <dt>Was</dt><dd>Fehlende Erholungsstrukturen im System</dd>
+              <dt>Warum</dt><dd>Chronisches Defizit = Stabilisierungspfad-Trigger</dd>
+            </dl>
           </div>
         </div>
       </div>
@@ -3811,19 +3888,7 @@
     </div>
     <div class="nelion-layer-body" id="nelionL2Body">
       <p>Die psychologische Ebene: Muster, Ängste, Vermeidung, Veränderungsresistenz. Das Betriebssystem entscheidet ob neue Strukturen wirklich angenommen werden — oder informell absorbiert.</p>
-
-      <div class="nelion-collapse">
-        <h4 class="nelion-collapse-header" onclick="toggleNelionCollapse(this)">
-          <span>Theorien</span><span class="nelion-collapse-arrow"></span>
-        </h4>
-        <div class="nelion-collapse-body">
-          <ul>
-            <li>Psychological Safety (Edmondson, 1999 ★★★) — Selbstzensur und Feedback</li>
-            <li>Immunity to Change (Kegan & Lahey ★★★) — Warum Veränderung scheitert</li>
-            <li>Attribution Style (Seligman ★★★) — Verantwortungsvermeidung</li>
-          </ul>
-        </div>
-      </div>
+      <p class="nelion-layer-question">Gibt es Entscheidungen die eigentlich klar wären — aber trotzdem nie getroffen werden?</p>
 
       <div class="nelion-collapse">
         <h4 class="nelion-collapse-header" onclick="toggleNelionCollapse(this)">
@@ -3834,66 +3899,52 @@
         </div>
       </div>
 
-      <div class="nelion-sublayer-grid">
-        <div class="nelion-sublayer nelion-sublayer-l2a">
-          <div class="nelion-sublayer-header">L2a — Selbstbezogene Blockaden</div>
-          <div class="nelion-sublayer-perspective">Perspektive: Individuum</div>
-
-          <div class="nelion-axis">
-            <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL2Ax1')">
-              <span>Selbstzensur</span><span class="nelion-axis-arrow">▼</span>
-            </div>
-            <div class="nelion-axis-body" id="nelionL2Ax1">
-              <dl>
-                <dt>Was</dt><dd>Werden Probleme offen benannt?</dd>
-                <dt>Gemessen durch</dt><dd>Survey F5 + Interview</dd>
-                <dt>Warum</dt><dd>Unsichtbare Probleme können nicht gelöst werden (Psychological Safety — Edmondson ★★★)</dd>
-              </dl>
-            </div>
+      <div class="nelion-axis-list">
+        <div class="nelion-axis">
+          <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL2Ax1')">
+            <span>Selbstzensur</span><span class="nelion-axis-arrow">▼</span>
           </div>
-
-          <div class="nelion-axis">
-            <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL2Ax4')">
-              <span>Irritabilität</span><span class="nelion-axis-arrow">▼</span>
-            </div>
-            <div class="nelion-axis-body" id="nelionL2Ax4">
-              <dl>
-                <dt>Was</dt><dd>Ist die Person im Abwehrmodus?</dd>
-                <dt>Gemessen durch</dt><dd>Survey F8 + Interview</dd>
-                <dt>Warum</dt><dd>Erhöhte Reizbarkeit = L1/L2-Grenzbereich, Alarm-Signal (Threat-State — Porges ★★☆)</dd>
-              </dl>
-            </div>
+          <div class="nelion-axis-body" id="nelionL2Ax1">
+            <dl>
+              <dt>Was</dt><dd>Werden Probleme offen benannt?</dd>
+              <dt>Warum</dt><dd>Unsichtbare Probleme können nicht gelöst werden</dd>
+            </dl>
           </div>
         </div>
 
-        <div class="nelion-sublayer nelion-sublayer-l2b">
-          <div class="nelion-sublayer-header">L2b — Beziehungsbezogene Blockaden</div>
-          <div class="nelion-sublayer-perspective">Perspektive: Interaktion</div>
-
-          <div class="nelion-axis">
-            <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL2Ax2')">
-              <span>Veränderungsresistenz</span><span class="nelion-axis-arrow">▼</span>
-            </div>
-            <div class="nelion-axis-body" id="nelionL2Ax2">
-              <dl>
-                <dt>Was</dt><dd>Warum scheitern Veränderungen trotz gutem Willen?</dd>
-                <dt>Gemessen durch</dt><dd>Survey F6 + Interview</dd>
-                <dt>Warum</dt><dd>Verborgene Annahmen blockieren echten Wandel (Immunity to Change — Kegan & Lahey ★★★)</dd>
-              </dl>
-            </div>
+        <div class="nelion-axis">
+          <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL2Ax4')">
+            <span>Irritabilität</span><span class="nelion-axis-arrow">▼</span>
           </div>
+          <div class="nelion-axis-body" id="nelionL2Ax4">
+            <dl>
+              <dt>Was</dt><dd>Ist die Person im Abwehrmodus?</dd>
+              <dt>Warum</dt><dd>Erhöhte Reizbarkeit = L1/L2-Grenzbereich, Alarm-Signal</dd>
+            </dl>
+          </div>
+        </div>
 
-          <div class="nelion-axis">
-            <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL2Ax3')">
-              <span>Verantwortungsvermeidung</span><span class="nelion-axis-arrow">▼</span>
-            </div>
-            <div class="nelion-axis-body" id="nelionL2Ax3">
-              <dl>
-                <dt>Was</dt><dd>Wem wird Ursache zugeschrieben?</dd>
-                <dt>Gemessen durch</dt><dd>Survey F7 + Interview</dd>
-                <dt>Warum</dt><dd>Externe Attribution verhindert Lernschleifen (Attribution Style — Seligman ★★★)</dd>
-              </dl>
-            </div>
+        <div class="nelion-axis">
+          <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL2Ax2')">
+            <span>Veränderungsresistenz</span><span class="nelion-axis-arrow">▼</span>
+          </div>
+          <div class="nelion-axis-body" id="nelionL2Ax2">
+            <dl>
+              <dt>Was</dt><dd>Warum scheitern Veränderungen trotz gutem Willen?</dd>
+              <dt>Warum</dt><dd>Verborgene Annahmen blockieren echten Wandel</dd>
+            </dl>
+          </div>
+        </div>
+
+        <div class="nelion-axis">
+          <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL2Ax3')">
+            <span>Verantwortungsvermeidung</span><span class="nelion-axis-arrow">▼</span>
+          </div>
+          <div class="nelion-axis-body" id="nelionL2Ax3">
+            <dl>
+              <dt>Was</dt><dd>Wem wird Ursache zugeschrieben?</dd>
+              <dt>Warum</dt><dd>Externe Attribution verhindert Lernschleifen</dd>
+            </dl>
           </div>
         </div>
       </div>
@@ -3927,19 +3978,7 @@
     </div>
     <div class="nelion-layer-body" id="nelionL3Body">
       <p>Die strukturelle Ebene: Prozesse, Entscheidungswege, Anreize, Informationsfluss. Schlechte Architektur erzeugt vorhersehbares Fehlverhalten — unabhängig davon wer die Stellen besetzt.</p>
-
-      <div class="nelion-collapse">
-        <h4 class="nelion-collapse-header" onclick="toggleNelionCollapse(this)">
-          <span>Theorien</span><span class="nelion-collapse-arrow"></span>
-        </h4>
-        <div class="nelion-collapse-body">
-          <ul>
-            <li>Goodhart's Law (★★★) — Anreize steuern Verhalten</li>
-            <li>Dunbar's Number (★★★) — Informationsfluss und Grösse</li>
-            <li>Meadows Leverage Points (★★★) — Wo Struktureingriffe wirken</li>
-          </ul>
-        </div>
-      </div>
+      <p class="nelion-layer-question">Was haben Sie in den letzten 12 Monaten versucht — und was davon ist heute noch gelebte Praxis?</p>
 
       <div class="nelion-collapse">
         <h4 class="nelion-collapse-header" onclick="toggleNelionCollapse(this)">
@@ -3950,66 +3989,52 @@
         </div>
       </div>
 
-      <div class="nelion-sublayer-grid">
-        <div class="nelion-sublayer nelion-sublayer-l3a">
-          <div class="nelion-sublayer-header">L3a — Entscheidungsebene</div>
-          <div class="nelion-sublayer-perspective">Perspektive: Steuerung</div>
-
-          <div class="nelion-axis">
-            <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL3Ax1')">
-              <span>Fehlentscheidungskosten</span><span class="nelion-axis-arrow">▼</span>
-            </div>
-            <div class="nelion-axis-body" id="nelionL3Ax1">
-              <dl>
-                <dt>Was</dt><dd>Wie klar sind Entscheidungswege und -befugnisse?</dd>
-                <dt>Gemessen durch</dt><dd>Survey F9 + Interview</dd>
-                <dt>Warum</dt><dd>Unklare Entscheidungswege = Lähmung oder Chaos (Entscheidungsarchitektur / Requisite Variety — Ashby ★★★)</dd>
-              </dl>
-            </div>
+      <div class="nelion-axis-list">
+        <div class="nelion-axis">
+          <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL3Ax1')">
+            <span>Fehlentscheidungskosten</span><span class="nelion-axis-arrow">▼</span>
           </div>
-
-          <div class="nelion-axis">
-            <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL3Ax2')">
-              <span>Dysfunktionale Anreize</span><span class="nelion-axis-arrow">▼</span>
-            </div>
-            <div class="nelion-axis-body" id="nelionL3Ax2">
-              <dl>
-                <dt>Was</dt><dd>Was wird tatsächlich belohnt — informell?</dd>
-                <dt>Gemessen durch</dt><dd>Survey F10 + Interview</dd>
-                <dt>Warum</dt><dd>Formale Ziele ≠ echte Anreize (Incentive-Struktur / Goodhart's Law ★★★)</dd>
-              </dl>
-            </div>
+          <div class="nelion-axis-body" id="nelionL3Ax1">
+            <dl>
+              <dt>Was</dt><dd>Wie klar sind Entscheidungswege und -befugnisse?</dd>
+              <dt>Warum</dt><dd>Unklare Entscheidungswege = Lähmung oder Chaos</dd>
+            </dl>
           </div>
         </div>
 
-        <div class="nelion-sublayer nelion-sublayer-l3b">
-          <div class="nelion-sublayer-header">L3b — Informationsebene</div>
-          <div class="nelion-sublayer-perspective">Perspektive: Fluss</div>
-
-          <div class="nelion-axis">
-            <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL3Ax3')">
-              <span>Verantwortungsvakuum</span><span class="nelion-axis-arrow">▼</span>
-            </div>
-            <div class="nelion-axis-body" id="nelionL3Ax3">
-              <dl>
-                <dt>Was</dt><dd>Gibt es ungeklärte Verantwortlichkeiten?</dd>
-                <dt>Gemessen durch</dt><dd>Survey F11 + Interview</dd>
-                <dt>Warum</dt><dd>Vakuum = niemand oder alle gleichzeitig zuständig (Strukturelle Ambiguität — March & Olsen ★★★)</dd>
-              </dl>
-            </div>
+        <div class="nelion-axis">
+          <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL3Ax2')">
+            <span>Dysfunktionale Anreize</span><span class="nelion-axis-arrow">▼</span>
           </div>
+          <div class="nelion-axis-body" id="nelionL3Ax2">
+            <dl>
+              <dt>Was</dt><dd>Was wird tatsächlich belohnt — informell?</dd>
+              <dt>Warum</dt><dd>Formale Ziele ≠ echte Anreize</dd>
+            </dl>
+          </div>
+        </div>
 
-          <div class="nelion-axis">
-            <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL3Ax4')">
-              <span>Informationsblockaden</span><span class="nelion-axis-arrow">▼</span>
-            </div>
-            <div class="nelion-axis-body" id="nelionL3Ax4">
-              <dl>
-                <dt>Was</dt><dd>Kommen relevante Informationen an wo sie gebraucht werden?</dd>
-                <dt>Gemessen durch</dt><dd>Survey F12 + Interview</dd>
-                <dt>Warum</dt><dd>Blockaden erzeugen Silos und Doppelarbeit (Informationsfluss / Dunbar's Number ★★★)</dd>
-              </dl>
-            </div>
+        <div class="nelion-axis">
+          <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL3Ax3')">
+            <span>Verantwortungsvakuum</span><span class="nelion-axis-arrow">▼</span>
+          </div>
+          <div class="nelion-axis-body" id="nelionL3Ax3">
+            <dl>
+              <dt>Was</dt><dd>Gibt es ungeklärte Verantwortlichkeiten?</dd>
+              <dt>Warum</dt><dd>Vakuum = niemand oder alle gleichzeitig zuständig</dd>
+            </dl>
+          </div>
+        </div>
+
+        <div class="nelion-axis">
+          <div class="nelion-axis-header" onclick="toggleNelionAxis(this, 'nelionL3Ax4')">
+            <span>Informationsblockaden</span><span class="nelion-axis-arrow">▼</span>
+          </div>
+          <div class="nelion-axis-body" id="nelionL3Ax4">
+            <dl>
+              <dt>Was</dt><dd>Kommen relevante Informationen an wo sie gebraucht werden?</dd>
+              <dt>Warum</dt><dd>Blockaden erzeugen Silos und Doppelarbeit</dd>
+            </dl>
           </div>
         </div>
       </div>
@@ -4096,7 +4121,187 @@
       </details>
     </div><!-- /.nelion-pane#nelionPaneRegime -->
 
-    <!-- ─── PANE 3: THEORIE-LEGENDE ───────────────────────────────── -->
+    <!-- ─── PANE 3: PERSISTENZMUSTER ───────────────────────────────── -->
+    <div class="nelion-pane" id="nelionPaneMuster">
+      <div class="nelion-section-label">Persistenzmuster</div>
+      <p class="nelion-intro" style="margin-bottom:14px">
+        Sechs wiederkehrende Muster, die erklären warum Friction trotz Interventionen bestehen bleibt. Jedes Muster ist einer Layer-Ebene zugeordnet — der Hebel liegt dort, wo das Muster wirkt.
+      </p>
+
+      <div class="nelion-muster nelion-muster-l2">
+        <div class="nelion-muster-header" onclick="toggleNelionAxis(this, 'nelionMusterB1')">
+          <span class="nelion-muster-name">Schweigekultur</span>
+          <span class="nelion-muster-badge nelion-badge-l2">L2</span>
+          <span class="nelion-axis-arrow">▼</span>
+        </div>
+        <div class="nelion-axis-body" id="nelionMusterB1">
+          <dl>
+            <dt>Was es ist</dt><dd>Probleme werden gesehen aber nicht benannt.</dd>
+            <dt>Erkennbar an</dt><dd>
+              <ul>
+                <li>Feedback wird nicht gegeben auch wenn Einladung besteht</li>
+                <li>Kritische Themen kommen erst im Austrittsgespräch</li>
+                <li>Meetings enden immer harmonisch</li>
+              </ul>
+            </dd>
+            <dt>Warum relevant</dt><dd>Unsichtbare Probleme können nicht gelöst werden — sie wachsen still.</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="nelion-muster nelion-muster-l2">
+        <div class="nelion-muster-header" onclick="toggleNelionAxis(this, 'nelionMusterB2')">
+          <span class="nelion-muster-name">Loyalitätsfalle</span>
+          <span class="nelion-muster-badge nelion-badge-l2">L2/L3</span>
+          <span class="nelion-axis-arrow">▼</span>
+        </div>
+        <div class="nelion-axis-body" id="nelionMusterB2">
+          <dl>
+            <dt>Was es ist</dt><dd>Personen werden geschützt obwohl sie Friction erzeugen.</dd>
+            <dt>Erkennbar an</dt><dd>
+              <ul>
+                <li>Bestimmte Namen tauchen nie als Reibungsquelle auf</li>
+                <li>Informelle Macht schützt vor Konsequenzen</li>
+                <li>Formale Prozesse werden für einzelne ausgesetzt</li>
+              </ul>
+            </dd>
+            <dt>Warum relevant</dt><dd>Friction bleibt solange die Quelle geschützt ist — unabhängig von allen anderen Massnahmen.</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="nelion-muster nelion-muster-l3">
+        <div class="nelion-muster-header" onclick="toggleNelionAxis(this, 'nelionMusterB3')">
+          <span class="nelion-muster-name">Scheinstabilität</span>
+          <span class="nelion-muster-badge nelion-badge-l3">L3</span>
+          <span class="nelion-axis-arrow">▼</span>
+        </div>
+        <div class="nelion-axis-body" id="nelionMusterB3">
+          <dl>
+            <dt>Was es ist</dt><dd>Formale Prozesse existieren aber werden nicht gelebt.</dd>
+            <dt>Erkennbar an</dt><dd>
+              <ul>
+                <li>Organigramm und tatsächliche Entscheidungswege stimmen nicht überein</li>
+                <li>Regeln gelten unterschiedlich je nach Person</li>
+                <li>Verantwortung ist formal zugewiesen aber informell unklar</li>
+              </ul>
+            </dd>
+            <dt>Warum relevant</dt><dd>Interventionen auf Papier ändern nichts wenn das informelle System sie absorbiert.</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="nelion-muster nelion-muster-l2">
+        <div class="nelion-muster-header" onclick="toggleNelionAxis(this, 'nelionMusterB4')">
+          <span class="nelion-muster-name">Erfahrungsstarre</span>
+          <span class="nelion-muster-badge nelion-badge-l2">L2</span>
+          <span class="nelion-axis-arrow">▼</span>
+        </div>
+        <div class="nelion-axis-body" id="nelionMusterB4">
+          <dl>
+            <dt>Was es ist</dt><dd>Das System hat gelernt dass Veränderung nicht hält.</dd>
+            <dt>Erkennbar an</dt><dd>
+              <ul>
+                <li>"Das haben wir schon versucht" ist häufige Reaktion</li>
+                <li>Initiativen starten mit Energie und versanden</li>
+                <li>Zynismus gegenüber neuen Projekten</li>
+              </ul>
+            </dd>
+            <dt>Warum relevant</dt><dd>Veränderungsmüdigkeit blockiert jede neue Initiative — auch gute.</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="nelion-muster nelion-muster-l1">
+        <div class="nelion-muster-header" onclick="toggleNelionAxis(this, 'nelionMusterB5')">
+          <span class="nelion-muster-name">Versuchsmüdigkeit</span>
+          <span class="nelion-muster-badge nelion-badge-l1">L1/L2</span>
+          <span class="nelion-axis-arrow">▼</span>
+        </div>
+        <div class="nelion-axis-body" id="nelionMusterB5">
+          <dl>
+            <dt>Was es ist</dt><dd>Energie für Veränderung ist erschöpft — nicht der Wille.</dd>
+            <dt>Erkennbar an</dt><dd>
+              <ul>
+                <li>L1-Signale dominant (Erschöpfung, Rückzug)</li>
+                <li>Gleichzeitig: ausgeprägter Wunsch nach Verbesserung</li>
+                <li>Initiativen scheitern an Kapazität nicht an Motivation</li>
+              </ul>
+            </dd>
+            <dt>Warum relevant</dt><dd>Wird oft als Widerstand fehldiagnostiziert — ist biologische Erschöpfung. Falscher Ansatz = falsche Intervention.</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="nelion-muster nelion-muster-l3">
+        <div class="nelion-muster-header" onclick="toggleNelionAxis(this, 'nelionMusterB6')">
+          <span class="nelion-muster-name">Schattenmacht</span>
+          <span class="nelion-muster-badge nelion-badge-l3">L3</span>
+          <span class="nelion-axis-arrow">▼</span>
+        </div>
+        <div class="nelion-axis-body" id="nelionMusterB6">
+          <dl>
+            <dt>Was es ist</dt><dd>Informelle Macht überschreibt formale Struktur.</dd>
+            <dt>Erkennbar an</dt><dd>
+              <ul>
+                <li>Entscheidungen fallen anders als Zuständigkeiten es vorsehen</li>
+                <li>Eine Person ohne formale Rolle hat faktisch Veto</li>
+                <li>Kommunikationswege umgehen die offizielle Hierarchie</li>
+              </ul>
+            </dd>
+            <dt>Warum relevant</dt><dd>Strukturreformen wirken nicht wenn die informelle Machtstruktur intakt bleibt.</dd>
+          </dl>
+        </div>
+      </div>
+    </div><!-- /.nelion-pane#nelionPaneMuster -->
+
+    <!-- ─── PANE 4: THEORIEN & MESSUNG ───────────────────────────────── -->
+    <div class="nelion-pane" id="nelionPaneTheorieMess">
+      <div class="nelion-section-label">Theorien &amp; Messung</div>
+      <p class="nelion-intro" style="margin-bottom:14px">
+        Interner Überblick: alle Theorien des NELION Frameworks mit Validierungsstand, Layer-Zuordnung und Mess-Operationalisierung.
+      </p>
+
+      <div class="nelion-tm-wrap">
+        <table class="nelion-tm-table">
+          <thead>
+            <tr>
+              <th>Theorie</th>
+              <th>Validierung</th>
+              <th>Layer</th>
+              <th>Gemessen durch</th>
+              <th>Was es misst</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Polyvagal Theory (Porges, 1995)</td><td>★★★</td><td>L1</td><td>F1+F2+Interview</td><td>Nervensystem-Zustand und Threat-State</td></tr>
+            <tr><td>Allostatic Load (McEwen, 1993)</td><td>★★★</td><td>L1</td><td>F1+F3+Interview</td><td>Akkumulierte biologische Stressbelastung</td></tr>
+            <tr><td>Decision Fatigue (Baumeister)</td><td>★★★</td><td>L1</td><td>F2+Interview</td><td>Entscheidungsqualität bei Erschöpfung</td></tr>
+            <tr><td>Window of Tolerance (Siegel)</td><td>★★☆</td><td>L1</td><td>Interview</td><td>Regulationskapazität</td></tr>
+            <tr><td>Interoception (Craig &amp; Garfinkel)</td><td>★★★</td><td>L1</td><td>Interview</td><td>Körperwahrnehmung und Signalverarbeitung</td></tr>
+            <tr><td>Chronobiologie</td><td>★★★</td><td>L1</td><td>F1+Interview</td><td>Energie-Rhythmen und Erholungsmuster</td></tr>
+            <tr><td>Ultradian Rhythms</td><td>★★★</td><td>L1</td><td>F2+Interview</td><td>90-Min-Leistungszyklen</td></tr>
+            <tr><td>Job Demands-Resources (Bakker &amp; Demerouti)</td><td>★★★</td><td>L1b</td><td>F3+F4+Interview</td><td>Anforderungs-Ressourcen-Ungleichgewicht</td></tr>
+            <tr><td>Effort-Recovery (Meijman &amp; Mulder)</td><td>★★★</td><td>L1b</td><td>F4+Interview</td><td>Regenerationsdefizit</td></tr>
+            <tr><td>Psychological Safety (Edmondson, 1999)</td><td>★★★</td><td>L2</td><td>F5+F9+Interview</td><td>Selbstzensur und Feedback</td></tr>
+            <tr><td>Immunity to Change (Kegan &amp; Lahey)</td><td>★★★</td><td>L2</td><td>F6+Interview</td><td>Veränderungsresistenz</td></tr>
+            <tr><td>Attribution Style (Seligman)</td><td>★★★</td><td>L2</td><td>F8+Interview</td><td>Verantwortungsvermeidung</td></tr>
+            <tr><td>SCARF (Rock)</td><td>★★☆</td><td>L2</td><td>Interview</td><td>Threat-State in sozialen Kontexten</td></tr>
+            <tr><td>Mayer Davis Schoorman (1995)</td><td>★★★</td><td>L2</td><td>F6+Interview</td><td>Vertrauensarchitektur bilateral</td></tr>
+            <tr><td>Feedback-Hyperreaktivität (Edmondson+Gross)</td><td>★★☆</td><td>L2</td><td>F5+Interview</td><td>Reaktion auf Kritik</td></tr>
+            <tr><td>Goodhart's Law</td><td>★★★</td><td>L3</td><td>F10+Interview</td><td>Dysfunktionale Anreizstrukturen</td></tr>
+            <tr><td>Dunbar's Number</td><td>★★★</td><td>L3</td><td>F12+Interview</td><td>Informationsfluss und Gruppengrösse</td></tr>
+            <tr><td>Requisite Variety (Ashby)</td><td>★★★</td><td>L3</td><td>F9+Interview</td><td>Entscheidungsarchitektur</td></tr>
+            <tr><td>Structural Ambiguity (March &amp; Olsen)</td><td>★★★</td><td>L3</td><td>F11+Interview</td><td>Verantwortungsvakuum</td></tr>
+            <tr><td>Meadows Leverage Points</td><td>★★★</td><td>L3</td><td>Interview</td><td>Hebelpunkte für Systemeingriffe</td></tr>
+            <tr><td>Weick Sensemaking</td><td>★★★</td><td>L3</td><td>F7+Interview</td><td>Kommunikationsarchitektur</td></tr>
+            <tr><td>Double-Loop Learning (Argyris)</td><td>★★★</td><td>L3</td><td>F6+Interview</td><td>Lernblockaden</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div><!-- /.nelion-pane#nelionPaneTheorieMess -->
+
+    <!-- ─── PANE 5: THEORIE-LEGENDE ───────────────────────────────── -->
     <div class="nelion-pane" id="nelionPaneTheorie">
       <div class="nelion-legend-title">Validierungsstufen</div>
 
@@ -7954,6 +8159,8 @@ function switchNelionPane(pane) {
   const target = document.getElementById(
     pane === "layer" ? "nelionPaneLayer" :
     pane === "regime" ? "nelionPaneRegime" :
+    pane === "muster" ? "nelionPaneMuster" :
+    pane === "theoriemess" ? "nelionPaneTheorieMess" :
     "nelionPaneTheorie"
   );
   if (target) target.classList.add("active");
@@ -9180,6 +9387,11 @@ async function analyseErstgespraechTranskript() {
     const payload = {
       transkript,
       person_name: currentContact ? currentContact.name : "",
+      person_rolle: currentContact?.person_rolle || "",
+      person_alter: currentContact?.person_alter || "",
+      person_geschlecht: currentContact?.person_geschlecht || "",
+      team_groesse: currentContact?.team_groesse || "",
+      branche: currentContact?.branche || "",
       phase_notes: {
         phase1: currentConsultation.phase1_notes || "",
         phase2: currentConsultation.phase2_notes || "",
@@ -11036,6 +11248,15 @@ function renderPaiPhase0() {
   return `
     <div class="phase-header"><span class="phase-number">Phase 0</span><span class="phase-title">Person & Kontext</span></div>
     <div class="phase-instruction">Grunddaten, Arbeitskontext und kognitives Profil. Basis für alle folgenden Phasen.</div>
+
+    <div class="phase-intro">
+      <ul>
+        <li>Grundlage für eine KI-Konfiguration die zur Person passt — nicht generisch, sondern auf individuelle Arbeitsweise und Muster abgestimmt</li>
+        <li>Erhoben werden: Arbeitskontext, Energieprofil, psychologische Muster und persönliche Erwartungen</li>
+        <li>Dauer: ca. 15–20 Minuten</li>
+        <li>Alle Angaben bleiben vertraulich</li>
+      </ul>
+    </div>
 
     <div class="scan-card">
       <div class="scan-card-title">Personendaten</div>
