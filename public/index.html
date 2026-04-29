@@ -2017,6 +2017,14 @@
   .aus-routing-badge-r2 { border-left-color: var(--yellow); }
   .aus-routing-badge-r2b { border-left-color: #c96; }
   .aus-routing-badge-r3 { border-left-color: var(--red); }
+  /* Cascade-Hinweis (statisch, in Auswertungs-Tab statt Kaskaden-Stepper) */
+  .cascade-hint {
+    padding: 14px 16px; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 6px;
+    color: var(--ink-mid); font-size: 13px; line-height: 1.55;
+  }
+  .cascade-hint p { margin: 0; }
+  .cascade-hint p + p { margin-top: 8px; color: var(--ink-mute); font-size: 12px; }
   .aus-befund-field { margin-bottom: 14px; }
   .aus-befund-field label {
     display: block; font-size: 11px; color: var(--ink-mute);
@@ -13273,135 +13281,20 @@ function renderAuswertungKulturIndikator() {
   `;
 }
 
-// ── KASKADEN-SIMULATION (Auswertungs-Tab, 2026-04-17) ────────────────────
-// Wiederverwendung der Logik aus Erstgespräch-Tab: determineKaskadenRegime
-// + KASKADEN_REGIMES + buildSimStep. Eigener State + eigener Mount, damit
-// Erstgespräch-Simulation unberührt bleibt.
-let simulationStateAus = { l1: null, l2: null, immunity: null };
-
+// ── KASKADEN-ROUTING HINWEIS (Auswertungs-Tab) ───────────────────────────
+// Statischer Hinweis statt interaktivem Stepper. Die eigentliche Pfad-
+// Empfehlung wird in Phase 3 (Einschätzung) von Claude aus allen Survey-
+// Ampeln, Interview-Notizen und Omission-Bias-Flags berechnet.
 function renderAuswertungKaskadenSimulation() {
   return `
     <div class="aus-section" id="ausSectionKaskaden">
-      <div class="aus-section-title">Kaskaden-Routing Simulation</div>
-      <div class="aus-section-sub">Interaktive Sequenz: L1-Status → L2-Status → Immunity → Regime-Ergebnis. Gleiche Logik wie im Erstgespräch.</div>
-      <div id="kaskadenSimulationRootAus"></div>
+      <div class="aus-section-title">Pfad-Empfehlung</div>
+      <div class="cascade-hint">
+        <p>Pfad-Empfehlung wird von Claude berechnet — auf Basis aller Survey-Ampeln, Interview-Notizen und Omission-Bias-Flags.</p>
+        <p>→ Pfad berechnen in Phase 3 (Einschätzung)</p>
+      </div>
     </div>
   `;
-}
-
-function renderKaskadenSimulationAus() {
-  const root = document.getElementById("kaskadenSimulationRootAus");
-  if (!root) return;
-  const s = simulationStateAus;
-  let html = `<div class="sim-wrap">`;
-
-  html += buildSimStep(
-    "Wie ist die biologische Belastung? (Neurobiologische Kapazität — L1)",
-    s.l1,
-    [
-      { v: "rot", label: "Rot — erschöpft / am Limit", cls: "r3" },
-      { v: "gelb", label: "Gelb — angespannt aber funktional", cls: "r2" },
-      { v: "gruen", label: "Grün — stabil", cls: "r1" },
-    ],
-    (v) => `setKaskadenStepAus('l1', '${v}')`);
-
-  if (s.l1 === "gelb") {
-    html += buildSimStep(
-      "Sind psychologische Muster sichtbar? (Psychologische Dynamik — L2)",
-      s.l2,
-      [
-        { v: "hoch", label: "Ja — Muster sichtbar", cls: "r2" },
-        { v: "ok", label: "Nein — unauffällig", cls: "r1" },
-      ],
-      (v) => `setKaskadenStepAus('l2', '${v}')`,
-      "Auffällig = mindestens eine Achse gelb/rot: Selbstzensur, Veränderungsresistenz, Verantwortungsvermeidung oder Irritabilität");
-  } else if (s.l1 === "gruen") {
-    html += buildSimStep(
-      "Welche Layer sind auffällig? (Psychologische Dynamik / Organisationale Struktur)",
-      s.l2,
-      [
-        { v: "dominant", label: "L2 dominant", cls: "r2" },
-        { v: "l3-dominant", label: "L3 dominant", cls: "r1" },
-        { v: "beide", label: "L2 + L3 beide", cls: "r2b" },
-      ],
-      (v) => `setKaskadenStepAus('l2', '${v}')`);
-  }
-
-  if (s.l1 === "gelb" && s.l2 === "ok") {
-    html += buildSimStep(
-      "Liegt ein strukturelles Problem vor das Blockaden erzeugt? (Organisationale Struktur — L3)",
-      s.immunity,
-      [
-        { v: "ja", label: "Ja — Struktur erzeugt Blockaden", cls: "r2b" },
-        { v: "nein", label: "Nein — Struktur unauffällig", cls: "r1" },
-      ],
-      (v) => `setKaskadenStepAus('immunity', '${v}')`,
-      "Typisch: unklare Verantwortungen, dysfunktionale Anreize oder Informationsblockaden führen zu Vermeidungsverhalten im Team");
-  }
-
-  const regimeKey = determineKaskadenRegime(s);
-  if (regimeKey) {
-    const r = KASKADEN_REGIMES[regimeKey];
-    html += `<div class="sim-result sim-result-${r.color}">
-      <div class="sim-result-label">${escHtml(r.label)}</div>
-      <div class="sim-result-expl">${escHtml(r.erklaerung)}</div>
-      ${r.basis ? `<div class="sim-result-basis" style="font-size:11px;color:var(--ink-mute);margin-top:6px;line-height:1.5"><strong style="font-weight:500">Basis:</strong> ${escHtml(r.basis)}</div>` : ""}
-      <div class="sim-result-mean-head">Massnahmen:</div>
-      <ul class="sim-result-mean">`;
-    for (const p of r.bedeutet) html += `<li>${escHtml(p)}</li>`;
-    html += `</ul></div>`;
-  }
-
-  html += `<div class="sim-actions">
-    <button class="btn btn-ghost" type="button" onclick="resetKaskadenSimulationAus()">Simulation zurücksetzen</button>
-  </div></div>`;
-  root.innerHTML = html;
-}
-
-function setKaskadenStepAus(field, value) {
-  simulationStateAus[field] = value;
-  if (field === "l1") { simulationStateAus.l2 = null; simulationStateAus.immunity = null; }
-  if (field === "l2") { simulationStateAus.immunity = null; }
-  renderKaskadenSimulationAus();
-  updateBefundKaskadenBadge();
-}
-
-// Ersetzt nur den Badge im Befund-Header (nicht den ganzen Befund-Block) —
-// damit Eingaben in den Befund-Textareas nicht verloren gehen.
-function updateBefundKaskadenBadge() {
-  const section = document.getElementById("ausSection3");
-  if (!section) return;
-  const old = section.querySelector(".aus-routing-badge");
-  if (!old) return;
-  const wrap = document.createElement("div");
-  wrap.innerHTML = renderBefundKaskadenBadge();
-  const next = wrap.firstElementChild;
-  if (next) old.replaceWith(next);
-}
-
-// Kleiner Badge im Befund-Header — spiegelt das aktuelle Ergebnis der
-// Kaskaden-Simulation. Leer (kein Fehler) solange kein Regime bestimmt ist.
-function renderBefundKaskadenBadge() {
-  const regimeKey = determineKaskadenRegime(simulationStateAus || {});
-  if (!regimeKey) {
-    return `<div class="aus-routing-badge aus-routing-badge-empty">
-      <span>Regime — noch nicht bestimmt</span>
-      <span class="aus-routing-badge-hint">↑ Kaskaden-Simulation oben anpassen</span>
-    </div>`;
-  }
-  const r = KASKADEN_REGIMES[regimeKey];
-  if (!r) return "";
-  return `<div class="aus-routing-badge aus-routing-badge-${r.color}">
-    <strong>${escHtml(r.label)}</strong>
-    <span>— aus Kaskaden-Simulation</span>
-    <span class="aus-routing-badge-hint">↑ Kaskaden-Simulation oben anpassen</span>
-  </div>`;
-}
-
-function resetKaskadenSimulationAus() {
-  simulationStateAus = { l1: null, l2: null, immunity: null };
-  renderKaskadenSimulationAus();
-  updateBefundKaskadenBadge();
 }
 
 // ── SEKTION 1: HEATMAP ────────────────────────────────────────────────────
@@ -13569,7 +13462,6 @@ function renderAuswertungBefund() {
     <div class="aus-section" id="ausSection3">
       <div class="aus-section-title">3 · Befund-Entwurf</div>
       <div class="aus-section-sub">Minto-Pyramide: Schlussfolgerung oben, Begründung darunter, Massnahmen zuletzt.</div>
-      ${renderBefundKaskadenBadge()}
       <div class="aus-befund-field">
         <label>Schlussfolgerung (1 Satz)${helpIcon("Schlussfolgerung (Minto-Pyramide)")}</label>
         <textarea class="form-input" id="ausBefSchluss" rows="2"
@@ -13615,10 +13507,6 @@ function wireAuswertungAutoSave() {
   wire("ausBefSchluss", "schlussfolgerung");
   wire("ausBefBegr",    "begruendung");
   wire("ausBefMass",    "massnahmen");
-  // Kaskaden-Simulation im Auswertungs-Tab initialisieren (nach jedem Rerender)
-  if (document.getElementById("kaskadenSimulationRootAus")) {
-    renderKaskadenSimulationAus();
-  }
 }
 
 function scheduleAuswertungSave() {
