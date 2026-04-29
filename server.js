@@ -2567,7 +2567,17 @@ Bitte berechne die Pfad-Empfehlung gemäss Gate-Logik.`;
 // Output in scans.persistenzmuster persistiert (Migration 024).
 app.post("/api/ada/persistenzmuster", async (req, res) => {
   if (!anthropic) return res.status(503).json({ error: "ANTHROPIC_API_KEY nicht konfiguriert" });
-  const { kunde_name, ampeln, interviews, omission_flags, arbeitshypothese } = req.body || {};
+  const {
+    kunde_name,
+    ampeln,
+    interviews,
+    omission_flags,
+    arbeitshypothese,
+    altersverteilung,
+    geschlechterverteilung,
+    branche,
+    externe_faktoren,
+  } = req.body || {};
 
   const ampelnBlock = Array.isArray(ampeln) && ampeln.length > 0
     ? ampeln.map(a => `- ${a.layer} ${a.achse}: ${a.wert}`).join("\n")
@@ -2583,43 +2593,111 @@ app.post("/api/ada/persistenzmuster", async (req, res) => {
     ? omission_flags.map((f, i) => `Interview ${i + 1}: ${Object.entries(f).filter(([, v]) => v === true).map(([k]) => k).join(", ") || "— keine Flags —"}`).join("\n")
     : "— keine Omission-Bias-Flags —";
 
-  const systemPrompt = `Du bist NELION Friction Diagnostics.
-Analysiere ob ein kulturelles Persistenzmuster vorliegt.
+  const systemPrompt = `Du bist NELION Friction Diagnostics — ein präzises diagnostisches
+System für organisationale Reibung.
 
-Prüfe die 6 NELION Persistenzmuster:
-1. Schweigekultur: Probleme werden gesehen aber nicht benannt. Erkennbar an: Selbstzensur + fehlende Eskalationswege.
-2. Loyalitätsfalle: Personen werden geschützt obwohl sie Friction erzeugen. Erkennbar an: Geschützte Personen im Omission Bias + dysfunktionale Anreize.
-3. Scheinstabilität: Formale Prozesse existieren aber werden nicht gelebt. Erkennbar an: Regelgefälle + Verantwortungsvakuum.
-4. Erfahrungsstarre: System hat gelernt dass Veränderung nicht hält. Erkennbar an: Veränderungsresistenz + gescheiterte Initiativen.
-5. Versuchsmüdigkeit: Energie für Veränderung erschöpft. Erkennbar an: L1 Erschöpfung + Veränderungsresistenz gleichzeitig.
-6. Schattenmacht: Informelle Macht überschreibt formale Struktur. Erkennbar an: Entscheidungswege ≠ Organigramm.
+Du analysierst ob ein kulturelles Persistenzmuster vorliegt das
+erklärt warum Friction trotz Interventionen immer wiederkehrt.
 
-Wichtig: Maximal 2 Muster benennen. Kein Muster ohne direktes Zitat aus Transkript.
+═══ NELION SECHS PERSISTENZMUSTER ═══
+
+1. Schweigekultur
+Probleme werden gesehen aber nicht benannt.
+Erkennbar an: Selbstzensur + fehlende Eskalationswege +
+niedrige Psychological Safety (Edmondson ★★★).
+L2-Dominanz.
+
+2. Loyalitätsfalle
+Personen werden geschützt obwohl sie Friction erzeugen.
+Erkennbar an: Geschützte Personen im Omission-Bias +
+dysfunktionale Incentive-Struktur.
+L2/L3-Grenzbereich.
+
+3. Scheinstabilität
+Formale Prozesse existieren aber werden nicht gelebt.
+Erkennbar an: Regelgefälle + Verantwortungsvakuum +
+Double-Loop-Learning-Blockade (Argyris ★★★).
+L3-Dominanz.
+
+4. Erfahrungsstarre
+System hat gelernt dass Veränderung nicht hält.
+Erkennbar an: Immunity-Muster (Kegan & Lahey ★★★) +
+gescheiterte Initiativen + Versandungsquote hoch (F7).
+L2-Dominanz.
+
+5. Versuchsmüdigkeit
+Energie für Veränderung erschöpft — nicht Wille.
+Erkennbar an: L1 Erschöpfung (rot/gelb) +
+Veränderungsresistenz gleichzeitig.
+Wichtig: kein L2-Problem — L1 gate prüfen.
+L1/L2-Kombination.
+
+6. Schattenmacht
+Informelle Macht überschreibt formale Struktur.
+Erkennbar an: Entscheidungswege ≠ Organigramm +
+Kommunikationsarchitektur-Lücken.
+L3-Dominanz.
+
+═══ INTERPRETATIONSHINWEIS ═══
+
+Generationen- und Geschlechterdynamiken beeinflussen
+besonders Schweigekultur und Loyalitätsfalle.
+Nicht als eigenständiger Befund — nur als Hinweis.
+
+═══ DEINE AUFGABE ═══
+
+## 1. Persistenzmuster-Check
+Prüfe alle 6 Muster systematisch gegen die Daten.
+Maximal 2 Muster benennen.
+Kein Muster ohne direktes Zitat aus Transkript oder
+Survey-Evidenz — Ampel-Wert allein reicht nicht.
 
 Falls kein Muster erkennbar:
-"Kein Persistenzmuster identifiziert — Einzelinterventionen auf Layer-Ebene ausreichend."
+"Kein Persistenzmuster identifiziert —
+Einzelinterventionen auf Layer-Ebene ausreichend."
 
-Ausgabe-Format:
-**Persistenzmuster erkannt:**
-[Name]
+## 2. Erkennbar an
+Für jedes benannte Muster:
+- Direktes Zitat oder Survey-Evidenz (zwingend)
+- Betroffene Achse(n)
+- Layer-Einordnung
 
-**Erkennbar an:**
-[Direktes Zitat aus Transkript]
+## 3. Systemische Perspektive
+Wurde das Muster durch externe Faktoren verstärkt
+oder ausgelöst?
+Falls ja: welcher externe Faktor → welches Muster?
+Falls unklar: als offene Frage markieren.
 
-**Pfad-Indikation:**
-[Pfadname] — [1 Satz Begründung warum dieses Muster diesen Pfad verstärkt]
+## 4. Pfad-Indikation
+Welchen Pfad verstärkt dieses Muster — und warum?
+Format: [Pfadname] — [1 Satz Begründung]
 
-**Handlungshinweis:**
-[Was als nächstes sinnvoll wäre, 1–2 Sätze]
+## 5. Handlungshinweis
+Was als nächstes sinnvoll wäre — 1-2 Sätze.
+Operativ, nicht abstrakt.
 
-**Mögliche Interventionsstrategie:**
-[Was ein Partner/Berater danach tun könnte, optional]
+## 6. Interventionsstrategie (optional)
+Was ein Partner oder Berater danach tun könnte.
+Nur wenn Datenlage ★★☆ oder ★★★.
 
-Antworte auf Deutsch. Schweizer Hochdeutsch — kein 'ß', immer 'ss'.`;
+═══ REGELN ═══
+
+- Maximal 2 Muster — Fokus schlägt Vollständigkeit
+- Kein Muster ohne Zitat oder Survey-Evidenz
+- Versuchsmüdigkeit nie als L2 diagnostizieren wenn
+  L1 rot — zuerst Gate-Logik prüfen
+- Maximal 300 Wörter
+- Deutsch, Schweizer Hochdeutsch (ss statt ß)
+- Markdown: ## Überschriften, **Fett** für Muster-Namen
+- Konfidenz immer explizit: ★☆☆ / ★★☆ / ★★★`;
 
   const userMsg = `Klient${kunde_name ? ": " + kunde_name : ""}.
 
-Survey-Ampeln (alle Achsen):
+Altersverteilung Team: ${altersverteilung || "— nicht erfasst —"}
+Geschlechterverteilung: ${geschlechterverteilung || "— nicht erfasst —"}
+Branche: ${branche || "— nicht erfasst —"}
+
+Survey-Ampeln (alle 18 Achsen):
 ${ampelnBlock}
 
 Interview-Transkripte / Notizen:
@@ -2630,6 +2708,9 @@ ${omissionBlock}
 
 Arbeitshypothese:
 ${(arbeitshypothese || "— keine Arbeitshypothese gesetzt —").trim()}
+
+Externe Faktoren (falls erfasst):
+${externe_faktoren || "— nicht erfasst —"}
 
 Bitte prüfe die 6 Persistenzmuster und liefere den strukturierten Befund.`;
 
