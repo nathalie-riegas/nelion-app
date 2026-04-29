@@ -3476,6 +3476,31 @@
   }
   .nelion-regime-result-r4 .nelion-regime-result-title { color: #B03636; }
   .nelion-regime-result-r4 .nelion-regime-result-badge { background: #B03636; }
+  /* L0 — Alarmstufe Rot (akute Krise / fehlendes Mandat) */
+  .nelion-regime-result-l0 {
+    background: #fde8e8; border-color: #B03636;
+  }
+  .nelion-regime-result-l0 .nelion-regime-result-title { color: #B03636; }
+  .nelion-regime-result-l0 .nelion-regime-result-badge { background: #B03636; }
+  /* L2b — Klärungspfad (Struktur erzeugt L2-Blockade) */
+  .nelion-regime-result-l2b {
+    background: #F4EDE2; border-color: #C68B3E;
+  }
+  .nelion-regime-result-l2b .nelion-regime-result-title { color: #8E5A1D; }
+  .nelion-regime-result-l2b .nelion-regime-result-badge { background: #C68B3E; }
+  /* L4 — Neuausrichtungspfad (alle Layer kritisch) */
+  .nelion-regime-result-l4 {
+    background: #fde8e8; border-color: #8B2A2A;
+  }
+  .nelion-regime-result-l4 .nelion-regime-result-title { color: #8B2A2A; }
+  .nelion-regime-result-l4 .nelion-regime-result-badge { background: #8B2A2A; }
+  /* Basis-Zeile unter Pfad-Beschreibung — wissenschaftliche Quellenangabe */
+  .nelion-regime-result-basis {
+    margin-top: 10px; padding-top: 8px;
+    border-top: 1px solid rgba(0,0,0,0.08);
+    font-size: 11px; line-height: 1.55; color: var(--ink-mute);
+  }
+  .nelion-regime-result-basis strong { font-weight: 600; color: var(--ink-mid); }
   .nelion-regime-warn {
     padding: 12px 14px; background: #FAEEDA; border: 1px solid #FAC775;
     border-radius: 6px; margin-top: 12px; font-size: 12px;
@@ -4077,14 +4102,15 @@
 
       <div class="nelion-regime-conf">
         <strong>Konfidenz-Erklärung</strong><br>
-        Erstgespräch: <span style="font-family:var(--mono)">★☆☆</span> — Claude schätzt Layer-Intensität aus Gesprächsnotizen (qualitativ, schwache Hypothese).<br>
-        Scan: <span style="font-family:var(--mono)">★★☆</span> bis <span style="font-family:var(--mono)">★★★</span> — Claude berechnet aus Survey-Ampeln + Interview (quantitativ + qualitativ).
+        Erstgespräch: <span style="font-family:var(--mono)">★☆☆</span> — qualitative Einschätzung, schwache Hypothese, Einzelquelle.<br>
+        Scan <span style="font-family:var(--mono)">★★☆</span>: Survey + 1–2 Interviews.<br>
+        Scan <span style="font-family:var(--mono)">★★★</span>: Survey + alle 3 Interviews + vollständiger Omission-Bias-Check.
       </div>
 
       <div class="nelion-section-label">Pfad-Simulation</div>
 
       <div class="nelion-regime-step">
-        <div class="nelion-regime-q">Schritt 1a — Individuelle biologische Kapazität (L1a)</div>
+        <div class="nelion-regime-q">Schritt 1a — Neurobiologische Kapazität (L1)</div>
         <div style="font-size:13px;color:#444441;margin-bottom:10px">Wie ist die Person selbst?</div>
         <div class="nelion-regime-btnrow" data-step="l1a">
           <button class="nelion-regime-btn g" onclick="setNelionRegime('l1a','gruen', this)">Grün</button>
@@ -8308,19 +8334,40 @@ function renderNelionRegimeResult() {
   }
   const l1 = _worstAmpel(l1a, l1b);
   // Pfad-Badge-Label + Layer-Variante für Farbgebung
-  let title = "", text = "", variant = "", badge = "";
-  if (l1 === "rot") {
-    title = "Stabilisierungspfad — Stabilisierung";
-    text = "L1 rot = Gate. Keine L3-Intervention solange die Neurobiologische Kapazität nicht stabilisiert ist. Priorität: Entlastung, Erholung, Reduktion.";
-    variant = "l1"; badge = "L1 — Neurobiologisch";
+  let title = "", text = "", basis = "", variant = "", badge = "";
+  if (l1a === "rot" && l1b === "rot" && dauer === "chronisch") {
+    // Alle Layer kritisch über lange Dauer → Neuausrichtungspfad
+    title = "Neuausrichtungspfad";
+    text = "Alle Layer kritisch — fundamentaler Reset nötig. Schrittweise Stabilisierung L1 → L2 → L3. Längerer Zeithorizont, externe Begleitung empfohlen.";
+    basis = "Dynamic Systems Theory (Thelen ★★☆) · Requisite Variety (Ashby ★★★)";
+    variant = "l4"; badge = "L1 + L2 + L3 — Reset";
+  } else if (l1 === "rot" && dauer === "akut") {
+    // Akute Krise / fehlendes Mandat → Alarmstufe Rot
+    title = "Alarmstufe Rot";
+    text = "System im Überlebensmodus — kein Scan möglich. Mandat fehlt oder akute Krise. Erst stabilisieren.";
+    basis = "Mandat-Check (NELION L0 Constitution) · Voraussetzungs-Gate";
+    variant = "l0"; badge = "L0 — Voraussetzungs-Gate";
+  } else if (l1 === "rot") {
+    title = "Stabilisierungspfad (Regime 3)";
+    text = "L1 dominant — biologische oder strukturell verursachte Erschöpfung blockiert alles andere. Keine Workshops, kein Prozess-Redesign. Erst: Entlastung, Regeneration, Kapazität aufbauen.";
+    basis = "Polyvagal Theory (Porges ★★★) · Allostatic Load (McEwen ★★★) · Sequenzierungs-Axiom (L0)";
+    variant = "l1"; badge = "L1 — Neurobiologische Kapazität";
   } else if (l1 === "gelb") {
-    title = "Kulturpfad — Psychologische Klärung";
-    text = "L1 gelb → Psychologische Dynamik (L2) prüfen und adressieren, bevor strukturelle Interventionen wirken können.";
+    title = "Kulturpfad (Regime 2)";
+    text = "L2 dominant — psychologische Blockaden verhindern dass strukturelle Lösungen greifen. Psychological Safety, Immunity-Muster, Vertrauensarchitektur zuerst adressieren.";
+    basis = "Psychological Safety (Edmondson ★★★) · Immunity to Change (Kegan & Lahey ★★★)";
     variant = "l2"; badge = "L2 — Psychologische Dynamik";
+  } else if (l1 === "gruen" && l1b === "gelb") {
+    // L1 stabil aber strukturelle Erschöpfung → L3-Versagen produziert L2-Blockade
+    title = "Klärungspfad (Regime 2b)";
+    text = "L3-Strukturversagen produziert L2-Blockade. Erkennbar an: Rollenunklarheit → Bescheidenheit/Over-Functioning → Erschöpfung. SEQUENZ ZWINGEND: L2 zuerst benennen — dann L3 formalisieren. Nicht L3 first.";
+    basis = "Structural Ambiguity (March & Olsen ★★★) · Mayer et al. Vertrauen (★★★)";
+    variant = "l2b"; badge = "L2 + L3 — Klärung vor Struktur";
   } else {
-    title = "Gestaltungspfad — Strukturoptimierung";
-    text = "L1 grün → primärer Hebel ist L3 (Organisationale Struktur). Prozesse, Entscheidungsarchitektur, Anreize.";
-    variant = "l3"; badge = "L3 — Strukturell";
+    title = "Gestaltungspfad (Regime 1)";
+    text = "L1 stabil, L3 dominant. System kann Veränderung aufnehmen. Direkte Strukturarbeit möglich: Entscheidungsarchitektur, Incentive-Struktur, Kommunikationsarchitektur.";
+    basis = "Requisite Variety (Ashby ★★★) · Meadows Leverage Points (★★★)";
+    variant = "l3"; badge = "L3 — Organisationale Struktur";
   }
   let warn = "";
   if (l1 === "gelb" && dauer === "chronisch") {
@@ -8338,6 +8385,7 @@ function renderNelionRegimeResult() {
       <span class="nelion-regime-result-badge">${badge}</span>
       <div class="nelion-regime-result-title">${title}</div>
       <div class="nelion-regime-result-text">${text}</div>
+      ${basis ? `<div class="nelion-regime-result-basis"><strong>Basis:</strong> ${basis}</div>` : ""}
     </div>${warn}
   `;
 }
