@@ -7734,12 +7734,12 @@ function renderScanErsteEinschaetzung() {
         <label class="form-label">Pfad-Empfehlung</label>
         <select class="form-input" id="befundRegime">
           <option value=""   ${regime===""   ? "selected" : ""}>— wählen —</option>
-          <option value="0"  ${regime==="0"  ? "selected" : ""}>Alarmstufe Rot — Scan nicht möglich</option>
-          <option value="1"  ${regime==="1"  ? "selected" : ""}>Gestaltungspfad — Optimierung</option>
-          <option value="2"  ${regime==="2"  ? "selected" : ""}>Kulturpfad — Kalibrierung</option>
-          <option value="2b" ${regime==="2b" ? "selected" : ""}>Klärungspfad — L3 erzeugt L2-Blockade</option>
-          <option value="3"  ${regime==="3"  ? "selected" : ""}>Stabilisierungspfad — Stabilisierung</option>
-          <option value="4"  ${regime==="4"  ? "selected" : ""}>Neuausrichtungspfad — Fundamentale Neuausrichtung</option>
+          <option value="0"  ${regime==="0"  ? "selected" : ""}>Alarmstufe Rot</option>
+          <option value="3"  ${regime==="3"  ? "selected" : ""}>Stabilisierungspfad (Regime 3)</option>
+          <option value="2"  ${regime==="2"  ? "selected" : ""}>Kulturpfad (Regime 2)</option>
+          <option value="2b" ${regime==="2b" ? "selected" : ""}>Klärungspfad (Regime 2b)</option>
+          <option value="1"  ${regime==="1"  ? "selected" : ""}>Gestaltungspfad (Regime 1)</option>
+          <option value="4"  ${regime==="4"  ? "selected" : ""}>Neuausrichtungspfad (alle Layer)</option>
         </select>
       </div>
       <div class="form-group" style="margin-top:8px">
@@ -7828,8 +7828,10 @@ function renderMassnahmeSlot(num) {
           <select class="form-input" id="befundMn${num}Layer">
             <option value="">— wählen —</option>
             <option value="L1">Neurobiologische Kapazität (L1)</option>
+            <option value="L1b">Strukturell verursachte Erschöpfung (L1b)</option>
             <option value="L2">Psychologische Dynamik (L2)</option>
             <option value="L3">Organisationale Struktur (L3)</option>
+            <option value="Cross-Layer">Cross-Layer</option>
           </select>
         </div>
         <div class="form-group">
@@ -8476,9 +8478,10 @@ function renderFuenfKernCheck() {
       <div class="kompass-check"><input type="checkbox" class="kern-cb" onchange="updateKernCheck()"><div><div class="kompass-check-label">Pfad-Empfehlung (1 / 2 / 2b / 3) ist begründet?</div></div></div>
       <div class="kompass-check"><input type="checkbox" class="kern-cb" onchange="updateKernCheck()"><div><div class="kompass-check-label">3 Sofortmassnahmen sind konkret und umsetzbar formuliert?</div></div></div>
       <div class="kompass-check"><input type="checkbox" class="kern-cb" onchange="updateKernCheck()"><div><div class="kompass-check-label">L1 als Gate geprüft — keine L3-Intervention bei rotem L1?</div></div></div>
-      <div class="kern-check-counter" id="kernCounter">0 von 5 Checks</div>
+      <div class="kompass-check"><input type="checkbox" class="kern-cb" onchange="updateKernCheck()"><div><div class="kompass-check-label">Systemische Perspektive geprüft — externe Faktoren benannt oder als Lücke markiert?</div></div></div>
+      <div class="kern-check-counter" id="kernCounter">0 von 6 Checks</div>
       <div class="kern-check-ok"    id="kernOk">✅ Befund bereit für Export.</div>
-      <div class="kern-check-warn"  id="kernWarn">Alle 5 Checks erfüllen, bevor der Befund exportiert wird.</div>
+      <div class="kern-check-warn"  id="kernWarn">Alle 6 Checks erfüllen, bevor der Befund exportiert wird.</div>
     </div>
   `;
 }
@@ -8491,12 +8494,12 @@ function updateKernCheck() {
   const warn = document.getElementById("kernWarn");
   const ok   = document.getElementById("kernOk");
   const btn  = document.getElementById("btnFinishScan");
-  if (counter) counter.textContent = `${count} von 5 Checks`;
-  if (warn) warn.classList.toggle("show", count < 5);
-  if (ok)   ok.classList.toggle("show", count === 5);
+  if (counter) counter.textContent = `${count} von 6 Checks`;
+  if (warn) warn.classList.toggle("show", count < 6);
+  if (ok)   ok.classList.toggle("show", count === 6);
   if (btn) {
-    btn.disabled = count < 5;
-    btn.style.opacity = count < 5 ? "0.4" : "1";
+    btn.disabled = count < 6;
+    btn.style.opacity = count < 6 ? "0.4" : "1";
   }
 }
 
